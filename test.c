@@ -1,12 +1,14 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <cmocka.h>
 #include <stdlib.h>
 #include "property.h"
 #include "player.h"
 
 
+// test l'initialisation de propiété
 static void test_init_Property_basic(void **state) {
     (void) state; /* Variable inutilisée */
 
@@ -43,9 +45,30 @@ static void test_init_Property_basic(void **state) {
     free(p);
 }
 
+// test l'initialisation de player
+static void test_init_player_values(void **state) {
+    (void) state; /* inutilisé */
+
+    // 1. Action
+    Player *p = init_player("TestPlayer", 1);
+
+    // 2. Assertions (Vérifications)
+    assert_non_null(p);
+    assert_string_equal(p->name, "TestPlayer");
+    assert_int_equal(p->number, 1);
+    assert_int_equal(p->credit, 1500);
+    assert_int_equal(p->position, 0);
+    assert_int_equal(p->eco_index, GRADE_A);
+
+    // 3. Nettoyage (Crucial pour Valgrind)
+    free(p);
+}
+
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
+        cmocka_unit_test(test_init_player_values),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

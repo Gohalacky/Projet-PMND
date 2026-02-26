@@ -1,10 +1,23 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+typedef enum {
+    GRADE_A = 1,
+    GRADE_B = 2,
+    GRADE_C = 3,
+    GRADE_D = 4,
+    GRADE_E = 5,
+    GRADE_F = 6
+} EcoGrade;
+
 typedef struct{
     char name[20];  /*Nom du joueur*/
     int number;     /*numéro du joueur*/
     int credit;     /*nombre de crédit du joueur*/
+    int position;   /*Index de la case sur laquelle se trouve le joueur (0 à 39)*/
+    EcoGrade eco_index;  /* Indice écologique personnel*/
 }Player;
+
+Player* init_player(const char* name, int number);
 
 #endif
