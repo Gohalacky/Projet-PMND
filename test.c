@@ -88,12 +88,25 @@ static void test_calcul_moyenne_eco_index_player(void **state) {
     free(p);
 }
 
+static void test_player_move(void **state) {
+    (void) state;
+    Player *p = init_player("TestMove\n", 1);
+    p->position = 35;
+    p->credit = 1000;
+
+    player_move(p, 10); // 35 + 10 = 45 -> 45 % 40 = 5
+
+    assert_int_equal(p->position, 5);
+    free(p);
+}
+
 
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
         cmocka_unit_test(test_init_player_values),
-        cmocka_unit_test(test_calcul_moyenne_eco_index_player)
+        cmocka_unit_test(test_calcul_moyenne_eco_index_player),
+        cmocka_unit_test(test_player_move)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

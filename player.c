@@ -54,3 +54,17 @@ void calcul_moyenne_eco_index_player(Player *p, Property *board, int board_size)
         p->eco_index = (EcoGrade)moyenne;
     }
 }
+
+void player_move(Player *p, int steps) {
+    if (p == NULL) return;
+
+    int old_position = p->position;
+    // Modulo 40 pour rester sur le plateau
+    p->position = (p->position + steps) % 40;
+
+    // Si la nouvelle position est inférieure à l'ancienne, 
+    // c'est qu'on a fait un tour complet (Passage par la case Départ)
+    if (p->position < old_position) {
+        printf("%s passe par la case départ !\n", p->name);
+    }
+}
