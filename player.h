@@ -22,5 +22,8 @@ typedef struct{
 Player* init_player(const char* name, int number);
 void calcul_moyenne_eco_index_player(Player *p, Property *board, int board_size);
 void player_move(Player *p, int steps);
+void player_add_credits(Player *p, int montant);
+int player_remove_credits(Player *p, int montant);
+
 
 #endif

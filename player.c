@@ -68,3 +68,22 @@ void player_move(Player *p, int steps) {
         printf("%s passe par la case départ !\n", p->name);
     }
 }
+
+void player_add_credits(Player *p, int montant) {
+    if (p != NULL && montant > 0) {
+        p->credit += montant;
+    }
+}
+
+//Retire des crédits. Retourne 0 si le joueur n'a plus assez d'argent. 1 sinon
+int player_remove_credits(Player *p, int montant) {
+    if (p == NULL) return 1;
+
+    if (p->credit < montant) {
+        p->credit = 0;
+        return 0;
+    }
+
+    p->credit -= montant;
+    return 1;
+}

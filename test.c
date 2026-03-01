@@ -100,13 +100,29 @@ static void test_player_move(void **state) {
     free(p);
 }
 
+/* Test de la gestion des crédits et faillite */
+static void test_player_credits_and_faillite(void **state) {
+    (void) state;
+    Player *p = init_player("Test player crédit \n", 1);
+    p->credit = 100;
+
+    player_add_credits(p, 50);
+    assert_int_equal(p->credit, 150);
+
+    int success = player_remove_credits(p, 200);
+    assert_int_equal(success, 0); // Doit retourner 0 (faillite)
+    assert_int_equal(p->credit, 0);
+
+    free(p);
+}
 
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
         cmocka_unit_test(test_init_player_values),
         cmocka_unit_test(test_calcul_moyenne_eco_index_player),
-        cmocka_unit_test(test_player_move)
+        cmocka_unit_test(test_player_move),
+        cmocka_unit_test(test_player_credits_and_faillite)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
