@@ -24,6 +24,8 @@ void calcul_moyenne_eco_index_player(Player *p, Property *board, int board_size)
 void player_move(Player *p, int steps);
 void player_add_credits(Player *p, int montant);
 int player_remove_credits(Player *p, int montant);
+void player_add_property(Player *p, Property *prop);
+void player_remove_property(Player *p, Property *prop);
 
 
 #endif

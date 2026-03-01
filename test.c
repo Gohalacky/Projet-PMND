@@ -116,13 +116,32 @@ static void test_player_credits_and_faillite(void **state) {
     free(p);
 }
 
+/* Test de l'acquisition d'une propriété */
+static void test_player_acquisition_propriete(void **state) {
+    (void) state;
+    Player *p = init_player("Owner", 1);
+    // On simule une propriété (tableaux de loyers vides pour le test)
+    int rm[3]={0}, rl[3]={0}, rp[3]={0};
+    Property *prop = init_Property("Test Prop", MARRON, -1, 60, 50, 2, rm, rl, rp, 0, 0, 10);
+
+    player_add_property(p, prop);
+    assert_int_equal(prop->owner, p->number);
+
+    player_remove_property(p, prop);
+    assert_int_equal(prop->owner, -1);
+
+    free(p);
+    free(prop);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
         cmocka_unit_test(test_init_player_values),
         cmocka_unit_test(test_calcul_moyenne_eco_index_player),
         cmocka_unit_test(test_player_move),
-        cmocka_unit_test(test_player_credits_and_faillite)
+        cmocka_unit_test(test_player_credits_and_faillite),
+        cmocka_unit_test(test_player_acquisition_propriete)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

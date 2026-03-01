@@ -87,3 +87,21 @@ int player_remove_credits(Player *p, int montant) {
     p->credit -= montant;
     return 1;
 }
+
+
+void player_add_property(Player *p, Property *prop) {
+    if (p == NULL || prop == NULL) return;
+    
+    prop->owner = p->number;
+    printf("%s a acquis %s !\n", p->name, prop->name);
+}
+
+
+void player_remove_property(Player *p, Property *prop) {
+    if (p == NULL || prop == NULL) return;
+
+    if (prop->owner == p->number) {
+        prop->owner = -1; // -1 elle n'appartient à personne
+	printf("%s a perdu %s !\n", p->name, prop->name);
+    }
+}
