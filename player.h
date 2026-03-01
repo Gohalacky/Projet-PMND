@@ -1,5 +1,6 @@
 #ifndef PLAYER_H
 #define PLAYER_H
+#include "property.h"
 
 typedef enum {
     GRADE_A = 1,
@@ -19,5 +20,6 @@ typedef struct{
 }Player;
 
 Player* init_player(const char* name, int number);
+void calcul_moyenne_eco_index_player(Player *p, Property *board, int board_size);
 
 #endif

@@ -12,12 +12,12 @@
 static void test_init_Property_basic(void **state) {
     (void) state; /* Variable inutilisée */
 
-    /* Données de test (tirées de ta ligne Marron dans l'image Excel) */
+    /* Données de test*/
     int rm[3] = {15, 45, 135};
     int rl[3] = {10, 30, 90};
     int rp[3] = {3, 8, 23};
 
-    /* On appelle ta fonction avec tes arguments en français */
+    /* On appelle ta fonction */
     Property *p = init_Property("Boulevard de Belleville", MARRON, 0, 60, 50, 2, rm, rl, rp, 0, 0, 10);
 
     
@@ -47,12 +47,12 @@ static void test_init_Property_basic(void **state) {
 
 // test l'initialisation de player
 static void test_init_player_values(void **state) {
-    (void) state; /* inutilisé */
+    (void) state;
 
-    // 1. Action
+
     Player *p = init_player("TestPlayer", 1);
 
-    // 2. Assertions (Vérifications)
+
     assert_non_null(p);
     assert_string_equal(p->name, "TestPlayer");
     assert_int_equal(p->number, 1);
@@ -60,7 +60,31 @@ static void test_init_player_values(void **state) {
     assert_int_equal(p->position, 0);
     assert_int_equal(p->eco_index, GRADE_A);
 
-    // 3. Nettoyage (Crucial pour Valgrind)
+    // Nettoyage
+    free(p);
+}
+
+
+
+static void test_calcul_moyenne_eco_index_player(void **state) {
+    (void) state;
+    Player *p = init_player("Ecolo", 1);
+    
+    // Création plateau de 2 propriétés
+    Property board[2];
+    // Propriété 1 : Note B
+    // Propriété 2 : Note D
+    // Moyenne attendue : (2+4)/2 = 3 -> Grade C
+    
+    board[0].owner = 1; 
+    board[0].indice = GRADE_B;
+    board[1].owner = 1; 
+    board[1].indice = GRADE_D;
+    
+    calcul_moyenne_eco_index_player(p, board, 2);
+    
+    assert_int_equal(p->eco_index, GRADE_C);
+    
     free(p);
 }
 
@@ -69,6 +93,7 @@ int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
         cmocka_unit_test(test_init_player_values),
+        cmocka_unit_test(test_calcul_moyenne_eco_index_player)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
