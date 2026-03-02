@@ -1,9 +1,24 @@
 #ifndef PROPERTY_H
 #define PROPERTY_H
+#define NB_PROPRIETE 22
 
 typedef enum {
-    MARRON, BLEU_CIEL, ROSE, ORANGE, ROUGE, JAUNE, VERT, BLEU_FONCE
+    MARRON = 0, 
+    GRIS = 1, 
+    ROSE = 2, 
+    ORANGE = 3, 
+    ROUGE = 4,
+    JAUNE = 5, 
+    VERT = 6, 
+    BLEU = 7
 } Color;
+
+typedef enum {
+    Vide = 0 ,
+    Maison = 1 , 
+    Social = 2 , 
+    Parc = 3
+} logement ;
 
 typedef struct{
     char name[50];          /*Nome de la propriété*/
@@ -18,11 +33,11 @@ typedef struct{
     int rent_logement[3];   /*liste de la valeur des loyer pour 1,2 et 3 logement sociaux*/
     int rent_parc[3];       /*liste de la valeur des loyer pour 1,2 et 3 parc*/
     int level;              /*indique le nombre de maison, de logement sociaux ou de parc sur la propriété*/
-    int type;               /*indique le type de logement construit sur la case 0 si rien, 1 pour maison , 2 pour logement sociaux, 3 pour parcs*/        
+    logement type;          /*indique le type de logement construit sur la case 0 si rien, 1 pour maison , 2 pour logement sociaux, 3 pour parcs*/        
     int indice;             /*indique l'indice écologique de la propriété*/
 } Property ;
 
-Property * init_Property(char *name, Color color, int owner, int value, int construction_cost, int rent_empty,int rent_maison[3],int rent_logement[3],int rent_parc[3], int level, int type, int indice);
-
+Property  * init_Property(char *name, Color color, int owner, int value, int construction_cost, int rent_empty,int rent_maison[3],int rent_logement[3],int rent_parc[3], int level, logement type, int indice);
+int chargement_propriete_loyer(Property * tableau[NB_PROPRIETE], const char* nomfichier);
 
 #endif
