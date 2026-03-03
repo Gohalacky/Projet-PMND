@@ -101,7 +101,7 @@ void player_remove_property(Player *p, Property *prop) {
     if (p == NULL || prop == NULL) return;
 
     if (prop->owner == p->number) {
-        prop->owner = -1; // -1 elle n'appartient à personne
+        prop->owner = 0; // 0 elle n'appartient à personne
 	printf("%s a perdu %s !\n", p->name, prop->name);
     }
 }
