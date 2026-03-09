@@ -15,6 +15,15 @@ const char* color_names[] = {
     "Bleu"
 };
 
+void replace_underscore_with_space(char *str) {
+    if (str == NULL) return;
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] == '_') {
+            str[i] = ' ';
+        }
+    }
+}
+
 Property * init_Property(char *nom, 
                         Color couleur, 
                         int proprio, 
@@ -76,6 +85,7 @@ int chargement_propriete_loyer(Property * plateau[NB_PROPRIETE], const char* nom
                   &l_m[0], &l_m[1], &l_m[2], 
                   &l_s[0], &l_s[1], &l_s[2], 
                   &l_p[0], &l_p[1], &l_p[2]) == 16){
+        replace_underscore_with_space(nom_str);
         plateau[i] = init_Property(nom_str, (Color)color_val, 0, val, c_const, l_vide, l_m, l_s, l_p, 0, Vide, 0);
         i++ ;
     }

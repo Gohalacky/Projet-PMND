@@ -55,13 +55,13 @@ static void test_chargement_complet(void **state) {
 
     /* On vérifie les données de la première propriété (A)*/
     assert_non_null(plateau[0]);
-    assert_string_equal(plateau[0]->name, "A");
+    assert_string_equal(plateau[0]->name, "LongsChamps");
     assert_int_equal(plateau[0]->color, MARRON);
     assert_int_equal(plateau[0]->value, 60);
 
     /*On vérifie une donnée au milieu (par exemple C, index 2)*/
     assert_non_null(plateau[2]);
-    assert_string_equal(plateau[2]->name, "C");
+    assert_string_equal(plateau[2]->name, "Jeanne d'Arc");
     assert_int_equal(plateau[2]->color, GRIS); /* Index 1 dans enum*/
     assert_int_equal(plateau[2]->rent_empty, 6);
 
@@ -189,6 +189,12 @@ static void test_full_color(void **state) {
     free(p2);
 }
 
+static void test_underscore_conversion(void **state) {
+    (void) state;
+    char nom_test[] = "Rue_de_Vaugirard";
+    replace_underscore_with_space(nom_test);
+    assert_string_equal(nom_test, "Rue de Vaugirard");
+}
 
 int main(void) {
     const struct CMUnitTest tests[] = {
@@ -199,7 +205,8 @@ int main(void) {
         cmocka_unit_test(test_player_move),
         cmocka_unit_test(test_player_credits_and_faillite),
         cmocka_unit_test(test_player_acquisition_propriete),
-        cmocka_unit_test(test_full_color)
+        cmocka_unit_test(test_full_color),
+        cmocka_unit_test(test_underscore_conversion)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
