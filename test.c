@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <stdio.h>
 #include <stddef.h>
 #include <setjmp.h>
 #include <stdint.h>
@@ -18,14 +19,14 @@ static void test_init_Property_basic(void **state) {
 
 
     /* On appelle la fonction avec les arguments*/
-    Property *p = init_Property("Boulevard de Belleville", MARRON, 0, 60, 50, 2, rm, rl, rp, 0, 0, 10);
+    Property *p = init_Property("A", MARRON, 0, 60, 50, 2, rm, rl, rp, 0, 0, 10);
 
     
     /* Vérifier que l'allocation mémoire a réussi */
     assert_non_null(p);
 
     /* Vérifie les chaînes de caractères et les entiers  */
-    assert_string_equal(p->name, "Boulevard de Belleville");
+    assert_string_equal(p->name, "A");
     assert_int_equal(p->color, MARRON);
     assert_int_equal(p->value, 60);
     assert_int_equal(p->construction_cost, 50);
@@ -196,6 +197,34 @@ static void test_underscore_conversion(void **state) {
     assert_string_equal(nom_test, "Rue de Vaugirard");
 }
 
+static void test_must_rent(void **state){
+    (void) state;
+    Player * proprio_test1 = init_player("proprio_test",1);
+    Player * proprio_test2 = init_player("proprio_test",1);
+    Player * loca_test = init_player("loca_test",2);
+    Property * plateau[NB_PROPRIETE] = {NULL}; /*création d'un tableau de toute les propriete*/
+    int nb = chargement_propriete_loyer(plateau, "loyer_insapoly.txt"); /*chargement des 22 propriétés classiques*/
+    player_add_property(proprio_test1,plateau[8]);
+    player_add_property(proprio_test1,plateau[9]);
+    player_add_property(proprio_test1,plateau[10]);
+    player_add_property(proprio_test2,plateau[11]);
+    must_rent(plateau,plateau[10],loca_test,proprio_test1);
+    must_rent(plateau,plateau[11],loca_test,proprio_test2);
+
+    assert_int_equal(loca_test->credit,1450);
+    assert_int_equal(proprio_test1->credit,1532);
+    assert_int_equal(proprio_test2->credit,1518);
+    /*à la fin du jeu on libère les propriétés qui sont chargées*/
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL){
+            free(plateau[i]);
+        }
+    }
+    free(proprio_test1);
+    free(proprio_test2);
+    free(loca_test);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
@@ -206,7 +235,8 @@ int main(void) {
         cmocka_unit_test(test_player_credits_and_faillite),
         cmocka_unit_test(test_player_acquisition_propriete),
         cmocka_unit_test(test_full_color),
-        cmocka_unit_test(test_underscore_conversion)
+        cmocka_unit_test(test_underscore_conversion),
+        cmocka_unit_test(test_must_rent)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

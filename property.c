@@ -35,7 +35,8 @@ Property * init_Property(char *nom,
                         logement type_logement,
                         int note){
     
-    Property * p = (Property *)malloc(sizeof(Property));
+    /*Property * p = (Property *)malloc(sizeof(Property));*/
+    Property * p = (Property *)calloc(1, sizeof(Property));
     
     if(p==NULL){
         printf("ERROR init_Property, erreur dans l'allocation de la mémoire \n");
@@ -111,4 +112,29 @@ int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){
     }
     printf("%s possède toute la couleur %s \n",p->name,color_names[couleur]);
     return 1 ; /*possède l'entiereté de la couleur*/
+}
+
+void must_rent(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player * ownr){
+    int dut;
+    if(full_color(tableau,ownr,prop->color)){ /*on vérifie si un joueur à toute la couleur avant de vérifié si il y a des maisons dessus*/
+        switch(prop->type){
+            case 0:
+                dut = prop->rent_full_color;
+                break;
+            case 1:
+                dut = prop->rent_maison[(prop->level)-1];
+                break;
+            case 2:
+                dut = prop->rent_logement[(prop->level)-1];
+                break;
+            case 3:
+                dut = prop->rent_parc[(prop->level)-1];
+                break;
+        }
+    }
+    else{
+        dut = prop->rent_empty;
+    }
+    player_add_credits(ownr,dut);
+    player_remove_credits(p,dut);
 }

@@ -43,6 +43,6 @@ typedef struct Property{
 Property  * init_Property(char *name, Color color, int owner, int value, int construction_cost, int rent_empty,int rent_maison[3],int rent_logement[3],int rent_parc[3], int level, logement type, int indice);
 int chargement_propriete_loyer(Property * tableau[NB_PROPRIETE], const char* nomfichier);
 int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur);
-void est_tombe_chez_qqun(Property * prop, Player *p);
+void must_rent(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player *o);
 void replace_underscore_with_space(char *str);
 #endif
