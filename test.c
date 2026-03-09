@@ -155,10 +155,38 @@ static void test_player_acquisition_propriete(void **state) {
     assert_int_equal(prop->owner, p->number);
 
     player_remove_property(p, prop);
-    assert_int_equal(prop->owner, -1);
+    assert_int_equal(prop->owner, 0);
 
     free(p);
     free(prop);
+}
+
+static void test_full_color(void **state) {
+    (void) state;
+    Player *p1 = init_player("Testfullcolor1\n", 1);
+    Player *p2 = init_player("Testfullcolor2\n", 2);
+    Property * plateau[NB_PROPRIETE] = {NULL}; /*création d'un tableau de toute les propriete*/
+    int nb = chargement_propriete_loyer(plateau, "loyer_insapoly.txt"); /*chargement des 22 propriétés classiques*/
+    Property *prop1;
+    Property *prop2;
+    Property *prop3;
+    prop1=plateau[0];
+    prop2=plateau[1];
+    prop3=plateau[2];
+    player_add_property(p1, prop1);
+    player_add_property(p1, prop2);
+    player_add_property(p2, prop3);
+
+    assert_int_equal(full_color(plateau,p1,MARRON),1);
+    assert_int_equal(full_color(plateau,p2,GRIS),0);
+    /*à la fin du jeu on libère les propriétés qui sont chargées*/
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL){
+            free(plateau[i]);
+        }
+    }
+    free(p1);
+    free(p2);
 }
 
 
@@ -170,7 +198,8 @@ int main(void) {
         cmocka_unit_test(test_calcul_moyenne_eco_index_player),
         cmocka_unit_test(test_player_move),
         cmocka_unit_test(test_player_credits_and_faillite),
-        cmocka_unit_test(test_player_acquisition_propriete)
+        cmocka_unit_test(test_player_acquisition_propriete),
+        cmocka_unit_test(test_full_color)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

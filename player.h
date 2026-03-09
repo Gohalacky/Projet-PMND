@@ -1,6 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include "property.h"
+
+struct Property; 
+typedef struct Property Property;
 
 typedef enum {
     GRADE_A = 1,

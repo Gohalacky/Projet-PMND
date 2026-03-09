@@ -3,8 +3,28 @@
 #include <stdlib.h>
 #include "property.h"
 
+/*récupère le nom des Couleurs avec le typedef enum Color*/
+const char* color_names[] = {
+    "Marron",
+    "Gris",
+    "Rose",
+    "Orange",
+    "Rouge",
+    "Jaune",
+    "Vert",
+    "Bleu"
+};
 
-Property * init_Property(char *nom, Color couleur, int proprio, int valeur,int construction_cout,int loyer_vide,int loyer_maison[3],int loyer_logement[3],int loyer_parc[3],int  niveau, logement type_logement,int note){
+Property * init_Property(char *nom, 
+                        Color couleur, 
+                        int proprio, 
+                        int valeur,
+                        int construction_cout,
+                        int loyer_vide,
+                        int loyer_maison[3],int loyer_logement[3],int loyer_parc[3],
+                        int  niveau, 
+                        logement type_logement,
+                        int note){
     
     Property * p = (Property *)malloc(sizeof(Property));
     
@@ -66,4 +86,19 @@ int chargement_propriete_loyer(Property * plateau[NB_PROPRIETE], const char* nom
     fclose(file);
     return i;
     
+}
+
+/*Vérifie si un joueur possède ou non la couleur complète*/
+int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){
+    int i;
+    for(i=0; i<NB_PROPRIETE; i++){
+        if(tableau[i]->color == couleur){
+            if(tableau[i]->owner != p->number){
+                printf("%s possède ne possède pas toute la couleur %s \n",p->name,color_names[couleur]);
+                return 0 ; /*ne possède pas toute la couleur*/
+            }
+        }
+    }
+    printf("%s possède toute la couleur %s \n",p->name,color_names[couleur]);
+    return 1 ; /*possède l'entiereté de la couleur*/
 }
