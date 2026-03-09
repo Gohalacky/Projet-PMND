@@ -102,6 +102,8 @@ void player_remove_property(Player *p, Property *prop) {
 
     if (prop->owner == p->number) {
         prop->owner = 0; // 0 elle n'appartient à personne
+        prop->type = 0 ; /*on enlève les constructions*/
+        prop->level = 0;
 	printf("%s a perdu %s !\n", p->name, prop->name);
     }
 }

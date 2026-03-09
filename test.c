@@ -225,6 +225,132 @@ static void test_must_rent(void **state){
     free(loca_test);
 }
 
+static void test_add_level_integration(void **state) {
+    (void) state;
+
+    //  Initialisation du joueur avec assez de crédits
+    Player * p_test = init_player("Bâtisseur", 1);
+    p_test->credit = 2000; // On s'assure qu'il a de quoi construire
+
+    //  Préparation du plateau 
+    Property * plateau[NB_PROPRIETE] = {NULL};
+    int nb = chargement_propriete_loyer(plateau, "loyer_insapoly.txt");
+
+    // Attribution d'un groupe de couleur complet (ex: le groupe Orange index 8, 9, 10)
+    player_add_property(p_test, plateau[8]);
+    player_add_property(p_test, plateau[9]);
+    player_add_property(p_test, plateau[10]);
+
+    //  On récupère les valeurs avant construction pour le calcul
+    int ancien_solde = p_test->credit;
+    int cout_const = plateau[8]->construction_cost;
+
+    
+    // On choisit le type 'Maison' 
+    int type_voulu = 1; 
+    int success = add_level(plateau, plateau[8], p_test, type_voulu);
+
+    assert_int_equal(success, 1);                 // La fonction doit renvoyer 1
+    assert_int_equal(plateau[8]->level, 1);       // Le niveau doit être passé à 1
+    assert_int_equal(plateau[8]->type, type_voulu); // Le type doit être mis à jour
+    assert_int_equal(p_test->credit, ancien_solde - cout_const); // L'argent doit être retiré
+
+    // On force le niveau à 3 manuellement pour tester la sécurité
+    plateau[8]->level = 3;
+    int fail = add_level(plateau, plateau[8], p_test, type_voulu);
+    assert_int_equal(fail, 0); // Doit renvoyer 0 car level n'est pas < 3
+    assert_int_equal(plateau[8]->level, 3); // Le niveau ne doit pas avoir bougé
+
+    //  Nettoyage mémoire
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL) free(plateau[i]);
+    }
+    free(p_test);
+}
+
+// Test de l'uniformité lors de la construction
+static void test_check_uniformity_build(void **state) {
+    (void) state;
+    Property *plateau[NB_PROPRIETE] = {NULL};
+    Property *p1;
+    Property *p2;
+    // On crée 2 propriétés de la même couleur (ex: MARRON)
+    int nb = chargement_propriete_loyer(plateau, "loyer_insapoly.txt"); /*chargement des 22 propriétés classiques*/
+    p1 = plateau[0] ; 
+    p2 = plateau[1] ;
+
+    // Cas 1 : P1 et P2 sont à 0. On peut construire sur P1 (lvl 0 -> 1)
+    assert_int_equal(check_uniformity(plateau, p1, 1), 1);
+
+    // Cas 2 : P1 passe à 1, P2 reste à 0.
+    p1->level = 1;
+    // On ne peut pas construire un 2ème niveau sur P1 car P2 est à 0 (écart > 1)
+    assert_int_equal(check_uniformity(plateau, p1, 1), 0);
+    // Mais on peut construire sur P2 pour rattraper P1
+    assert_int_equal(check_uniformity(plateau, p2, 1), 1);
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL) free(plateau[i]);
+    }
+}
+
+// Test de l'uniformité lors de la destruction (vente)
+static void test_check_uniformity_destroy(void **state) {
+    (void) state;
+    Property *plateau[NB_PROPRIETE] = {NULL};
+    int nb = chargement_propriete_loyer(plateau, "loyer_insapoly.txt"); /*chargement des 22 propriétés classiques*/
+    Property *p1;
+    Property *p2;
+    p1=plateau[0];
+    p2=plateau[1];
+    p1->type=1;
+    p2->type=1;
+    p1->level=1;
+    p2->level=1;
+    // Cas 1 : P1 et P2 sont à 1. On peut détruire sur P1 (lvl 1 -> 0)
+    assert_int_equal(check_uniformity(plateau, p1, -1), 1);
+
+    // Cas 2 : P1 est descendu à 0, P2 est resté à 1.
+    p1->level = 0;
+    // On ne peut pas détruire P1 (déjà à 0), mais surtout on peut détruire P2
+    assert_int_equal(check_uniformity(plateau, p2, -1), 1);
+    
+    // Si on avait p1=2 et p2=1, on ne pourrait pas détruire p2 (car p1 est trop haut)
+    p1->level = 2; p2->level = 1;
+    assert_int_equal(check_uniformity(plateau, p2, -1), 0);
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL) free(plateau[i]);
+    }
+}
+
+// Test complet de la fonction remove_level
+static void test_remove_level_integration(void **state) {
+    (void) state;
+    Player *p = init_player("Test", 1);
+    p->credit = 1000;
+    Property *plateau[NB_PROPRIETE] = {NULL};
+    int nb = chargement_propriete_loyer(plateau, "loyer_insapoly.txt"); /*chargement des 22 propriétés classiques*/
+    // Propriété avec une maison (lvl 1), coût construction 200
+    Property *prop ;
+    prop =plateau[0] ;
+    prop->construction_cost = 200;
+    prop->type=1;
+    prop->level=1;
+    prop->owner = p->number;
+    // On détruit le niveau
+    int success = remove_level(plateau, prop, p);
+
+    assert_int_equal(success, 1);
+    assert_int_equal(prop->level, 0);
+    assert_int_equal(prop->type, 0); // Doit être revenu à Vide
+    // Crédits : 1000 + (200 ) = 1200
+    assert_int_equal(p->credit, 1200);
+
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL) free(plateau[i]);
+    }
+    free(p);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
@@ -236,7 +362,11 @@ int main(void) {
         cmocka_unit_test(test_player_acquisition_propriete),
         cmocka_unit_test(test_full_color),
         cmocka_unit_test(test_underscore_conversion),
-        cmocka_unit_test(test_must_rent)
+        cmocka_unit_test(test_must_rent),
+        cmocka_unit_test(test_add_level_integration),
+        cmocka_unit_test(test_check_uniformity_build),
+        cmocka_unit_test(test_check_uniformity_destroy),
+        cmocka_unit_test(test_remove_level_integration)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

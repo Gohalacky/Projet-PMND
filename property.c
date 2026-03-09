@@ -116,6 +116,7 @@ int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){
 
 void must_rent(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player * ownr){
     int dut;
+    int banqueroute;
     if(full_color(tableau,ownr,prop->color)){ /*on vérifie si un joueur à toute la couleur avant de vérifié si il y a des maisons dessus*/
         switch(prop->type){
             case 0:
@@ -136,5 +137,83 @@ void must_rent(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Pla
         dut = prop->rent_empty;
     }
     player_add_credits(ownr,dut);
-    player_remove_credits(p,dut);
+    banqueroute = player_remove_credits(p,dut);
+    if(banqueroute == 0){
+        printf("BANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+    }
+}
+
+int add_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p , int type_choisi){
+    if(prop->level < 3 && full_color(tableau,p,prop->color)){
+        if(prop->level == 0){
+            prop->type = type_choisi;
+        }
+    prop->level++;
+    player_remove_credits(p,prop->construction_cost);
+    return 1 ;
+    }
+    else{
+        printf("Impossible de rajouté un niveau de propriété\n");
+        return 0;
+    }
+}
+
+int check_uniformity(Property * tableau[NB_PROPRIETE], Property * prop, int action) {
+    if (prop == NULL) return 0;
+
+    int min_lvl = 3;
+    int max_lvl = 0;
+
+    // On scanne le groupe de couleur
+    for (int i = 0; i < NB_PROPRIETE; i++) {
+        if (tableau[i] != NULL && tableau[i]->color == prop->color) {
+            if (tableau[i]->level < min_lvl) min_lvl = tableau[i]->level;
+            if (tableau[i]->level > max_lvl) max_lvl = tableau[i]->level;
+        }
+    }
+
+    //  Logique de vérification
+    if (action == 1) { // CONSTRUCTION
+        // On ne peut construire que si on n'est pas déjà au dessus du min
+        if (prop->level > min_lvl) {
+            printf("Construction non uniforme ! Égalisez les niveaux d'abord.\n");
+            return 0;
+        }
+    } 
+    else if (action == -1) { // DESTRUCTION
+        // On ne peut détruire que si on n'est pas déjà en dessous du max
+        if (prop->level < max_lvl) {
+            printf("Destruction non uniforme ! Réduisez les autres d'abord.\n");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+int remove_level(Property * tableau[NB_PROPRIETE], Property * prop, Player * p) {
+    //  Vérifications de base
+    if (prop->level > 0 && prop->owner == p->number) {
+        
+        // Vérification de l'uniformité (action = -1)
+        if (!check_uniformity(tableau, prop, -1)) {
+            return 0;
+        }
+
+        prop->level--;
+        
+        // Si on retombe à 0, la case redevient "Vide"
+        if (prop->level == 0) {
+            prop->type = 0; // Type Vide
+        }
+
+        // Remboursement ( 100% du prix de construction)
+        int remboursement = prop->construction_cost ;
+        player_add_credits(p, remboursement);
+        
+        return 1;
+    }
+    
+    printf("Impossible de détruire un niveau ici.\n");
+    return 0;
 }

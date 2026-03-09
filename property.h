@@ -66,7 +66,7 @@ int chargement_propriete_loyer(Property * tableau[NB_PROPRIETE], const char* nom
 int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur);
 void must_rent(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player *o);
 void replace_underscore_with_space(char *str);
-void add_level(Property * tableau[NB_PROPRIETE], Property * prop, int type);
-
-
+int add_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p, int type);
+int remove_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p );
+int check_uniformity(Property * tableau[NB_PROPRIETE], Property * prop, int action);
 #endif
