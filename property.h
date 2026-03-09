@@ -1,6 +1,7 @@
 #ifndef PROPERTY_H
 #define PROPERTY_H
 #define NB_PROPRIETE 22
+#define NB_ACCISITION 28
 #include "player.h"
 
 typedef enum Color{
@@ -11,7 +12,9 @@ typedef enum Color{
     ROUGE = 4,
     JAUNE = 5, 
     VERT = 6, 
-    BLEU = 7
+    BLEU = 7,
+    COMP = 8,
+    GAR = 9,
 } Color;
 
 extern const char* color_names[];
@@ -40,9 +43,30 @@ typedef struct Property{
     int indice;             /*indique l'indice écologique de la propriété*/
 } Property ;
 
+typedef struct Compagnies{
+    char name[50];
+    Color color;
+    int owner;
+    int value;
+    int rent[2];
+} Compagnies ;
+
+typedef struct Gares{
+    char name[50];
+    Color color;
+    int owner;
+    int value;
+    int rent[4];
+} Gares ;
+
+
+
 Property  * init_Property(char *name, Color color, int owner, int value, int construction_cost, int rent_empty,int rent_maison[3],int rent_logement[3],int rent_parc[3], int level, logement type, int indice);
 int chargement_propriete_loyer(Property * tableau[NB_PROPRIETE], const char* nomfichier);
 int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur);
 void must_rent(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player *o);
 void replace_underscore_with_space(char *str);
+void add_level(Property * tableau[NB_PROPRIETE], Property * prop, int type);
+
+
 #endif
