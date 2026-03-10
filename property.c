@@ -35,7 +35,7 @@ Property * init_Property(char *nom,
                         logement type_logement,
                         int note){
     
-    /*Property * p = (Property *)malloc(sizeof(Property));*/
+    /*Property * p = (Property *)malloc(sizeof(Property)); ça fonctionne mieux avec le calloc*/
     Property * p = (Property *)calloc(1, sizeof(Property));
     
     if(p==NULL){
@@ -65,6 +65,39 @@ Property * init_Property(char *nom,
 
     return p;
 
+}
+
+Compagnies * init_Compagnies(char *nom, Color couleur, int proprio, int valeur, int loyer[2]){
+    Compagnies * g = (Compagnies *)calloc(1,sizeof(Compagnies));
+    if(g==NULL){
+        printf("ERROR init_Compagnies, erreur dans l'allocation de la mémoire \n");
+        return NULL;
+    }
+    strncpy(g->name, nom, 49);
+    g->name[49] = '\0'; /*on s'assure que la chaine de caractère est fini*/
+    g->color = couleur;
+    g->owner = proprio;
+    g->value = valeur;
+    for(int i = 0; i < 2; i++){
+        g->rent[i]=loyer[i];
+    }
+    return g;
+}
+Gares * init_Gares(char *nom, Color couleur ,int proprio, int valeur, int loyer[4]){
+    Gares * g = (Gares *)calloc(1,sizeof(Gares));
+    if(g==NULL){
+        printf("ERROR init_Gares, erreur dans l'allocation de la mémoire \n");
+        return NULL;
+    }
+    strncpy(g->name, nom, 49);
+    g->name[49] = '\0'; /*on s'assure que la chaine de caractère est fini*/
+    g->color = couleur;
+    g->owner = proprio;
+    g->value = valeur;
+    for(int i = 0; i < 4; i++){
+        g->rent[i]=loyer[i];
+    }
+    return g;
 }
 
 
@@ -114,7 +147,7 @@ int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){
     return 1 ; /*possède l'entiereté de la couleur*/
 }
 
-void must_rent(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player * ownr){
+void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player * ownr){
     int dut;
     int banqueroute;
     if(full_color(tableau,ownr,prop->color)){ /*on vérifie si un joueur à toute la couleur avant de vérifié si il y a des maisons dessus*/

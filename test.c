@@ -45,6 +45,60 @@ static void test_init_Property_basic(void **state) {
     free(p);
 }
 
+static void test_init_COMPAGNIE_basic(void **state) {
+    (void) state; /* Variable inutilisée */
+
+    /* Données de test*/
+    int rm[2] = {4, 10};
+
+    /* On appelle la fonction avec les arguments*/
+    Compagnies *p = init_Compagnies("A", COMP, 0, 150, rm);
+
+    
+    /* Vérifier que l'allocation mémoire a réussi */
+    assert_non_null(p);
+
+    /* Vérifie les chaînes de caractères et les entiers  */
+    assert_string_equal(p->name, "A");
+    assert_int_equal(p->color, COMP);
+    assert_int_equal(p->value, 150);
+
+    /* Vérifie que les tableaux de loyers ont été bien copiés par exemple le loyer de la maison 3 (index 2)*/
+    assert_int_equal(p->rent[1], 10);
+    assert_int_equal(p->rent[0], 4);
+
+    /* libération de la mémoire*/
+    free(p);
+}
+
+static void test_init_GARE_basic(void **state) {
+    (void) state; /* Variable inutilisée */
+
+    /* Données de test*/
+    int rm[4] = {25, 50, 100, 200};
+
+    /* On appelle la fonction avec les arguments*/
+    Gares *p = init_Gares("A", GAR, 0, 200, rm);
+
+    
+    /* Vérifier que l'allocation mémoire a réussi */
+    assert_non_null(p);
+
+    /* Vérifie les chaînes de caractères et les entiers  */
+    assert_string_equal(p->name, "A");
+    assert_int_equal(p->color, GAR);
+    assert_int_equal(p->value, 200);
+
+    /* Vérifie que les tableaux de loyers ont été bien copiés par exemple le loyer de la maison 3 (index 2)*/
+    assert_int_equal(p->rent[3], 200);
+    assert_int_equal(p->rent[2], 100);
+    assert_int_equal(p->rent[1], 50);
+    assert_int_equal(p->rent[0], 25);
+
+    /* libération de la mémoire*/
+    free(p);
+}
+
 static void test_chargement_complet(void **state) {
     (void) state;
     Property *plateau[NB_PROPRIETE] = {NULL};
@@ -197,7 +251,7 @@ static void test_underscore_conversion(void **state) {
     assert_string_equal(nom_test, "Rue de Vaugirard");
 }
 
-static void test_must_rent(void **state){
+static void test_must_rent_Property(void **state){
     (void) state;
     Player * proprio_test1 = init_player("proprio_test",1);
     Player * proprio_test2 = init_player("proprio_test",1);
@@ -208,8 +262,8 @@ static void test_must_rent(void **state){
     player_add_property(proprio_test1,plateau[9]);
     player_add_property(proprio_test1,plateau[10]);
     player_add_property(proprio_test2,plateau[11]);
-    must_rent(plateau,plateau[10],loca_test,proprio_test1);
-    must_rent(plateau,plateau[11],loca_test,proprio_test2);
+    must_rent_Property(plateau,plateau[10],loca_test,proprio_test1);
+    must_rent_Property(plateau,plateau[11],loca_test,proprio_test2);
 
     assert_int_equal(loca_test->credit,1450);
     assert_int_equal(proprio_test1->credit,1532);
@@ -354,6 +408,8 @@ static void test_remove_level_integration(void **state) {
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
+        cmocka_unit_test(test_init_GARE_basic),
+        cmocka_unit_test(test_init_COMPAGNIE_basic),
         cmocka_unit_test(test_chargement_complet),
         cmocka_unit_test(test_init_player_values),
         cmocka_unit_test(test_calcul_moyenne_eco_index_player),
@@ -362,7 +418,7 @@ int main(void) {
         cmocka_unit_test(test_player_acquisition_propriete),
         cmocka_unit_test(test_full_color),
         cmocka_unit_test(test_underscore_conversion),
-        cmocka_unit_test(test_must_rent),
+        cmocka_unit_test(test_must_rent_Property),
         cmocka_unit_test(test_add_level_integration),
         cmocka_unit_test(test_check_uniformity_build),
         cmocka_unit_test(test_check_uniformity_destroy),

@@ -1,6 +1,8 @@
 #ifndef PROPERTY_H
 #define PROPERTY_H
 #define NB_PROPRIETE 22
+#define NB_COMPAGNIE 2
+#define NB_GARE 4
 #define NB_ACCISITION 28
 #include "player.h"
 
@@ -61,12 +63,22 @@ typedef struct Gares{
 
 
 
-Property  * init_Property(char *name, Color color, int owner, int value, int construction_cost, int rent_empty,int rent_maison[3],int rent_logement[3],int rent_parc[3], int level, logement type, int indice);
+Property  * init_Property(char *name, 
+            Color color, 
+            int owner, 
+            int value, int construction_cost, 
+            int rent_empty,int rent_maison[3],int rent_logement[3],int rent_parc[3], 
+            int level, logement type, int indice);
+Compagnies * init_Compagnies(char *name, Color color, int owner, int value, int rent[2]);
+Gares * init_Gares(char *name, Color color ,int owner, int value, int rent[4]);
 int chargement_propriete_loyer(Property * tableau[NB_PROPRIETE], const char* nomfichier);
 int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur);
-void must_rent(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player *o);
+void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player *o);
+void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp, Player *p, Player *o);
+void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *p, Player *o);
 void replace_underscore_with_space(char *str);
 int add_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p, int type);
 int remove_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p );
 int check_uniformity(Property * tableau[NB_PROPRIETE], Property * prop, int action);
+
 #endif
