@@ -83,6 +83,7 @@ Compagnies * init_Compagnies(char *nom, Color couleur, int proprio, int valeur, 
     }
     return g;
 }
+
 Gares * init_Gares(char *nom, Color couleur ,int proprio, int valeur, int loyer[4]){
     Gares * g = (Gares *)calloc(1,sizeof(Gares));
     if(g==NULL){
@@ -125,12 +126,71 @@ int chargement_propriete_loyer(Property * plateau[NB_PROPRIETE], const char* nom
     }
     if (i < NB_PROPRIETE) {
     int c = fgetc(file);
-    printf("La lecture s'est arretee. Prochain caractere dans le fichier : '%c' (code ASCII : %d)\n", c, c);
+    printf("La lecture s'est arretee. Prochain caractere dans le fichier proprio: '%c' (code ASCII : %d)\n", c, c);
     }
     fclose(file);
     return i;
     
 }
+
+int chargement_GARE_loyer(Gares * plateau[NB_GARE], const char* nomfichier){
+    FILE* file = fopen(nomfichier,"r");
+    if(file == NULL){
+        printf("ERROR chargement_propriete_loyer, impossible d'ouvrir le fichier");
+        return 0;
+    }
+    int color_val; // Pour lire le chiffre de la couleur (0, 1, 2...)
+    char nom_str[50];
+    int val;
+    int l_m[4];
+
+    int i = 0;
+    while (i < NB_PROPRIETE && 
+           fscanf(file, " %d %s %d %d %d %d %d", 
+                  &color_val, nom_str, &val,
+                  &l_m[0], &l_m[1], &l_m[2], &l_m[3]) == 7){
+        replace_underscore_with_space(nom_str);
+        plateau[i] = init_Gares(nom_str, (Color)color_val, 0, val, l_m);
+        i++ ;
+    }
+    if (i < NB_GARE) {
+    int c = fgetc(file);
+    printf("La lecture s'est arretee. Prochain caractere dans le fichier gare: '%c' (code ASCII : %d)\n", c, c);
+    }
+    fclose(file);
+    return i;
+    
+}
+
+int chargement_COMPAGNIE_loyer(Compagnies * plateau[NB_COMPAGNIE], const char* nomfichier){
+    FILE* file = fopen(nomfichier,"r");
+    if(file == NULL){
+        printf("ERROR chargement_propriete_loyer, impossible d'ouvrir le fichier");
+        return 0;
+    }
+    int color_val; // Pour lire le chiffre de la couleur (0, 1, 2...)
+    char nom_str[50];
+    int val;
+    int l_m[2];
+
+    int i = 0;
+    while (i < NB_PROPRIETE && 
+           fscanf(file, " %d %s %d %d %d", 
+                  &color_val, nom_str, &val,
+                  &l_m[0], &l_m[1]) == 5){
+        replace_underscore_with_space(nom_str);
+        plateau[i] = init_Compagnies(nom_str, (Color)color_val, 0, val, l_m);
+        i++ ;
+    }
+    if (i < NB_COMPAGNIE) {
+    int c = fgetc(file);
+    printf("La lecture s'est arretee. Prochain caractere dans le fichier compagnie: '%c' (code ASCII : %d)\n", c, c);
+    }
+    fclose(file);
+    return i;
+    
+}
+
 
 /*Vérifie si un joueur possède ou non la couleur complète*/
 int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){

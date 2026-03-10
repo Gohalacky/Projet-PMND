@@ -126,6 +126,59 @@ static void test_chargement_complet(void **state) {
     }
 }
 
+static void test_chargement_GARE(void **state) {
+    (void) state;
+    Gares *plateau[NB_GARE] = {NULL};
+    
+    int nb = chargement_GARE_loyer(plateau, "gares.txt");
+
+    /* : On attend exactement 4 gares*/
+    assert_int_equal(nb, 4);
+
+    /* On vérifie les données de la première propriété (A)*/
+    assert_non_null(plateau[0]);
+    assert_string_equal(plateau[0]->name, "Beaulieu-Université");
+    assert_int_equal(plateau[0]->color, GAR);
+    assert_int_equal(plateau[0]->value, 200);
+
+    /*On vérifie une donnée au milieu (par exemple C, index 2)*/
+    assert_non_null(plateau[2]);
+    assert_string_equal(plateau[2]->name, "Gare de Rennes");
+    assert_int_equal(plateau[2]->color, GAR); /* Index 1 dans enum*/
+    assert_int_equal(plateau[2]->rent[2], 100);
+    assert_int_equal(plateau[3]->rent[3], 200);
+    /*Nettoyage de la mémoire après le test*/
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL) free(plateau[i]);
+    }
+}
+
+static void test_chargement_COMPAGNIE(void **state) {
+    (void) state;
+    Compagnies *plateau[NB_COMPAGNIE] = {NULL};
+    
+    int nb = chargement_COMPAGNIE_loyer(plateau, "compagnie.txt");
+
+    /* : On attend exactement 4 gares*/
+    assert_int_equal(nb, 2);
+
+    /* On vérifie les données de la première propriété (A)*/
+    assert_non_null(plateau[0]);
+    assert_string_equal(plateau[0]->name, "Foy");
+    assert_int_equal(plateau[0]->color, COMP);
+    assert_int_equal(plateau[0]->value, 150);
+    assert_non_null(plateau[1]);
+    assert_string_equal(plateau[1]->name, "K'Fet");
+    assert_int_equal(plateau[1]->color, COMP);
+    assert_int_equal(plateau[1]->rent[0], 4);
+    assert_int_equal(plateau[1]->rent[1], 10);
+
+    /*Nettoyage de la mémoire après le test*/
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL) free(plateau[i]);
+    }
+}
+
 // test l'initialisation de player
 static void test_init_player_values(void **state) {
     (void) state;
@@ -411,6 +464,8 @@ int main(void) {
         cmocka_unit_test(test_init_GARE_basic),
         cmocka_unit_test(test_init_COMPAGNIE_basic),
         cmocka_unit_test(test_chargement_complet),
+        cmocka_unit_test(test_chargement_GARE),
+        cmocka_unit_test(test_chargement_COMPAGNIE),
         cmocka_unit_test(test_init_player_values),
         cmocka_unit_test(test_calcul_moyenne_eco_index_player),
         cmocka_unit_test(test_player_move),
