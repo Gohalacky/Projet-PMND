@@ -269,6 +269,39 @@ static void test_player_acquisition_propriete(void **state) {
     free(prop);
 }
 
+static void test_player_addremove_comp(void **state){
+    (void) state;
+    Player *p = init_player("Owner", 1);
+    // on simule une compagnie
+    int loyer[2] = {4,10};
+    Compagnies * c = init_Compagnies("test comp", COMP, 0, 150, loyer);
+    player_add_comp(p,c);
+    assert_int_equal(c->owner, p->number);
+    
+    player_remove_comp(p, c);
+    assert_int_equal(c->owner, 0);
+
+    free(p);
+    free(c);
+}
+
+static void test_player_addremove_gar(void **state){
+    (void) state;
+    Player *p = init_player("Owner", 1);
+    // on simule une gare
+    int loyer[4] = {25,50,100,200};
+    Gares * g = init_Gares("test gare", COMP, 0, 200, loyer);
+    player_add_gar(p,g);
+    assert_int_equal(g->owner, p->number);
+    
+    player_remove_gar(p, g);
+    assert_int_equal(g->owner, 0);
+
+    free(p);
+    free(g);
+}
+
+
 static void test_full_color(void **state) {
     (void) state;
     Player *p1 = init_player("Testfullcolor1\n", 1);
@@ -295,6 +328,45 @@ static void test_full_color(void **state) {
     }
     free(p1);
     free(p2);
+}
+
+static void test_full_comp(void **state){
+    (void) state;
+    Player *p1 = init_player("Testfullcolor1\n", 1);
+    Compagnies * tableau[NB_COMPAGNIE] = {NULL};
+    int nb = chargement_COMPAGNIE_loyer(tableau, "compagnie.txt");
+    player_add_comp(p1,tableau[0]);
+    assert_int_equal(full_Comp(tableau, p1),0);
+    player_add_comp(p1,tableau[1]);
+    assert_int_equal(full_Comp(tableau, p1),1);
+    for (int i = 0; i < nb; i++) {
+        if (tableau[i] != NULL){
+            free(tableau[i]);
+        }
+    }
+    free(p1);
+}
+
+static void test_nb_Gare(void **state){
+    (void) state;
+    Player *p1 = init_player("Testnbg\n", 1);
+    Gares * tableau[NB_GARE] = {NULL};
+    int nb = chargement_GARE_loyer(tableau, "gares.txt");
+    assert_int_equal(nb_Gare(tableau, p1),0);   // on test pour si la personne possède de 0 à 4 gares
+    player_add_gar(p1,tableau[0]);
+    assert_int_equal(nb_Gare(tableau, p1),1);
+    player_add_gar(p1,tableau[1]);
+    assert_int_equal(nb_Gare(tableau, p1),2);
+    player_add_gar(p1,tableau[2]);
+    assert_int_equal(nb_Gare(tableau, p1),3);
+    player_add_gar(p1,tableau[3]);
+    assert_int_equal(nb_Gare(tableau, p1),4);
+    for (int i = 0; i < nb; i++) {
+        if (tableau[i] != NULL){
+            free(tableau[i]);
+        }
+    }
+    free(p1);
 }
 
 static void test_underscore_conversion(void **state) {
@@ -471,7 +543,11 @@ int main(void) {
         cmocka_unit_test(test_player_move),
         cmocka_unit_test(test_player_credits_and_faillite),
         cmocka_unit_test(test_player_acquisition_propriete),
+        cmocka_unit_test(test_player_addremove_comp),
+        cmocka_unit_test(test_player_addremove_gar),
         cmocka_unit_test(test_full_color),
+        cmocka_unit_test(test_full_comp),
+        cmocka_unit_test(test_nb_Gare),
         cmocka_unit_test(test_underscore_conversion),
         cmocka_unit_test(test_must_rent_Property),
         cmocka_unit_test(test_add_level_integration),

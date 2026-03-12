@@ -207,6 +207,33 @@ int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){
     return 1 ; /*possède l'entiereté de la couleur*/
 }
 
+int full_Comp(Compagnies * tableau[NB_COMPAGNIE],Player *p){
+    int i;
+    int n;
+    n=0;
+    for(i=0; i<NB_COMPAGNIE; i++){
+        if(tableau[i]->owner == p->number){
+            n++;
+        }
+    }
+    if(n==NB_COMPAGNIE){
+        return 1;
+    }
+    return 0;
+}
+
+int nb_Gare(Gares * tableau[NB_GARE], Player *p){
+    int i;
+    int n;
+    n=0;
+    for(i=0; i<NB_GARE; i++){
+        if(tableau[i]->owner == p->number){
+            n++;
+        }
+    }
+    return n;
+}
+
 void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player * ownr){
     int dut;
     int banqueroute;

@@ -1,8 +1,12 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-struct Property; 
+struct Property;
 typedef struct Property Property;
+struct Gares;
+typedef struct Gares Gares;
+struct Compagnies;
+typedef struct Compagnies Compagnies;
 
 typedef enum {
     GRADE_A = 1,
@@ -27,7 +31,11 @@ void player_move(Player *p, int steps);
 void player_add_credits(Player *p, int montant);
 int player_remove_credits(Player *p, int montant);
 void player_add_property(Player *p, Property *prop);
+void player_add_comp(Player *p, Compagnies *prop);
+void player_add_gar(Player *p, Gares *prop);
 void player_remove_property(Player *p, Property *prop);
+void player_remove_comp(Player *p, Compagnies *prop);
+void player_remove_gar(Player *p, Gares *prop);
 
 
 #endif
