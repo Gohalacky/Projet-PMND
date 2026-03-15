@@ -8,8 +8,6 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_rect.h>
-
-#include <SDL2/SDL_video.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -17,156 +15,79 @@
 
 int main(int argc, char* args[]){
 
-    /* Test lancement */
-    if(SDL_Init(SDL_INIT_VIDEO<0) || !(IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG)){
+    if (SDL_Init(SDL_INIT_VIDEO) < 0 || !(IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG)) {
         printf("Erreur SDL : %s\n", SDL_GetError());
         return -1;
     }
 
-    EtatJeu currentState=MENU;
-    bool quit=false;
-    SDL_Event event; 
+    SDL_Window*   window   = SDL_CreateWindow("INSAPOLY", SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED, 1280, 720,SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    /*Font*/
-    char* font = "FONT/fontPixel.ttf";
+    TTF_Init(); 
 
-    /*Lancement de la fenêtre*/
-    SDL_Window* window= SDL_CreateWindow("INSAPOLY",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280,720,SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-    SDL_Renderer * renderer= SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
+    TTF_Font* fontNormal = TTF_OpenFont("FONT/fontPixel.ttf", 22);
+    TTF_Font* fontTitle  = TTF_OpenFont("FONT/fontPixel.ttf", 38);  
 
-    /*Chargement des textures*/
-    SDL_Texture* texMenu=IMG_LoadTexture(renderer,"IMAGE/Menu_principal.png");
-    SDL_Texture* texPlateau=IMG_LoadTexture(renderer,"IMAGE/Plateau.png");
-    SDL_Texture* texLancer=IMG_LoadTexture(renderer,"IMAGE/Lance_de.png");
-    SDL_Texture* texPropriete=IMG_LoadTexture(renderer,"IMAGE/Menu_interne.png");
-    SDL_Texture* texTest=IMG_LoadTexture(renderer,"IMAGE/TEST.png");
+    TexturesPack tex;
+    ButtonsPack btn = {
+        .newGame    = { .ref = {457, 255, 370, 67} },
+        .loadGame   = { .ref = {457, 337, 370, 67} },
+        .save       = { .ref = {457, 417, 370, 67} },
+        .ranking    = { .ref = {457, 498, 370, 67} },
+        .backToMenu = { .ref = {1233,  2,  40, 40} },
+        .throwDice  = { .ref = {1107, 559, 160, 50} },
+        .properties = { .ref = {1107, 615, 160, 44} },
+        .launchGame = { .ref = { 747, 636, 193, 45} },
+        .cancel     = { .ref = { 359, 636, 134, 45} },
+    };
 
-    if(!texMenu || !texPlateau || !texLancer || !texPropriete || !texTest){
-        printf("Image loading error");
+    Button* allButtons[] = {
+        &btn.newGame, &btn.loadGame, &btn.save,    &btn.ranking,
+        &btn.backToMenu, &btn.throwDice, &btn.properties,
+        &btn.launchGame, &btn.cancel
+    };
+
+    TextsPack texts = {
+        .titleNewGame  = {"Nouvelle Partie",      541, 53,  38, 0,0,0, {235,221,192,255}},
+        .btnLaunchGame = {"Lancer la partie",      790, 650, 22, 0,0,0, {235,221,192,255}},
+        .btnCancel     = {"Annuler",               392, 650, 22, 0,0,0, {235,221,192,255}},
+        .btnThrowDice  = {"Lancer les dés",       1123, 582, 22, 0,0,0, {235,221,192,255}},
+        .btnProperties = {"Gérer les propriétés", 1123, 636, 22, 0,0,0, {235,221,192,255}},
+    };
+
+    Text* allTexts[] = {
+        &texts.titleNewGame, &texts.btnLaunchGame, &texts.btnCancel,
+        &texts.btnThrowDice, &texts.btnProperties
+    };
+    int textCount = sizeof(allTexts) / sizeof(allTexts[0]);
+    for (int i = 0; i < textCount; i++){
+        ScaleText(allTexts[i], 1.0f, 1.0f);
+    } 
+
+    float ratioX = 1.0f; // fenêtre démarre à 1280x720 = ratio 1
+    float ratioY = 1.0f;
+    int count = sizeof(allButtons) / sizeof(allButtons[0]);
+    for (int i = 0; i < count; i++) {
+        ScaleButton(allButtons[i], ratioX, ratioY);
+    }
+
+    if (loadTextures(renderer, &tex) < 0){
         return -1;
+    } 
+
+    EtatJeu   state = MENU;
+    bool      quit  = false;
+    SDL_Event event;
+
+    while (!quit) {
+        handleEvents(&event, &state, &btn, &texts, &fontNormal, &fontTitle, &quit);
+        render(renderer, state, &tex, &btn, &texts, fontNormal, fontTitle);
     }
 
-    /*Boutons*/
-    /*Menu Principal*/
-    SDL_Rect buttonNewGame={457,255,370,67};
-    SDL_Rect buttonLoadGame={457,337,370,67};
-    SDL_Rect buttonSave={457,417,370,67};
-    SDL_Rect buttonRanking={457,498,370,67};
+    TTF_CloseFont(fontNormal);
+    TTF_CloseFont(fontTitle);
+    cleanup(window, renderer, &tex);
+    return 0;
 
-    /*Plateau*/
-    SDL_Rect buttonBackToMenu={1233,2,40,40};
-    SDL_Rect buttonThrow={1107,559,160,50};
-    SDL_Rect buttonProperties={1107,615,160,44};
-
-    /*Evenements*/
-    while(!quit){
-      
-        
-        while(SDL_PollEvent(&event)!=0){
-            if(event.type==SDL_QUIT){
-                quit=true;
-            }
-
-            if(event.type==SDL_MOUSEBUTTONDOWN){
-                int x,y; 
-                SDL_GetMouseState(&x, &y);
-                printf("Clic souris : x=%d, y=%d \n",x,y);
-
-                /*Menu*/
-                if(x>=buttonNewGame.x && x<=(buttonNewGame.x + buttonNewGame.w) &&
-                y>=buttonNewGame.y && y<=(buttonNewGame.y+buttonNewGame.h)){
-                    currentState=PLATEAU;
-                }
-
-                if(x>=buttonLoadGame.x && x<=(buttonLoadGame.x + buttonLoadGame.w) &&
-                y>=buttonLoadGame.y && y<=(buttonLoadGame.y+buttonLoadGame.h)){
-                    currentState=TEST;
-                }
-
-                if(x>=buttonSave.x && x<=(buttonSave.x + buttonSave.w) &&
-                y>=buttonSave.y && y<=(buttonSave.y+buttonSave.h)){
-                    currentState=TEST;
-                }
-
-                if(x>=buttonRanking.x && x<=(buttonRanking.x + buttonRanking.w) &&
-                y>=buttonRanking.y && y<=(buttonRanking.y+buttonRanking.h)){
-                    currentState=TEST;
-                }
-
-                /*Plateau*/
-                if(x>=buttonBackToMenu.x && x<=(buttonBackToMenu.x + buttonBackToMenu.w) &&
-                y>=buttonBackToMenu.y && y<=(buttonBackToMenu.y+buttonBackToMenu.h)){
-                    currentState=MENU;
-                }
-
-                if(x>=buttonThrow.x && x<=(buttonThrow.x + buttonThrow.w) &&
-                y>=buttonThrow.y && y<=(buttonThrow.y+buttonThrow.h)){
-                    currentState=LANCER;
-                }
-
-                if(x>=buttonProperties.x && x<=(buttonProperties.x + buttonProperties.w) &&
-                y>=buttonProperties.y && y<=(buttonProperties.y+buttonProperties.h)){
-                    currentState=PROPRIETE;
-                }           
-
-            }
-
-            if(event.type==SDL_WINDOWEVENT){
-                if(event.window.event==SDL_WINDOWEVENT_RESIZED || event.window.event==SDL_WINDOWEVENT_SIZE_CHANGED){
-                    UpdateButtonPositionsScaled(event.window.data1, event.window.data2, &buttonNewGame, &buttonLoadGame, &buttonSave, &buttonRanking);
-                }
-            }
-
-            if(event.type==SDL_KEYDOWN){
-                if(event.key.keysym.sym==SDLK_ESCAPE){
-                    currentState=MENU;
-                }
-            }
-
-        }
-        SDL_RenderClear(renderer);
-
-        /*Affichage des textures*/
-
-        if(currentState==MENU){
-            SDL_RenderCopy(renderer,texMenu, NULL,NULL);
-            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-        }
-
-        if(currentState==PLATEAU || currentState==LANCER){
-            SDL_RenderCopy(renderer,texPlateau, NULL,NULL);
-            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 90);
-            SDL_RenderFillRect(renderer, &buttonBackToMenu);
-            SDL_RenderFillRect(renderer, &buttonProperties);
-            SDL_RenderFillRect(renderer, &buttonThrow);
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            
-            if(currentState==LANCER){
-                SDL_Rect fenetreLancer ={340,100,600,400};
-                SDL_RenderCopy(renderer,texLancer, NULL,&fenetreLancer);
-            }
-
-        }
-            
-        if(currentState==PROPRIETE){
-            SDL_RenderCopy(renderer,texPropriete , NULL,NULL);
-            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-        }
-
-        if(currentState==TEST){
-            SDL_RenderCopy(renderer,texTest, NULL,NULL);
-            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-        }
-
-
-
-        SDL_RenderPresent(renderer);
-    }
-
-    SDL_DestroyTexture(texMenu);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    IMG_Quit();
-    SDL_Quit();
+    
 }
