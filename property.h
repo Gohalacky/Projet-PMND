@@ -1,8 +1,13 @@
 #ifndef PROPERTY_H
 #define PROPERTY_H
 #define NB_PROPRIETE 22
+#define NB_COMPAGNIE 2
+#define NB_GARE 4
+#define NB_ACCISITION 28
+#include "player.h"
+#include "tool.h"
 
-typedef enum {
+typedef enum Color{
     MARRON = 0, 
     GRIS = 1, 
     ROSE = 2, 
@@ -10,17 +15,21 @@ typedef enum {
     ROUGE = 4,
     JAUNE = 5, 
     VERT = 6, 
-    BLEU = 7
+    BLEU = 7,
+    COMP = 8,
+    GAR = 9,
 } Color;
 
-typedef enum {
+extern const char* color_names[];
+
+typedef enum logement{
     Vide = 0 ,
     Maison = 1 , 
     Social = 2 , 
     Parc = 3
 } logement ;
 
-typedef struct{
+typedef struct Property{
     char name[50];          /*Nome de la propriété*/
     Color color;            /*Couleur de la propriété*/   
     int owner;              /*Qui est le propriétaire 0 si non possédé et 1 pour joueur 1 et 2 pour joueur 2 et ainsi de suite*/ 
@@ -37,7 +46,43 @@ typedef struct{
     int indice;             /*indique l'indice écologique de la propriété*/
 } Property ;
 
-Property  * init_Property(char *name, Color color, int owner, int value, int construction_cost, int rent_empty,int rent_maison[3],int rent_logement[3],int rent_parc[3], int level, logement type, int indice);
-int chargement_propriete_loyer(Property * tableau[NB_PROPRIETE], const char* nomfichier);
+typedef struct Compagnies{
+    char name[50];
+    Color color;
+    int owner;
+    int value;
+    int rent[2];
+} Compagnies ;
+
+typedef struct Gares{
+    char name[50];
+    Color color;
+    int owner;
+    int value;
+    int rent[4];
+} Gares ;
+
+
+
+Property  * init_Property(char *name, 
+            Color color, 
+            int owner, 
+            int value, int construction_cost, 
+            int rent_empty,int rent_maison[3],int rent_logement[3],int rent_parc[3], 
+            int level, logement type, int indice);                                                              /*Fait*/ //initialise une propriété
+Compagnies * init_Compagnies(char *name, Color color, int owner, int value, int rent[2]);                       /*Fait*/ //initialise une compagnie
+Gares * init_Gares(char *name, Color color ,int owner, int value, int rent[4]);                                 /*Fait*/ //initialise une gare
+int chargement_propriete_loyer(Property * tableau[NB_PROPRIETE], const char* nomfichier);                       /*Fait*/
+int chargement_GARE_loyer(Gares * tableau[NB_GARE], const char* nomfichier);                                    /*Fait*/
+int chargement_COMPAGNIE_loyer(Compagnies * tableau[NB_COMPAGNIE], const char* nomfichier);                     /*Faot*/
+int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur);                                     /*Fait*/ //Vérifie si un joueur à la couleur complete indiquée
+int full_Comp(Compagnies * tableau[NB_COMPAGNIE],Player *p);                                                    /*Fait*/ //Vérifie si un joueur possède les 2 Compagnies
+int nb_Gare(Gares * tableau[NB_GARE], Player *p);                                                               /*Fait*/ //Renvoie le nombre de gare qu'un joueur possède
+void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Player *loueur, Player *owner);               /*Fait*/ //RFait payer le loyer à payer par le joueur tombé sur la propriété
+void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp, Player *loueur, Player *owner, int d);  /*Fait*/ //idem pour une compagnie
+void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *loueur, Player *owner);                                /*Fait*/ //idem pour une gare
+int add_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p, int type);                          /*Fait*/ //ajoute un level de batiment
+int remove_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p );                                /*Fait*/ //enleve un level de batiment
+int check_uniformity(Property * tableau[NB_PROPRIETE], Property * prop, int action);                            /*Fait*/ //verifie si il y a trop de batiment d'écart entre les différentes propriété d'une même couleur
 
 #endif

@@ -96,12 +96,46 @@ void player_add_property(Player *p, Property *prop) {
     printf("%s a acquis %s !\n", p->name, prop->name);
 }
 
+void player_add_comp(Player *p, Compagnies *prop) {
+    if (p == NULL || prop == NULL) return;
+    
+    prop->owner = p->number;
+    printf("%s a acquis %s !\n", p->name, prop->name);
+}
+
+void player_add_gar(Player *p, Gares *prop) {
+    if (p == NULL || prop == NULL) return;
+    
+    prop->owner = p->number;
+    printf("%s a acquis %s !\n", p->name, prop->name);
+}
+
 
 void player_remove_property(Player *p, Property *prop) {
     if (p == NULL || prop == NULL) return;
 
     if (prop->owner == p->number) {
-        prop->owner = -1; // -1 elle n'appartient à personne
+        prop->owner = 0; // 0 elle n'appartient à personne
+        prop->type = 0 ; /*on enlève les constructions*/
+        prop->level = 0;
+	printf("%s a perdu %s !\n", p->name, prop->name);
+    }
+}
+
+void player_remove_comp(Player *p, Compagnies *prop) {
+    if (p == NULL || prop == NULL) return;
+
+    if (prop->owner == p->number) {
+        prop->owner = 0; // 0 elle n'appartient à personne
+	printf("%s a perdu %s !\n", p->name, prop->name);
+    }
+}
+
+void player_remove_gar(Player *p, Gares *prop) {
+    if (p == NULL || prop == NULL) return;
+
+    if (prop->owner == p->number) {
+        prop->owner = 0; // 0 elle n'appartient à personne
 	printf("%s a perdu %s !\n", p->name, prop->name);
     }
 }

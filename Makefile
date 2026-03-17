@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -std=c11 -g -I. 
 LDFLAGS = -lcmocka
-SRC = property.c player.c
+SRC = property.c player.c tool.c
 OBJ = $(SRC:.c=.o)
 
 EXEC = insapoly
