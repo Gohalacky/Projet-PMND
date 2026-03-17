@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "property.h"
 #include "player.h"
+#include "tool.h"
 
 int main(){
     Property * tableau_prop[NB_PROPRIETE] = {NULL}; /*création d'un tableau de toute les propriete*/

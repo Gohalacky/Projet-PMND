@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "property.h"
-
+#include "tool.h"
 /*récupère le nom des Couleurs avec le typedef enum Color*/
 const char* color_names[] = {
     "Marron",
@@ -15,14 +15,6 @@ const char* color_names[] = {
     "Bleu"
 };
 
-void replace_underscore_with_space(char *str) {
-    if (str == NULL) return;
-    for (int i = 0; str[i] != '\0'; i++) {
-        if (str[i] == '_') {
-            str[i] = ' ';
-        }
-    }
-}
 
 Property * init_Property(char *nom, 
                         Color couleur, 
@@ -260,6 +252,28 @@ void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Playe
     banqueroute = player_remove_credits(p,dut);
     if(banqueroute == 0){
         printf("BANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+    }
+}
+
+void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp, Player *p, Player *ownr, int d){
+    int dut;
+    int banqueroute;
+    dut= (comp->rent[full_Comp(tableau,ownr)])*d; //d est le résultat du lancé de dé précédent
+    player_add_credits(ownr,dut);
+    banqueroute = player_remove_credits(p,dut);
+    if(banqueroute == 0){
+        printf("BANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+    }
+}
+
+void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *loueur, Player *owner){
+    int dut;
+    int banqueroute;
+    dut= (g->rent[nb_Gare(tableau,owner)-1]); //-1 car le owner possède déja une gare, ce n'est pas cette fonction qui le vérifie
+    player_add_credits(owner,dut);
+    banqueroute = player_remove_credits(loueur,dut);
+    if(banqueroute == 0){
+        printf("BANQUEROUTE de %s \n", loueur->name); /*il faudra réalisé le protocole de banqueroute*/
     }
 }
 

@@ -5,6 +5,7 @@
 #define NB_GARE 4
 #define NB_ACCISITION 28
 #include "player.h"
+#include "tool.h"
 
 typedef enum Color{
     MARRON = 0, 
@@ -68,21 +69,20 @@ Property  * init_Property(char *name,
             int owner, 
             int value, int construction_cost, 
             int rent_empty,int rent_maison[3],int rent_logement[3],int rent_parc[3], 
-            int level, logement type, int indice);                                                              /*Fait*/
-Compagnies * init_Compagnies(char *name, Color color, int owner, int value, int rent[2]);                       /*Fait*/
-Gares * init_Gares(char *name, Color color ,int owner, int value, int rent[4]);                                 /*Fait*/
+            int level, logement type, int indice);                                                              /*Fait*/ //initialise une propriété
+Compagnies * init_Compagnies(char *name, Color color, int owner, int value, int rent[2]);                       /*Fait*/ //initialise une compagnie
+Gares * init_Gares(char *name, Color color ,int owner, int value, int rent[4]);                                 /*Fait*/ //initialise une gare
 int chargement_propriete_loyer(Property * tableau[NB_PROPRIETE], const char* nomfichier);                       /*Fait*/
 int chargement_GARE_loyer(Gares * tableau[NB_GARE], const char* nomfichier);                                    /*Fait*/
 int chargement_COMPAGNIE_loyer(Compagnies * tableau[NB_COMPAGNIE], const char* nomfichier);                     /*Faot*/
-int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur);                                     /*Fait*/
-int full_Comp(Compagnies * tableau[NB_COMPAGNIE],Player *p);                                                    // à faire
-int nb_Gare(Gares * tableau[NB_GARE], Player *p);                                                               // à faire
-void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player *o);               /*Fait*/
-void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp, Player *p, Player *o, int d);  // à faire
-void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *p, Player *o);                                // à faire
-void replace_underscore_with_space(char *str);                                                                  /*Fait*/
-int add_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p, int type);                          /*Fait*/
-int remove_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p );                                /*Fait*/
-int check_uniformity(Property * tableau[NB_PROPRIETE], Property * prop, int action);                            /*Fait*/
+int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur);                                     /*Fait*/ //Vérifie si un joueur à la couleur complete indiquée
+int full_Comp(Compagnies * tableau[NB_COMPAGNIE],Player *p);                                                    /*Fait*/ //Vérifie si un joueur possède les 2 Compagnies
+int nb_Gare(Gares * tableau[NB_GARE], Player *p);                                                               /*Fait*/ //Renvoie le nombre de gare qu'un joueur possède
+void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Player *loueur, Player *owner);               /*Fait*/ //RFait payer le loyer à payer par le joueur tombé sur la propriété
+void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp, Player *loueur, Player *owner, int d);  /*Fait*/ //idem pour une compagnie
+void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *loueur, Player *owner);                                /*Fait*/ //idem pour une gare
+int add_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p, int type);                          /*Fait*/ //ajoute un level de batiment
+int remove_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p );                                /*Fait*/ //enleve un level de batiment
+int check_uniformity(Property * tableau[NB_PROPRIETE], Property * prop, int action);                            /*Fait*/ //verifie si il y a trop de batiment d'écart entre les différentes propriété d'une même couleur
 
 #endif

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "property.h"
 #include "player.h"
+#include "tool.h"
 
 
 static void test_init_Property_basic(void **state) {
@@ -404,6 +405,61 @@ static void test_must_rent_Property(void **state){
     free(loca_test);
 }
 
+static void test_must_rent_COMP(void **state){
+    (void) state;
+    Player * proprio_test1 = init_player("proprio_test",1);
+    Player * loca_test = init_player("loca_test",2);
+    Compagnies * plateau[NB_COMPAGNIE] = {NULL};
+    int nb = chargement_COMPAGNIE_loyer(plateau, "compagnie.txt"); 
+    
+    player_add_comp(proprio_test1,plateau[0]);
+    must_rent_Compagnies(plateau,plateau[0],loca_test,proprio_test1,5);
+    assert_int_equal(loca_test->credit,1480);
+    assert_int_equal(proprio_test1->credit,1520);
+    player_add_comp(proprio_test1,plateau[1]);
+    must_rent_Compagnies(plateau,plateau[0],loca_test,proprio_test1,5);
+    assert_int_equal(loca_test->credit,1430);
+    assert_int_equal(proprio_test1->credit,1570);
+
+    /*à la fin du jeu on libère les propriétés qui sont chargées*/
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL){
+            free(plateau[i]);
+        }
+    }
+    free(proprio_test1);
+    free(loca_test);
+}
+
+static void test_must_rent_GARE(void **state){
+    (void) state;
+    Player * proprio_test1 = init_player("proprio_test",1);
+    Player * loca_test = init_player("loca_test",2);
+    Gares * plateau[NB_GARE] = {NULL};
+    int nb = chargement_GARE_loyer(plateau, "gares.txt"); 
+    
+    player_add_gar(proprio_test1,plateau[0]);
+    must_rent_Gares(plateau,plateau[0],loca_test,proprio_test1);
+    assert_int_equal(loca_test->credit,1475);
+    assert_int_equal(proprio_test1->credit,1525);
+    player_add_gar(proprio_test1,plateau[1]);
+    player_add_gar(proprio_test1,plateau[2]);
+    player_add_gar(proprio_test1,plateau[3]);
+    must_rent_Gares(plateau,plateau[0],loca_test,proprio_test1);
+    assert_int_equal(loca_test->credit,1275);
+    assert_int_equal(proprio_test1->credit,1725);
+
+    /*à la fin du jeu on libère les propriétés qui sont chargées*/
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL){
+            free(plateau[i]);
+        }
+    }
+    free(proprio_test1);
+    free(loca_test);
+}
+
+
 static void test_add_level_integration(void **state) {
     (void) state;
 
@@ -550,6 +606,8 @@ int main(void) {
         cmocka_unit_test(test_nb_Gare),
         cmocka_unit_test(test_underscore_conversion),
         cmocka_unit_test(test_must_rent_Property),
+        cmocka_unit_test(test_must_rent_COMP),
+        cmocka_unit_test(test_must_rent_GARE),
         cmocka_unit_test(test_add_level_integration),
         cmocka_unit_test(test_check_uniformity_build),
         cmocka_unit_test(test_check_uniformity_destroy),
