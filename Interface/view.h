@@ -108,7 +108,7 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
                   TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,
                   bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes);
 
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, ButtonsPack* btn,
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex,
             TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,
             Counter* counterJoueurs, TextBoxPack* tboxes);
 

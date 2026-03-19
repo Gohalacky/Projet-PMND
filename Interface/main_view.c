@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-int main(int argc, char* args[]){
+int main(){
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0 || !(IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG)) {
         printf("Erreur SDL : %s\n", SDL_GetError());
@@ -109,7 +109,7 @@ int main(int argc, char* args[]){
         handleEvents(&event, &state, &btn, &texts,
                      &fontNormal, &fontTitle, &fontButton,
                      &quit, &counterJoueurs, &tboxes);
-        render(renderer, state, &tex, &btn, &texts,
+        render(renderer, state, &tex, &texts,
                fontButton, fontNormal, fontTitle,
                &counterJoueurs, &tboxes);
     }

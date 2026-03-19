@@ -6,35 +6,50 @@ LIBS = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf
 INTERFACE_DIR = Interface
 MODELE_DIR    = Modele
 
-SRC_ROOT      = property.c player.c tool.c eco.c cartes.c alea.c evenements.c
-SRC_INTERFACE = $(INTERFACE_DIR)/main_view.c $(INTERFACE_DIR)/view.c
-SRC_MODELE    = $(MODELE_DIR)/main.c $(MODELE_DIR)/player.c $(MODELE_DIR)/property.c
+SRC_MODELE_ONLY = $(MODELE_DIR)/alea.c \
+                  $(MODELE_DIR)/cartes.c \
+                  $(MODELE_DIR)/eco.c \
+                  $(MODELE_DIR)/evenements.c \
+                  $(MODELE_DIR)/player.c \
+                  $(MODELE_DIR)/property.c \
+                  $(MODELE_DIR)/tool.c
 
-SRC = $(SRC_ROOT) $(SRC_INTERFACE) $(SRC_MODELE)
-OBJ = $(SRC:.c=.o)
+OBJ_MODELE_ONLY = $(SRC_MODELE_ONLY:.c=.o)
 
-EXEC         = insapoly
-TEST_EXEC    = unit_tests
-TEST_CARTES  = test_cartes
-VIEW         = interface
+SRC_COMMON = $(SRC_MODELE_ONLY) $(INTERFACE_DIR)/view.c
+OBJ_COMMON = $(SRC_COMMON:.c=.o)
+
+EXEC        = insapoly
+TEST_EXEC   = unit_tests
+TEST_CARTES = test_cartes
+VIEW        = interface
 
 all: $(EXEC)
 
-$(EXEC): main.o $(OBJ)
+$(EXEC): $(MODELE_DIR)/main.o $(OBJ_COMMON)
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 
-test: test.o $(OBJ)
-	$(CC) $(CFLAGS) $^ -o $(TEST_EXEC) $(LDFLAGS)
+interface: $(INTERFACE_DIR)/main_view.o $(OBJ_COMMON)
+	$(CC) $(CFLAGS) $^ -o $(VIEW) $(LIBS)
 
-test_cartes: main_test_cartes.o $(OBJ)
-	$(CC) $(CFLAGS) $^ -o $(TEST_CARTES) $(LDFLAGS)
+test: $(MODELE_DIR)/test.o $(OBJ_COMMON)
+	$(CC) $(CFLAGS) $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS)
 
-interface: $(SRC)
-	$(CC) $(CFLAGS) $(SRC) -o $(VIEW) $(LIBS)
+test_cartes: $(MODELE_DIR)/main_test_cartes.o $(OBJ_COMMON)
+	$(CC) $(CFLAGS) $^ -o $(TEST_CARTES) $(LDFLAGS) $(LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o $(INTERFACE_DIR)/*.o $(MODELE_DIR)/*.o \
-	      $(EXEC) $(TEST_EXEC) $(TEST_CARTES)
+	rm -f $(INTERFACE_DIR)/*.o $(MODELE_DIR)/*.o \
+	      $(EXEC) $(TEST_EXEC) $(TEST_CARTES) $(VIEW)
+
+run_interface: interface
+	cd $(INTERFACE_DIR) && ../$(VIEW)
+
+run_test: test_cartes
+	cd $(MODELE_DIR) && ../$(TEST_CARTES)
+
+run_unit_tests: test
+	cd $(MODELE_DIR) && ../$(TEST_EXEC)
