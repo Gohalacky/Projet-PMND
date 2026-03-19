@@ -73,20 +73,16 @@ int main(){
         &texts.numbTurns, &texts.event, &texts.btnValid
     };
 
-    /* ── Zones de saisie
-         Positions de référence à 1280×720 : juste à droite des labels
-         Ajuste refX/refY/refW/refH selon ta maquette                    ── */
+    /* Zones de saisie */
     TextBoxPack tboxes;
-    //                        refX  refY  refW  refH
     initTextBox(&tboxes.initialMoney, 630, 422,  140, 36);
     initTextBox(&tboxes.numbTurns,    630, 304,  140, 36);
     initTextBox(&tboxes.eventFreq,    630, 528,  140, 36);
 
-    /* ── Compteur joueurs ── */
+    /* Compteur joueurs  */
     Counter counterJoueurs;
     initCounter(&counterJoueurs, 2, 4, 2, 716, 172, 526, 172, 37, 37, 634, 176);
 
-    /* ── Scaling initial (ratio 1.0) ── */
     float ratioX = 1.0f;
     float ratioY = 1.0f;
     int count = sizeof(allButtons) / sizeof(allButtons[0]);
