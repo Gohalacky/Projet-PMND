@@ -18,16 +18,35 @@
 #define REF_BTN_W 370.0f
 #define REF_BTN_H 67.0f
 
+#define TEXTBOX_MAX_LEN 16
+
 typedef struct {
-    SDL_Rect rect;      
-    SDL_Rect ref;       
+    SDL_Rect rect;      // Position/taille actuelles (mises à jour au resize)
+    SDL_Rect ref;       // Position/taille de référence à 1280x720
 } Button;
+
+/* ── Zone de saisie ─────────────────────────────────────────────────────── */
+typedef struct {
+    char     text[TEXTBOX_MAX_LEN]; // Contenu saisi
+    int      cursor_pos;            // Position du curseur (en caractères)
+    int      active;                // 1 si la box a le focus
+    SDL_Rect rect;                  // Position/taille actuelles
+    SDL_Rect ref;                   // Position/taille de référence à 1280×720
+} TextBox;
+
+typedef struct {
+    TextBox initialMoney;   // Argent initial
+    TextBox numbTurns;      // Nombre de tours
+    TextBox eventFreq;      // Fréquence d'événements
+} TextBoxPack;
 
 typedef struct{
     SDL_Texture* menu;
     SDL_Texture* newGame;
     SDL_Texture* launchGame;
-    SDL_Texture* gameBoard;
+    SDL_Texture* gameBoard2Player;
+    SDL_Texture* gameBoard3Player;
+    SDL_Texture* gameBoard4Player;
     SDL_Texture* throws; 
     SDL_Texture* menuProperties;
     SDL_Texture* test;
@@ -39,7 +58,7 @@ typedef struct{
     /*Game Board*/
     Button backToMenu, throwDice, properties;
     /*New Game*/
-    Button launchGame, cancel;
+    Button launchGame, cancel, validMoney;
 } ButtonsPack;
 
 typedef struct {
@@ -52,29 +71,66 @@ typedef struct {
 } Text;
 
 typedef struct {
-    /*New Game*/
+    // Nouvelle Partie
     Text titleNewGame;
+    Text numberPlayer;
+    Text chooseParam;
     Text btnLaunchGame;
     Text btnCancel;
-    /*Game Board*/
+    Text btnValid;
+    Text initialMoney;
+    Text tillBankruptcy;
+    Text numbTurns;
+    Text event;
+
+    // Plateau
     Text btnThrowDice;
     Text btnProperties;
+    Text btnEndTurn;
 } TextsPack;
 
+typedef struct {
+    int value;
+    int min;
+    int max;
+    Text label;
+    Button btnPlus;
+    Button btnMoins;
+} Counter;
 
-typedef enum {MENU,NOUVPARTIE,CHARGERPARTIE,PLATEAU,LANCER,PROPRIETE, TEST} EtatJeu;
+typedef enum {MENU,NOUVPARTIE,CHARGERPARTIE,PLATEAU2J,PLATEAU3J,PLATEAU4J,LANCER,PROPRIETE, TEST} EtatJeu;
 
 
-int loadTextures(SDL_Renderer* renderer, TexturesPack* tex);
+int  loadTextures(SDL_Renderer* renderer, TexturesPack* tex);
 bool isClicked(Button* btn, int x, int y);
-void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack* texts, TTF_Font** fontNormal, TTF_Font** fontTitle, bool* quit);
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, ButtonsPack* btn, TextsPack* texts, TTF_Font* fontNormal, TTF_Font* fontTitle);
+
+void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack* texts,
+                  TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,
+                  bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes);
+
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, ButtonsPack* btn,
+            TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,
+            Counter* counterJoueurs, TextBoxPack* tboxes);
+
 void cleanup(SDL_Window* win, SDL_Renderer* rdr, TexturesPack* tex);
 void ScaleButton(Button* btn, float ratioX, float ratioY);
 void updateTextPosition(int windowW, int windowH);
 void printText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, int x, int y);
 void ScaleText(Text* t, float ratioX, float ratioY);
-void ScaleFonts(TTF_Font** fontNormal, TTF_Font** fontTitle, float ratioY);
+void ScaleFonts(TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, float ratioY);
 
+void initCounter(Counter* c, int min, int max, int startValue,
+                 int xPlus, int yPlus, int xMoins, int yMoins,
+                 int w, int h, int xText, int yText); 
+void handleCounter(Counter* c, int mouseX, int mouseY);
+void renderCounter(SDL_Renderer* renderer, Counter* c, TTF_Font* font, int xText, int yText) ;
+
+/* ── TextBox ─────────────────────────────────────────────────────────────── */
+void initTextBox(TextBox* tb, int refX, int refY, int refW, int refH);
+void ScaleTextBox(TextBox* tb, float ratioX, float ratioY);
+void handleTextBoxEvent(SDL_Event* event, TextBox* tb);
+void handleTextBoxClick(TextBoxPack* tboxes, int mouseX, int mouseY);
+void renderTextBox(SDL_Renderer* renderer, TTF_Font* font, TextBox* tb);
+void ScaleAllTextBoxes(TextBoxPack* tboxes, float ratioX, float ratioY);
 
 #endif

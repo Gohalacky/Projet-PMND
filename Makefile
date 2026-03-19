@@ -1,23 +1,17 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=c11 -g -I. 
-LDFLAGS = -lcmocka
-SRC = property.c player.c
-OBJ = $(SRC:.c=.o)
+TARGET=insapoly
 
-EXEC = insapoly
-TEST_EXEC = unit_tests
+CC=gcc
+CFLAGS=-Wall -Wextra $(shell sdl2-config --cflags)
+LIBS=$(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf
+SRC=main_view.c view.c
 
-all: $(EXEC)
+all:$(TARGET)
 
-$(EXEC): main.o $(OBJ)
-	$(CC) $(CFLAGS) $^ -o $@
+$(TARGET):$(SRC)
+	$(CC) $(CFLAGS) $(SRC) -o $(TARGET) $(LIBS)
 
-test: test.o $(OBJ)
-	$(CC) $(CFLAGS) $^ -o $(TEST_EXEC) $(LDFLAGS)
+clean : 
+	rm -f $(TARGET)
 
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-clean:
-	rm -f *.o $(EXEC) $(TEST_EXEC)
+run: $(TARGET)
+	./$(TARGET)
