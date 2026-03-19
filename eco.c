@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "eco.h"
 
 static double coeffs[NOTE_ECO_NB] = {0.5, 0.8, 1.0, 1.2, 1.5, 2.0};

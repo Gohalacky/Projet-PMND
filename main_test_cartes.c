@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "modele/alea.h"
-#include "modele/cartes.h"
-#include "modele/evenements.h"
-#include "modele/eco.h"
+#include "alea.h"
+#include "cartes.h"
+#include "evenements.h"
+#include "eco.h"
 
 int main(void) {
     Alea a;
@@ -19,8 +19,8 @@ int main(void) {
     NoteEco noteA = NOTE_A;
     NoteEco noteF = NOTE_F;
 
-    int round = 1;
-    for (round; round <= 6; ++round) {
+    int round;
+    for (round =1; round <= 6; ++round) {
         printf("\n=== ROUND %d (check evenement 1 fois) ===\n", round);
 
         /* Exemple bonus_risque : +0.05 */

@@ -1,8 +1,10 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "cartes.h"
 
 static void melanger(int *t, int n, Alea *a) {
-    int i = n-1;
-    for (i ; i > 0; --i) {
+    for(int i = n-1; i > 0; --i){
         int j = (int)alea_borne(a, (uint32_t)(i + 1));
         int tmp = t[i];
         t[i] = t[j];
@@ -59,15 +61,15 @@ void cartes_init_paquets(Paquet paquets[PAQUET_NB],
     paquets[PAQUET_COMMUNAUTE].ordre = ordre_commu;
     paquets[PAQUET_COMMUNAUTE].sommet = 0;
 
-    int i = 0;
+    int i;
     if (cap_chance < NB_CHANCE || cap_commu < NB_COMMUNAUTE) {
-        for (i; i < NB_CHANCE && i < cap_chance; ++i) ordre_chance[i] = i;
-        for (i; i < NB_COMMUNAUTE && i < cap_commu; ++i) ordre_commu[i] = i;
+        for (i=0; i < NB_CHANCE && i < cap_chance; ++i) ordre_chance[i] = i;
+        for (i=0; i < NB_COMMUNAUTE && i < cap_commu; ++i) ordre_commu[i] = i;
         return;
     }
-    int j = 0;
-    for (j; i < NB_CHANCE; ++i) ordre_chance[i] = i;
-    for (j; i < NB_COMMUNAUTE; ++i) ordre_commu[i] = i;
+    int j ;
+    for(j=0; j < NB_CHANCE; ++j) ordre_chance[j] = j;
+    for(j=0; j < NB_COMMUNAUTE; ++j) ordre_commu[j] = j;
 
     melanger(ordre_chance, NB_CHANCE, a);
     melanger(ordre_commu, NB_COMMUNAUTE, a);
@@ -77,8 +79,8 @@ const Carte* cartes_piocher(Paquet *p, Alea *a) {
     if (!p || !p->cartes || !p->ordre || p->nb_cartes <= 0) return NULL;
 
     if (p->sommet >= p->nb_cartes) {
-        int i = 0 ;
-        for (i; i < p->nb_cartes; ++i) p->ordre[i] = i;
+        int i ;
+        for (i=0; i < p->nb_cartes; ++i) p->ordre[i] = i;
         melanger(p->ordre, p->nb_cartes, a);
         p->sommet = 0;
     }
