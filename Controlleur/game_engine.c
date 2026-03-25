@@ -1,84 +1,90 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "game_engine.h"
+#include "plateau.h"
 
+/**
+ * Simule un lancer de 2 dés de 6 faces.
+ */
 int engine_roll_dice() {
     return (rand() % 6 + 1) + (rand() % 6 + 1);
 }
 
-void engine_play_turn(Player *p,Player *all_players[],int nb_players,Property *tableau_prop[]) {
-    printf("\n=== TOUR DE %s (Crédits: %d ECTS | IndiceEco: %d) ===\n",p->name,p->credit,p->eco_index);
+/**
+ * Gère l'intégralité du tour d'un joueur.
+ */
+void engine_play_turn(Player *p, Player *all_players[],
+                      Property *tableau_prop[], Plateau *plateau) {
+    
+    // Sécurité
+    if (p==NULL || plateau==NULL) return;
 
-    // Déplacement
-    int des = engine_roll_dice();  //lancé des dés
-    printf("Total des Dés : %d\n",des);
-    player_move(p,des);
+    printf("\n--- TOUR DE %s ---\n", p->name);
+    printf("Portefeuille : %d ECTS | Grade Éco : %d\n", p->credit, p->eco_index);
 
-    // Identification de la case (dans le tableau de propriétés)
-    int case_idx = p->position % NB_PROPRIETE; 
-    Property *current_prop = tableau_prop[case_idx];
+    // DÉPLACEMENT
+    int total_des = engine_roll_dice();
+    printf("[Dés] : Résultat = %d\n", total_des);
+    player_move(p, total_des);
 
-    printf("[Déplacement] Atterrissage sur : %s\n",current_prop->name);
+    // ANALYSE DE LA CASE
+    Case *current_case = &plateau->cases[p->position];
+    printf("[Position] : %d (%s)\n", p->position, current_case->nom_affichage);
 
-    // Interaction avec la case
-    if (current_prop->owner == 0) {
-        // CASE LIBRE : Achat
-        if (p->credit >= current_prop->value) {
-            printf("Case libre ! Voulez-vous l'acheter pour %d ECTS ? (1:Oui / 0:Non) : ",current_prop->value);
-            int choix;
-            scanf("%d",&choix);
-            if (choix == 1) {
-                player_remove_credits(p,current_prop->value);
-                player_add_property(p,current_prop);
-            }
-        } else {
-            printf("Fonds insuffisants pour acheter cette propriété.\n");
-        }
-    } 
-    else if (current_prop->owner != p->number) {
-        // case occupée: Loyer
-        Player *proprietaire = NULL;
-        for(int i=0;i<nb_players;i++) {
-            if(all_players[i]->number == current_prop->owner) {
-                proprietaire = all_players[i];
-            }
-        }
+    // ACTIONS SELON LE TYPE DE CASE
+    switch (current_case->type) {
         
-        if (proprietaire != NULL) {
-            printf("Propriété de %s. Paiement du loyer en cours...\n",proprietaire->name);
-            must_rent_Property(tableau_prop,current_prop,p,proprietaire);
-        }
-    }
-    else {
-        // On tombe sur notre: Construction (regle simplifier pour tester nos fonctions)
-        printf("Vous êtes chez vous. Voulez-vous améliorer ce terrain ?\n");
-        printf("1 : Maison | 2 : Logement Social | 3 : Parc | 0 : Rien : ");
-        int type_const;
-        scanf("%d",&type_const);
-        
-        if (type_const > 0) {
-            if (add_level(tableau_prop,current_prop,p,type_const)) {
-                // Si on construit, on met à jour la note éco de la case
-                if (type_const == 3) {
-                    current_prop->indice = GRADE_A;
+        case CASE_DEPART:
+            printf(">> Passage par le départ : +200 ECTS !\n");
+            player_add_credits(p, 200);
+            break;
+
+        case CASE_TERRAIN: {
+            Property *prop = (Property *)current_case->data;
+            if (prop==NULL) break;
+
+            if (prop->owner == 0) {
+                // Achat possible
+                if (p->credit >= prop->value) {
+                    printf(">> Terrain libre (%d ECTS). Voulez-vous acheter ? (1:Oui/0:Non) : ", prop->value);
+                    int choix;
+                    if (scanf("%d", &choix) == 1 && choix == 1) {
+                        player_remove_credits(p, prop->value);
+                        player_add_property(p, prop);
+                        printf(">> Achat effectué !\n");
+                    }
                 }
-                else if (type_const == 1) {
-                    current_prop->indice = GRADE_C;
-                }
-                
-                printf("Amélioration réussie ! Nouveau niveau : %d\n",current_prop->level);
+            } else if (prop->owner != p->number) {
+                // Loyer à payer
+                Player *proprio = all_players[prop->owner - 1]; // On récupère le proprio
+                printf(">> Propriété de %s. Paiement du loyer...\n", proprio->name);
+                must_rent_Property(tableau_prop, prop, p, proprio);
             }
+            break;
         }
+
+        case CASE_GARE:
+            printf(">> Case Gare : logique de loyer gare à faire.\n");
+            break;
+
+        default:
+            printf(">> Case spéciale : pas d'action immédiate.\n");
+            break;
     }
 
-    // Mise à jour du bilan écologique du joueur (Fin de tour)
+    // MISE À JOUR ÉCOLOGIQUE (Fin de tour)
+    // On prépare une liste propre pour le calcul de l'indice
     Property board_static[NB_PROPRIETE];
-    for(int i=0;i<NB_PROPRIETE;i++) {
-        board_static[i] = *(tableau_prop[i]);
+    int valid_count = 0;
+
+    for (int i = 0; i < NB_PROPRIETE; i++) {
+        if (tableau_prop[i] != NULL) {
+            board_static[valid_count] = *(tableau_prop[i]);
+            valid_count++;
+        }
     }
-    
-    calcul_moyenne_eco_index_player(p, board_static, NB_PROPRIETE);
-    
-    printf("Fin du tour. Nouvel indice écologique de %s : Grade %d\n",p->name,p->eco_index);
-    printf("===========================================\n");
+
+    if (valid_count > 0) {
+        calcul_moyenne_eco_index_player(p, board_static, valid_count);
+    }
 }

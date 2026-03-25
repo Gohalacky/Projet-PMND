@@ -51,8 +51,8 @@ controlleur: $(CONTROLLEUR_DIR)/main.o $(OBJ_ENGINE) $(OBJ_COMMON)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(INTERFACE_DIR)/*.o $(MODELE_DIR)/*.o $(CONTROLLEUR_DIR)/*.o *.o  
-	      $(EXEC) $(TEST_EXEC) $(TEST_CARTES) $(VIEW) $(CONTROLLEUR)
+	rm -f $(INTERFACE_DIR)/*.o $(MODELE_DIR)/*.o $(CONTROLLEUR_DIR)/*.o *.o
+	rm -f $(EXEC) $(TEST_EXEC) $(TEST_CARTES) $(VIEW) $(CONTROLLEUR)
 
 run_interface: interface
 	cd $(INTERFACE_DIR) && ../$(VIEW)

@@ -9,7 +9,7 @@ typedef enum {
     CASE_TERRAIN,
     CASE_GARE,
     CASE_COMPAGNIE,
-    CASE_SPECIAL // Taxes, Prison, Chance, etc.
+    CASE_SPECIAL // Taxes, Prison, Chance,
 } TypeCase;
 
 // Structure d'une case du plateau
@@ -24,9 +24,9 @@ typedef struct {
     Case cases[40];
 } Plateau;
 
-/**
- * @brief Initialise le plateau en plaçant les propriétés, gares et compagnies aux bons indices.
- */
+
+//Initialise le plateau en plaçant les propriétés, gares et compagnies aux bons indices.
+
 void init_plateau(Plateau *plt, Property *t_prop[], Gares *t_gar[], Compagnies *t_comp[]);
 
 #endif
