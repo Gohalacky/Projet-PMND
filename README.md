@@ -33,7 +33,7 @@ Si vous souhaitez recompiler le projet chez vous (environnement Linux recommand�
 * **Utilitaires de base :** `gcc` et `make`
 * **Pour l'interface graphique :** Les bibliothèques `libsdl2-dev`, `libsdl2-image-dev` et `libsdl2-ttf-dev`
 * **Pour les tests unitaires :** `libcmocka-dev`
-
+* **Pour générer la documentation :** `doxygen` et `graphviz` (pour les graphes d'appels)
 ---
 
 ## Compilation et exécution
@@ -45,6 +45,7 @@ Nous avons configuré un Makefile à la racine pour vous simplifier la vie.
 * Juste le moteur de jeu (sans interface) : `make controlleur`
 * Juste l'interface graphique : `make interface`
 * Les tests unitaires : `make test` et `make test_cartes`
+* Générer le site web de la documentation et l'ouvre (sous linux): `make doc` (crée un dossier `docs/`, ouvrez ensuite le fichier `docs/html/index.html` dans votre navigateur)
 * Nettoyer les fichiers de compilation : `make clean`
 
 ### 2. Pour lancer le jeu

@@ -50,9 +50,15 @@ controlleur: $(CONTROLLEUR_DIR)/main.o $(OBJ_ENGINE) $(OBJ_COMMON)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+doc:
+	doxygen Doxyfile
+	@echo "Documentation générée dans le dossier docs/"
+	xdg-open docs/html/index.html
+
 clean:
 	rm -f $(INTERFACE_DIR)/*.o $(MODELE_DIR)/*.o $(CONTROLLEUR_DIR)/*.o *.o
 	rm -f $(EXEC) $(TEST_EXEC) $(TEST_CARTES) $(VIEW) $(CONTROLLEUR)
+	rm -rf docs/
 
 run_interface: interface
 	cd $(INTERFACE_DIR) && ../$(VIEW)
