@@ -4,10 +4,12 @@
 #include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
+#include <string.h>
 #include <stdlib.h>
 #include "property.h"
 #include "player.h"
 #include "tool.h"
+#include "hypo.h"
 
 
 static void test_init_Property_basic(void **state) {
@@ -597,6 +599,106 @@ static void test_remove_level_integration(void **state) {
     free(p);
 }
 
+static void test_hypotheque_et_rachat_PROP(void **state) {
+    (void) state;
+    
+    // Initialisation
+    Player *p1 = init_player("Joueur1", 1);
+    Player *p2 = init_player("Joueur2", 2);
+    
+    Property *prop = calloc(1, sizeof(Property));
+    strcpy(prop->name, "Rue de la Soif");
+    prop->owner = 1;      // Appartient à p1
+    prop->value = 200;    // Hypothèque = 100, Rachat = 220 (selon ta formule)
+    prop->hypo = 0;
+    prop->level = 0;
+
+    // 1. Tests d'échec de mise en hypothèque
+    assert_int_equal(hypotheque_PROP(prop, p2), 0); // Pas le bon propriétaire
+    
+    prop->level = 1; // On simule une maison construite
+    assert_int_equal(hypotheque_PROP(prop, p1), 0); // Échec : il y a une construction
+    prop->level = 0; // On retire la maison
+
+    // 2. Test de succès de mise en hypothèque
+    p1->credit = 1000;
+    assert_int_equal(hypotheque_PROP(prop, p1), 1); // Succès
+    assert_int_equal(prop->hypo, 1);
+    assert_int_equal(p1->credit, 1100); // 1000 + (200/2)
+
+    // 3. Test d'échec (déjà hypothéquée)
+    assert_int_equal(hypotheque_PROP(prop, p1), 0); 
+
+    // 4. Tests de rachat (Levée d'hypothèque)
+    assert_int_equal(rachathypo_PROP(prop, p2), 0); // Pas le bon propriétaire
+    
+    p1->credit = 100; // Pas assez d'argent (coût = 200 + 10% = 220)
+    assert_int_equal(rachathypo_PROP(prop, p1), 0);
+    assert_int_equal(prop->hypo, 1); // Reste hypothéquée
+
+    p1->credit = 1000;
+    assert_int_equal(rachathypo_PROP(prop, p1), 1); // Succès
+    assert_int_equal(prop->hypo, 0); // N'est plus hypothéquée
+    assert_int_equal(p1->credit, 890); // 1000 - 110
+
+    // Nettoyage
+    free(prop);
+    free(p1);
+    free(p2);
+}
+
+static void test_hypotheque_et_rachat_GARE(void **state) {
+    (void) state;
+
+    Player *p1 = init_player("Joueur1", 1);
+    Gares *gare = calloc(1, sizeof(Gares));
+    strcpy(gare->name, "Gare du Nord");
+    gare->owner = 1;
+    gare->value = 200;
+    gare->hypo = 0;
+
+    p1->credit = 1000;
+
+    // Succès hypothèque
+    assert_int_equal(hypotheque_GARE(gare, p1), 1);
+    assert_int_equal(gare->hypo, 1);
+    assert_int_equal(p1->credit, 1100);
+
+    // Succès rachat
+    assert_int_equal(rachathypo_GARE(gare, p1), 1);
+    assert_int_equal(gare->hypo, 0);
+    assert_int_equal(p1->credit, 990); // 1100 - 110
+
+    free(gare);
+    free(p1);
+}
+
+static void test_hypotheque_et_rachat_COMP(void **state) {
+    (void) state;
+
+    Player *p1 = init_player("Joueur1", 1);
+    Compagnies *comp = calloc(1, sizeof(Compagnies));
+    strcpy(comp->name, "Compagnie des Eaux");
+    comp->owner = 1;
+    comp->value = 150; // Hypothèque = 75, Rachat = 150 + 15 = 165
+    comp->hypo = 0;
+
+    p1->credit = 1000;
+
+    // Succès hypothèque
+    assert_int_equal(hypotheque_COMP(comp, p1), 1);
+    assert_int_equal(comp->hypo, 1);
+    assert_int_equal(p1->credit, 1075); // 1000 + 75
+
+    // Succès rachat
+    assert_int_equal(rachathypo_COMP(comp, p1), 1);
+    assert_int_equal(comp->hypo, 0);
+    assert_int_equal(p1->credit, 993); // 1075 - 82
+
+    free(comp);
+    free(p1);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
@@ -622,7 +724,10 @@ int main(void) {
         cmocka_unit_test(test_add_level_integration),
         cmocka_unit_test(test_check_uniformity_build),
         cmocka_unit_test(test_check_uniformity_destroy),
-        cmocka_unit_test(test_remove_level_integration)
+        cmocka_unit_test(test_remove_level_integration),
+        cmocka_unit_test(test_hypotheque_et_rachat_PROP),
+        cmocka_unit_test(test_hypotheque_et_rachat_GARE),
+        cmocka_unit_test(test_hypotheque_et_rachat_COMP)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

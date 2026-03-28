@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "property.h"
-#include "tool.h"
+
 /*récupère le nom des Couleurs avec le typedef enum Color*/
 const char* color_names[] = {
     "Marron",
@@ -251,6 +251,7 @@ void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Playe
         }
         else{
             dut = prop->rent_empty;
+            printf("Le loyer est de %d Crédits. \n",dut);
         }
         player_add_credits(ownr,dut);
         banqueroute = player_remove_credits(p,dut);
@@ -268,6 +269,7 @@ void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp,
     int banqueroute;
     if(comp->hypo == 0){
         dut= (comp->rent[full_Comp(tableau,ownr)])*d; //d est le résultat du lancé de dé précédent
+        printf("Le loyer est de %d Crédits. \n",dut);
         player_add_credits(ownr,dut);
         banqueroute = player_remove_credits(p,dut);
         if(banqueroute == 0){
@@ -284,6 +286,7 @@ void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *loueur, Player
     int banqueroute;
     if(g->hypo == 0){
         dut= (g->rent[nb_Gare(tableau,owner)-1]); //-1 car le owner possède déja une gare, ce n'est pas cette fonction qui le vérifie
+        printf("Le loyer est de %d Crédits. \n",dut);
         player_add_credits(owner,dut);
         banqueroute = player_remove_credits(loueur,dut);
         if(banqueroute == 0){
