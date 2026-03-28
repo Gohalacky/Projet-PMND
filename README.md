@@ -22,7 +22,7 @@ Pour garder un code propre et testable, nous avons structuré le projet selon le
 * La création de partie jusqu'à 4 joueurs avec des paramètres personnalisables (argent initial, nombre de tours, etc.).
 * Un système de propriétés où l'on peut construire des aménagements (maisons, logements sociaux, parcs) qui influencent directement l'indice écologique global et personnel.
 * La gestion des événements aléatoires (cartes Chance et Caisse Communauté).
-* Une couverture de tests sur la logique métier grâce à CMocka.
+* Une couverture de tests sur la logique grâce à CMocka.
 
 ---
 
@@ -62,4 +62,8 @@ Nous avons configuré un Makefile à la racine pour vous simplifier la vie.
   `make run_test`
 
 ---
-Projet réalisé par l'équipe de développement dans le cadre du cursus INSA.
+Projet réalisé dans le cadre du cursus INSA Rennes 3EII par
+Arthur GALLIC
+Arnaud PASTRE
+Thomas LELONG
+Titouan CHIFFOLEAU
