@@ -388,6 +388,9 @@ static void test_must_rent_Property(void **state){
     player_add_property(proprio_test1,plateau[9]);
     player_add_property(proprio_test1,plateau[10]);
     player_add_property(proprio_test2,plateau[11]);
+    plateau[8]->hypo=1;
+    must_rent_Property(plateau,plateau[8],loca_test,proprio_test1);
+    assert_int_equal(loca_test->credit,1500);
     must_rent_Property(plateau,plateau[10],loca_test,proprio_test1);
     must_rent_Property(plateau,plateau[11],loca_test,proprio_test2);
 
@@ -413,6 +416,10 @@ static void test_must_rent_COMP(void **state){
     int nb = chargement_COMPAGNIE_loyer(plateau, "compagnie.txt"); 
     
     player_add_comp(proprio_test1,plateau[0]);
+    plateau[0]->hypo=1;
+    must_rent_Compagnies(plateau,plateau[0],loca_test,proprio_test1,5);
+    assert_int_equal(loca_test->credit,1500);
+    plateau[0]->hypo=0;
     must_rent_Compagnies(plateau,plateau[0],loca_test,proprio_test1,5);
     assert_int_equal(loca_test->credit,1480);
     assert_int_equal(proprio_test1->credit,1520);
@@ -439,6 +446,10 @@ static void test_must_rent_GARE(void **state){
     int nb = chargement_GARE_loyer(plateau, "gares.txt"); 
     
     player_add_gar(proprio_test1,plateau[0]);
+    plateau[0]->hypo=1;
+    must_rent_Gares(plateau,plateau[0],loca_test,proprio_test1);
+    assert_int_equal(loca_test->credit,1500);
+    plateau[0]->hypo=0;
     must_rent_Gares(plateau,plateau[0],loca_test,proprio_test1);
     assert_int_equal(loca_test->credit,1475);
     assert_int_equal(proprio_test1->credit,1525);

@@ -64,6 +64,7 @@ typedef struct Property {
     int level;              /**< Niveau de développement (nombre de bâtiments actuels) */
     logement type;          /**< Type d'aménagement actuel (0: Vide, 1: Maison, 2: Social, 3: Parc) */        
     int indice;             /**< Indice écologique actuel de la propriété (impactant la note de A à F) */
+    int hypo;              /**< Renvoie si la carte est en état d'hypothèque */
 } Property;
 
 /**
@@ -76,6 +77,7 @@ typedef struct Compagnies {
     int owner;              /**< ID du propriétaire */
     int value;              /**< Prix d'achat en crédits ECTS */
     int rent[2];            /**< Multiplicateurs de loyer selon le nombre de compagnies possédées (1 ou 2) */
+    int hypo;              /**< Renvoie si la carte est en état d'hypothèque */
 } Compagnies;
 
 /**
@@ -88,6 +90,7 @@ typedef struct Gares {
     int owner;              /**< ID du propriétaire */
     int value;              /**< Prix d'achat en crédits ECTS */
     int rent[4];            /**< Loyers selon le nombre de gares possédées (1, 2, 3 ou 4) */
+    int hypo;              /**< Renvoie si la carte est en état d'hypothèque */
 } Gares;
 
 
