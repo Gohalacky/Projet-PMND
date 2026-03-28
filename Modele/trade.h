@@ -32,4 +32,24 @@ typedef struct {
     int nb_comps;                          /**< Compteur de compagnies */
 } TradeOffer;
 
+
+/**
+ * @brief Initialise une offre vide.
+ */
+TradeOffer init_empty_offer();
+
+/**
+ * @brief Vérifie si un échange est légal selon les règles.
+ * @return 1 si l'échange est valide, 0 si une règle est violée (ex: triche, constructions présentes).
+ */
+int is_trade_valid(Player *p1, TradeOffer *off_p1, 
+                   Player *p2, TradeOffer *off_p2, 
+                   Property *plateau[NB_PROPRIETE]);
+
+/**
+ * @brief Transfère les titres de propriété et l'argent entre les deux joueurs.
+ * @pre La fonction is_trade_valid DOIT avoir retourné 1 avant d'appeler celle-ci.
+ */
+void execute_trade(Player *p1, TradeOffer *off_p1, 
+                   Player *p2, TradeOffer *off_p2);
 #endif

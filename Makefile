@@ -15,6 +15,7 @@ SRC_MODELE_ONLY = $(MODELE_DIR)/alea.c \
                   $(MODELE_DIR)/property.c \
                   $(MODELE_DIR)/tool.c \
 				  $(MODELE_DIR)/hypo.c \
+				  $(MODELE_DIR)/trade.c \
 
 OBJ_MODELE_ONLY = $(SRC_MODELE_ONLY:.c=.o)
 
