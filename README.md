@@ -60,6 +60,3 @@ Nous avons configuré un Makefile à la racine pour vous simplifier la vie.
   `make run_unit_tests`
 * Lancer les tests sur les cartes : 
   `make run_test`
-
----
-Projet réalisé par l'équipe de développement dans le cadre du cursus INSA.
