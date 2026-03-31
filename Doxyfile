@@ -4,7 +4,7 @@
 
 # --- Informations générales ---
 PROJECT_NAME           = "INSA'poly"
-PROJECT_BRIEF          = "Jeu de plateau éco-responsable (Projet C - MVC)"
+PROJECT_BRIEF          = "Jeu de plateau (Projet C - MVC)"
 OUTPUT_DIRECTORY       = docs/
 
 # --- Langage C ---
@@ -14,7 +14,7 @@ EXTRACT_PRIVATE        = YES
 EXTRACT_STATIC         = YES
 
 # --- Fichiers à analyser ---
-# On inclut tes dossiers MVC et on demande de lire le README
+# On inclut les dossiers MVC et on demande de lire le README
 INPUT                  = Modele/ Interface/ Controlleur/ README.md
 RECURSIVE              = YES
 USE_MDFILE_AS_MAINPAGE = README.md
