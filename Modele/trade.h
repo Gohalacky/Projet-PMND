@@ -17,6 +17,8 @@
  * Une tradeOffer et ce qu'un joueur offre en échange d'une autre tradeoffer
  */
 typedef struct {
+
+    Player * proposant;                    /**<Dit qui propose cette offre */
     int ects;                              /**< Nombre de crédits proposé */
     
     Carte * car[4];                        /**< Les cartes proposé, forcément des cartes sorties de prison */ 
@@ -34,22 +36,20 @@ typedef struct {
 
 
 /**
- * @brief Initialise une offre vide.
+ * @brief Initialise une offre vide et alloue l'espace mémoire qui est free dans  executre_trade.
  */
-TradeOffer init_empty_offer();
+TradeOffer * init_empty_offer(Player *p);
 
 /**
  * @brief Vérifie si un échange est légal selon les règles.
  * @return 1 si l'échange est valide, 0 si une règle est violée (ex: triche, constructions présentes).
  */
-int is_trade_valid(Player *p1, TradeOffer *off_p1, 
-                   Player *p2, TradeOffer *off_p2, 
-                   Property *plateau[NB_PROPRIETE]);
+int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2, Property *plateau[NB_PROPRIETE]);
 
 /**
  * @brief Transfère les titres de propriété et l'argent entre les deux joueurs.
- * @pre La fonction is_trade_valid DOIT avoir retourné 1 avant d'appeler celle-ci.
+ * @pre La fonction is_trade_valid DOIT avoir retourné 1 avant d'appeler celle-ci, de plus elle free l'espace mémoire alloué au trade offer.
  */
-void execute_trade(Player *p1, TradeOffer *off_p1, 
-                   Player *p2, TradeOffer *off_p2);
+void execute_trade(TradeOffer *off_p1, TradeOffer *off_p2);
+
 #endif

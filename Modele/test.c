@@ -10,11 +10,17 @@
 #include "player.h"
 #include "tool.h"
 #include "hypo.h"
-
-
+#include "trade.h"
+/*
+printf("==========================================================\n");
+printf("              TESTS DE property                \n");
+printf("==========================================================\n");
+*/
 static void test_init_Property_basic(void **state) {
     (void) state; /* Variable inutilisée */
-
+    printf("==========================================================\n");
+    printf("              TESTS DE property                \n");
+    printf("==========================================================\n");
     /* Données de test*/
     int rm[3] = {15, 45, 135};
     int rl[3] = {10, 30, 90};
@@ -180,203 +186,6 @@ static void test_chargement_COMPAGNIE(void **state) {
     for (int i = 0; i < nb; i++) {
         if (plateau[i] != NULL) free(plateau[i]);
     }
-}
-
-// test l'initialisation de player
-static void test_init_player_values(void **state) {
-    (void) state;
-
-
-    Player *p = init_player("TestPlayer", 1);
-
-
-    assert_non_null(p);
-    assert_string_equal(p->name, "TestPlayer");
-    assert_int_equal(p->number, 1);
-    assert_int_equal(p->credit, 1500);
-    assert_int_equal(p->position, 0);
-    assert_int_equal(p->eco_index, GRADE_A);
-
-    // Nettoyage
-    free(p);
-}
-
-
-
-
-static void test_calcul_moyenne_eco_index_player(void **state) {
-    (void) state;
-    Player *p = init_player("Ecolo", 1);
-    
-    // Création plateau de 2 propriétés
-    Property board[2];
-    // Propriété 1 : Note B
-    // Propriété 2 : Note D
-    // Moyenne attendue : (2+4)/2 = 3 -> Grade C
-    
-    board[0].owner = 1; 
-    board[0].indice = GRADE_B;
-    board[1].owner = 1; 
-    board[1].indice = GRADE_D;
-    
-    calcul_moyenne_eco_index_player(p, board, 2);
-    
-    assert_int_equal(p->eco_index, GRADE_C);
-    
-    free(p);
-}
-
-static void test_player_move(void **state) {
-    (void) state;
-    Player *p = init_player("TestMove\n", 1);
-    p->position = 35;
-    p->credit = 1000;
-
-    player_move(p, 10); // 35 + 10 = 45 -> 45 % 40 = 5
-
-    assert_int_equal(p->position, 5);
-    free(p);
-}
-
-/* Test de la gestion des crédits et faillite */
-static void test_player_credits_and_faillite(void **state) {
-    (void) state;
-    Player *p = init_player("Test player crédit \n", 1);
-    p->credit = 100;
-
-    player_add_credits(p, 50);
-    assert_int_equal(p->credit, 150);
-
-    int success = player_remove_credits(p, 200);
-    assert_int_equal(success, 0); // Doit retourner 0 (faillite)
-    assert_int_equal(p->credit, 0);
-
-    free(p);
-}
-
-/* Test de l'acquisition d'une propriété */
-static void test_player_acquisition_propriete(void **state) {
-    (void) state;
-    Player *p = init_player("Owner", 1);
-    // On simule une propriété (tableaux de loyers vides pour le test)
-    int rm[3]={0}, rl[3]={0}, rp[3]={0};
-    Property *prop = init_Property("Test Prop", MARRON, -1, 60, 50, 2, rm, rl, rp, 0, 0, 10);
-
-    player_add_property(p, prop);
-    assert_int_equal(prop->owner, p->number);
-
-    player_remove_property(p, prop);
-    assert_int_equal(prop->owner, 0);
-
-    free(p);
-    free(prop);
-}
-
-static void test_player_addremove_comp(void **state){
-    (void) state;
-    Player *p = init_player("Owner", 1);
-    // on simule une compagnie
-    int loyer[2] = {4,10};
-    Compagnies * c = init_Compagnies("test comp", COMP, 0, 150, loyer);
-    player_add_comp(p,c);
-    assert_int_equal(c->owner, p->number);
-    
-    player_remove_comp(p, c);
-    assert_int_equal(c->owner, 0);
-
-    free(p);
-    free(c);
-}
-
-static void test_player_addremove_gar(void **state){
-    (void) state;
-    Player *p = init_player("Owner", 1);
-    // on simule une gare
-    int loyer[4] = {25,50,100,200};
-    Gares * g = init_Gares("test gare", COMP, 0, 200, loyer);
-    player_add_gar(p,g);
-    assert_int_equal(g->owner, p->number);
-    
-    player_remove_gar(p, g);
-    assert_int_equal(g->owner, 0);
-
-    free(p);
-    free(g);
-}
-
-
-static void test_full_color(void **state) {
-    (void) state;
-    Player *p1 = init_player("Testfullcolor1\n", 1);
-    Player *p2 = init_player("Testfullcolor2\n", 2);
-    Property * plateau[NB_PROPRIETE] = {NULL}; /*création d'un tableau de toute les propriete*/
-    int nb = chargement_propriete_loyer(plateau, "loyer_insapoly.txt"); /*chargement des 22 propriétés classiques*/
-    Property *prop1;
-    Property *prop2;
-    Property *prop3;
-    prop1=plateau[0];
-    prop2=plateau[1];
-    prop3=plateau[2];
-    player_add_property(p1, prop1);
-    player_add_property(p1, prop2);
-    player_add_property(p2, prop3);
-
-    assert_int_equal(full_color(plateau,p1,MARRON),1);
-    assert_int_equal(full_color(plateau,p2,GRIS),0);
-    /*à la fin du jeu on libère les propriétés qui sont chargées*/
-    for (int i = 0; i < nb; i++) {
-        if (plateau[i] != NULL){
-            free(plateau[i]);
-        }
-    }
-    free(p1);
-    free(p2);
-}
-
-static void test_full_comp(void **state){
-    (void) state;
-    Player *p1 = init_player("Testfullcolor1\n", 1);
-    Compagnies * tableau[NB_COMPAGNIE] = {NULL};
-    int nb = chargement_COMPAGNIE_loyer(tableau, "compagnie.txt");
-    player_add_comp(p1,tableau[0]);
-    assert_int_equal(full_Comp(tableau, p1),0);
-    player_add_comp(p1,tableau[1]);
-    assert_int_equal(full_Comp(tableau, p1),1);
-    for (int i = 0; i < nb; i++) {
-        if (tableau[i] != NULL){
-            free(tableau[i]);
-        }
-    }
-    free(p1);
-}
-
-static void test_nb_Gare(void **state){
-    (void) state;
-    Player *p1 = init_player("Testnbg\n", 1);
-    Gares * tableau[NB_GARE] = {NULL};
-    int nb = chargement_GARE_loyer(tableau, "gares.txt");
-    assert_int_equal(nb_Gare(tableau, p1),0);   // on test pour si la personne possède de 0 à 4 gares
-    player_add_gar(p1,tableau[0]);
-    assert_int_equal(nb_Gare(tableau, p1),1);
-    player_add_gar(p1,tableau[1]);
-    assert_int_equal(nb_Gare(tableau, p1),2);
-    player_add_gar(p1,tableau[2]);
-    assert_int_equal(nb_Gare(tableau, p1),3);
-    player_add_gar(p1,tableau[3]);
-    assert_int_equal(nb_Gare(tableau, p1),4);
-    for (int i = 0; i < nb; i++) {
-        if (tableau[i] != NULL){
-            free(tableau[i]);
-        }
-    }
-    free(p1);
-}
-
-static void test_underscore_conversion(void **state) {
-    (void) state;
-    char nom_test[] = "Rue_de_Vaugirard";
-    replace_underscore_with_space(nom_test);
-    assert_string_equal(nom_test, "Rue de Vaugirard");
 }
 
 static void test_must_rent_Property(void **state){
@@ -599,9 +408,229 @@ static void test_remove_level_integration(void **state) {
     free(p);
 }
 
+static void test_full_color(void **state) {
+    (void) state;
+    Player *p1 = init_player("Testfullcolor1\n", 1);
+    Player *p2 = init_player("Testfullcolor2\n", 2);
+    Property * plateau[NB_PROPRIETE] = {NULL}; /*création d'un tableau de toute les propriete*/
+    int nb = chargement_propriete_loyer(plateau, "loyer_insapoly.txt"); /*chargement des 22 propriétés classiques*/
+    Property *prop1;
+    Property *prop2;
+    Property *prop3;
+    prop1=plateau[0];
+    prop2=plateau[1];
+    prop3=plateau[2];
+    player_add_property(p1, prop1);
+    player_add_property(p1, prop2);
+    player_add_property(p2, prop3);
+
+    assert_int_equal(full_color(plateau,p1,MARRON),1);
+    assert_int_equal(full_color(plateau,p2,GRIS),0);
+    /*à la fin du jeu on libère les propriétés qui sont chargées*/
+    for (int i = 0; i < nb; i++) {
+        if (plateau[i] != NULL){
+            free(plateau[i]);
+        }
+    }
+    free(p1);
+    free(p2);
+}
+
+static void test_full_comp(void **state){
+    (void) state;
+    Player *p1 = init_player("Testfullcolor1\n", 1);
+    Compagnies * tableau[NB_COMPAGNIE] = {NULL};
+    int nb = chargement_COMPAGNIE_loyer(tableau, "compagnie.txt");
+    player_add_comp(p1,tableau[0]);
+    assert_int_equal(full_Comp(tableau, p1),0);
+    player_add_comp(p1,tableau[1]);
+    assert_int_equal(full_Comp(tableau, p1),1);
+    for (int i = 0; i < nb; i++) {
+        if (tableau[i] != NULL){
+            free(tableau[i]);
+        }
+    }
+    free(p1);
+}
+
+static void test_nb_Gare(void **state){
+    (void) state;
+    Player *p1 = init_player("Testnbg\n", 1);
+    Gares * tableau[NB_GARE] = {NULL};
+    int nb = chargement_GARE_loyer(tableau, "gares.txt");
+    assert_int_equal(nb_Gare(tableau, p1),0);   // on test pour si la personne possède de 0 à 4 gares
+    player_add_gar(p1,tableau[0]);
+    assert_int_equal(nb_Gare(tableau, p1),1);
+    player_add_gar(p1,tableau[1]);
+    assert_int_equal(nb_Gare(tableau, p1),2);
+    player_add_gar(p1,tableau[2]);
+    assert_int_equal(nb_Gare(tableau, p1),3);
+    player_add_gar(p1,tableau[3]);
+    assert_int_equal(nb_Gare(tableau, p1),4);
+    for (int i = 0; i < nb; i++) {
+        if (tableau[i] != NULL){
+            free(tableau[i]);
+        }
+    }
+    free(p1);
+}
+/*
+printf("==========================================================\n");
+printf("              TESTS DE player                 \n");
+printf("==========================================================\n");
+*/
+// test l'initialisation de player
+static void test_init_player_values(void **state) {
+    (void) state;
+    printf("==========================================================\n");
+    printf("              TESTS DE player                 \n");
+    printf("==========================================================\n");
+
+    Player *p = init_player("TestPlayer", 1);
+
+
+    assert_non_null(p);
+    assert_string_equal(p->name, "TestPlayer");
+    assert_int_equal(p->number, 1);
+    assert_int_equal(p->credit, 1500);
+    assert_int_equal(p->position, 0);
+    assert_int_equal(p->eco_index, GRADE_A);
+
+    // Nettoyage
+    free(p);
+}
+
+
+
+
+static void test_calcul_moyenne_eco_index_player(void **state) {
+    (void) state;
+    Player *p = init_player("Ecolo", 1);
+    
+    // Création plateau de 2 propriétés
+    Property board[2];
+    // Propriété 1 : Note B
+    // Propriété 2 : Note D
+    // Moyenne attendue : (2+4)/2 = 3 -> Grade C
+    
+    board[0].owner = 1; 
+    board[0].indice = GRADE_B;
+    board[1].owner = 1; 
+    board[1].indice = GRADE_D;
+    
+    calcul_moyenne_eco_index_player(p, board, 2);
+    
+    assert_int_equal(p->eco_index, GRADE_C);
+    
+    free(p);
+}
+
+static void test_player_move(void **state) {
+    (void) state;
+    Player *p = init_player("TestMove\n", 1);
+    p->position = 35;
+    p->credit = 1000;
+
+    player_move(p, 10); // 35 + 10 = 45 -> 45 % 40 = 5
+
+    assert_int_equal(p->position, 5);
+    free(p);
+}
+
+/* Test de la gestion des crédits et faillite */
+static void test_player_credits_and_faillite(void **state) {
+    (void) state;
+    Player *p = init_player("Test player crédit \n", 1);
+    p->credit = 100;
+
+    player_add_credits(p, 50);
+    assert_int_equal(p->credit, 150);
+
+    int success = player_remove_credits(p, 200);
+    assert_int_equal(success, 0); // Doit retourner 0 (faillite)
+    assert_int_equal(p->credit, 0);
+
+    free(p);
+}
+
+/* Test de l'acquisition d'une propriété */
+static void test_player_acquisition_propriete(void **state) {
+    (void) state;
+    Player *p = init_player("Owner", 1);
+    // On simule une propriété (tableaux de loyers vides pour le test)
+    int rm[3]={0}, rl[3]={0}, rp[3]={0};
+    Property *prop = init_Property("Test Prop", MARRON, -1, 60, 50, 2, rm, rl, rp, 0, 0, 10);
+
+    player_add_property(p, prop);
+    assert_int_equal(prop->owner, p->number);
+
+    player_remove_property(p, prop);
+    assert_int_equal(prop->owner, 0);
+
+    free(p);
+    free(prop);
+}
+
+static void test_player_addremove_comp(void **state){
+    (void) state;
+    Player *p = init_player("Owner", 1);
+    // on simule une compagnie
+    int loyer[2] = {4,10};
+    Compagnies * c = init_Compagnies("test comp", COMP, 0, 150, loyer);
+    player_add_comp(p,c);
+    assert_int_equal(c->owner, p->number);
+    
+    player_remove_comp(p, c);
+    assert_int_equal(c->owner, 0);
+
+    free(p);
+    free(c);
+}
+
+static void test_player_addremove_gar(void **state){
+    (void) state;
+    Player *p = init_player("Owner", 1);
+    // on simule une gare
+    int loyer[4] = {25,50,100,200};
+    Gares * g = init_Gares("test gare", COMP, 0, 200, loyer);
+    player_add_gar(p,g);
+    assert_int_equal(g->owner, p->number);
+    
+    player_remove_gar(p, g);
+    assert_int_equal(g->owner, 0);
+
+    free(p);
+    free(g);
+}
+
+
+
+/*
+printf("==========================================================\n");
+printf("              TESTS DE tool                \n");
+printf("==========================================================\n");
+*/
+static void test_underscore_conversion(void **state) {
+    (void) state;
+    printf("==========================================================\n");
+    printf("              TESTS DE tool                \n");
+    printf("==========================================================\n");
+    char nom_test[] = "Rue_de_Vaugirard";
+    replace_underscore_with_space(nom_test);
+    assert_string_equal(nom_test, "Rue de Vaugirard");
+}
+
+
+/*
+printf("==========================================================\n");
+printf("              TESTS DE hypo                \n");
+printf("==========================================================\n");
+*/
 static void test_hypotheque_et_rachat_PROP(void **state) {
     (void) state;
-    
+    printf("==========================================================\n");
+    printf("              TESTS DE hypo                \n");
+    printf("==========================================================\n");
     // Initialisation
     Player *p1 = init_player("Joueur1", 1);
     Player *p2 = init_player("Joueur2", 2);
@@ -698,6 +727,44 @@ static void test_hypotheque_et_rachat_COMP(void **state) {
     free(comp);
     free(p1);
 }
+/*
+printf("==========================================================\n");
+printf("              TESTS DE trade                \n");
+printf("==========================================================\n");
+*/
+static void test_init_empty_offer(void **state) {
+    (void) state; // Variable inutilisée
+    printf("==========================================================\n");
+    printf("              TESTS DE trade                \n");
+    printf("==========================================================\n");
+    // 1. Initialisation d'un faux joueur pour le test
+    Player *p1 = init_player("Négociateur", 1);
+    assert_non_null(p1);
+
+    // 2. Appel de la fonction à tester
+    TradeOffer *offer = init_empty_offer(p1);
+
+    // 3. Vérifications de base
+    assert_non_null(offer); // On vérifie que le calloc a bien fonctionné
+    assert_ptr_equal(offer->proposant, p1); // Vérifie que c'est le bon pointeur de joueur
+
+    // 4. Vérification que "calloc" a bien tout mis à 0 et NULL
+    assert_int_equal(offer->ects, 0);
+    assert_int_equal(offer->nb_props, 0);
+    assert_int_equal(offer->nb_gares, 0);
+    assert_int_equal(offer->nb_comps, 0);
+    assert_int_equal(offer->nb_cartes, 0);
+
+    // On vérifie quelques cases des tableaux au hasard pour s'assurer du NULL
+    assert_null(offer->props[0]); 
+    assert_null(offer->gares[0]);
+    assert_null(offer->comps[0]);
+    assert_null(offer->car[0]);
+
+    // 5. Nettoyage de la mémoire (Très important pour Valgrind)
+    free(offer);
+    free(p1);
+}
 
 int main(void) {
     const struct CMUnitTest tests[] = {
@@ -707,17 +774,6 @@ int main(void) {
         cmocka_unit_test(test_chargement_complet),
         cmocka_unit_test(test_chargement_GARE),
         cmocka_unit_test(test_chargement_COMPAGNIE),
-        cmocka_unit_test(test_init_player_values),
-        cmocka_unit_test(test_calcul_moyenne_eco_index_player),
-        cmocka_unit_test(test_player_move),
-        cmocka_unit_test(test_player_credits_and_faillite),
-        cmocka_unit_test(test_player_acquisition_propriete),
-        cmocka_unit_test(test_player_addremove_comp),
-        cmocka_unit_test(test_player_addremove_gar),
-        cmocka_unit_test(test_full_color),
-        cmocka_unit_test(test_full_comp),
-        cmocka_unit_test(test_nb_Gare),
-        cmocka_unit_test(test_underscore_conversion),
         cmocka_unit_test(test_must_rent_Property),
         cmocka_unit_test(test_must_rent_COMP),
         cmocka_unit_test(test_must_rent_GARE),
@@ -725,9 +781,25 @@ int main(void) {
         cmocka_unit_test(test_check_uniformity_build),
         cmocka_unit_test(test_check_uniformity_destroy),
         cmocka_unit_test(test_remove_level_integration),
+        cmocka_unit_test(test_full_color),
+        cmocka_unit_test(test_full_comp),
+        cmocka_unit_test(test_nb_Gare),
+        
+        cmocka_unit_test(test_init_player_values),
+        cmocka_unit_test(test_calcul_moyenne_eco_index_player),
+        cmocka_unit_test(test_player_move),
+        cmocka_unit_test(test_player_credits_and_faillite),
+        cmocka_unit_test(test_player_acquisition_propriete),
+        cmocka_unit_test(test_player_addremove_comp),
+        cmocka_unit_test(test_player_addremove_gar),
+        
+        cmocka_unit_test(test_underscore_conversion),
+
         cmocka_unit_test(test_hypotheque_et_rachat_PROP),
         cmocka_unit_test(test_hypotheque_et_rachat_GARE),
-        cmocka_unit_test(test_hypotheque_et_rachat_COMP)
+        cmocka_unit_test(test_hypotheque_et_rachat_COMP),
+        
+        cmocka_unit_test(test_init_empty_offer)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
