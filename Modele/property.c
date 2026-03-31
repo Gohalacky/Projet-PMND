@@ -259,6 +259,7 @@ void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp,
     int dut;
     int banqueroute;
     dut= (comp->rent[full_Comp(tableau,ownr)])*d; //d est le résultat du lancé de dé précédent
+    printf("Montant total à payer : (%d ECTS)",dut);
     player_add_credits(ownr,dut);
     banqueroute = player_remove_credits(p,dut);
     if(banqueroute == 0){
@@ -271,6 +272,7 @@ void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *loueur, Player
     int banqueroute;
     dut= (g->rent[nb_Gare(tableau,owner)-1]); //-1 car le owner possède déja une gare, ce n'est pas cette fonction qui le vérifie
     player_add_credits(owner,dut);
+    printf("Montant total à payer : (%d ECTS)",dut);
     banqueroute = player_remove_credits(loueur,dut);
     if(banqueroute == 0){
         printf("BANQUEROUTE de %s \n", loueur->name); /*il faudra réalisé le protocole de banqueroute*/

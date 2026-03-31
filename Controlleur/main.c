@@ -54,7 +54,13 @@ int main() {
     // Choix du mode de jeu
     int mode_jeu = 0;
     int max_tours = -1; // -1 signifie infini (mode faillite)
-
+    int admin_mode = 0;
+    printf("\nChoisissez le mode de fonctionnement :\n");
+    printf("0. Mode Normal (Dés aléatoires)\n");
+    printf("1. Mode Admin (Choix manuel des déplacements)\n");
+    printf("Choix : ");
+    scanf("%d", &admin_mode);
+    vider_buffer();
     printf("\nChoisissez le mode de jeu :\n");
     printf("1. Nombre de tours limité\n");
     printf("2. Jusqu'à la première faillite (Mort subite)\n");
@@ -85,7 +91,7 @@ int main() {
         printf("\n--- TOUR %d ---\n", tour_actuel);
         
         for (int i = 0; i < nb_joueurs; i++) {
-            engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, &mon_plateau);
+            engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, tableau_gar ,tableau_comp,  &mon_plateau, admin_mode);
             
             // Vérification de la faillite (Mode 2)
             if (mode_jeu == 2 && liste_joueurs[i]->credit <= 0) {

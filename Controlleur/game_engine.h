@@ -6,11 +6,11 @@
 #include "../Controlleur/plateau.h"
 
 // Lance un tour complet pour un joueur
-void engine_play_turn(Player *current_p, Player *all_players[],
-                      Property *tableau_prop[], Plateau *plateau);
+void engine_play_turn(Player *p, Player *all_players[],
+                      Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[], Plateau *plateau, int admin_mode) ;
 
 // Fonction pour lancer les dés
-int engine_roll_dice();
+int engine_roll_dice(int admin_mode);
 
 
 
