@@ -1,15 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include "plateau.h"
 #include "../Modele/player.h"
 #include "game_engine.h"
 
+
+void vider_buffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+
 int main() {
-    // Initialisation de l'aléatoire
+    // Init aléatoire
     srand(time(NULL));
 
-    // CHARGEMENT DES DONNÉES
+    // Chargement des données
     Property *tableau_prop[NB_PROPRIETE] = {NULL};
     Gares *tableau_gar[NB_GARE] = {NULL};
     Compagnies *tableau_comp[NB_COMPAGNIE] = {NULL};
@@ -19,17 +27,31 @@ int main() {
     int nbg = chargement_GARE_loyer(tableau_gar, "gares.txt");
     int nbc = chargement_COMPAGNIE_loyer(tableau_comp, "compagnie.txt");
 
-    // CRÉATION DU PLATEAU
+    // Création du plateau
     Plateau mon_plateau;
     init_plateau(&mon_plateau, tableau_prop, tableau_gar, tableau_comp);
     printf("Plateau prêt : %d propriétés , %d gares chargées et %d compagnies chargées.\n" , nbp, nbg, nbc);
 
-    // INITIALISATION DES JOUEURS
-    Player *j1 = init_player("Jean", 1);
-    Player *j2 = init_player("Bob", 2);
-    Player *liste_joueurs[2] = {j1, j2};
+    // Nombre de joueurs
+    int nb_joueurs = 0;
+    while (nb_joueurs < 1 || nb_joueurs > 4) {
+        printf("Nombre de joueurs (1-4) : ");
+        if (scanf("%d", &nb_joueurs) != 1) vider_buffer();
+    }
+    vider_buffer();
 
-    // BOUCLE PRINCIPALE
+    // Noms des joueurs
+    Player *liste_joueurs[4] = {NULL};
+    for (int i = 0; i < nb_joueurs; i++) {
+        char nom[50];
+        printf("Nom du joueur %d : ", i + 1);
+        if (fgets(nom, sizeof(nom), stdin)) {
+            nom[strcspn(nom, "\n")] = 0; // Enlever le \n à la fin
+            liste_joueurs[i] = init_player(nom, i + 1);
+        }
+    }
+
+    // Boucle principal
     printf("\n=================================");
     printf("\n       BIENVENUE SUR INSA'POLY   ");
     printf("\n=================================\n");
@@ -52,9 +74,8 @@ int main() {
     }
 
     // LIBÉRATION DE LA MÉMOIRE
-    printf("\n[Système] Fermeture du jeu et libération de la mémoire...\n");
-    free(j1); 
-    free(j2);
+    printf("\nFermeture du jeu et libération de la mémoire...\n");
+    for (int i = 0; i < nb_joueurs; i++) free(liste_joueurs[i]);
     
     for (int i = 0; i < NB_PROPRIETE; i++) if (tableau_prop[i]) free(tableau_prop[i]);
     for (int i = 0; i < NB_GARE; i++) if (tableau_gar[i]) free(tableau_gar[i]);
