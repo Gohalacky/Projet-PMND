@@ -41,7 +41,9 @@ void engine_play_turn(Player *p, Player *all_players[],
 
         case CASE_TERRAIN: {
             Property *prop = (Property *)current_case->data;
-            if (prop==NULL) break;
+            if (prop==NULL){
+                break;
+            }
 
             if (prop->owner == 0) {
                 // Achat possible
@@ -90,9 +92,51 @@ void engine_play_turn(Player *p, Player *all_players[],
             break;
         }
 
-        case CASE_GARE:
-            printf(">> Case Gare : logique de loyer gare à faire.\n");
+        case CASE_GARE: {
+            Gares *gare = (Gares *)current_case->data;
+            if (!gare){
+                break;
+            } 
+
+            if (gare->owner == 0) {
+                if (p->credit >= gare->value) {
+                    printf(">> Gare libre (%d ECTS). Acheter ? (1:Oui/0:Non) : ", gare->value);
+                    int choix;
+                    if (scanf("%d", &choix) == 1 && choix == 1) {
+                        player_remove_credits(p, gare->value);
+                        player_add_gar(p, gare);
+                    }
+                }
+            } else if (gare->owner != p->number) {
+                Player *proprio = all_players[gare->owner - 1];
+                printf(">> Gare de %s. Paiement du loyer \n", proprio->name);
+                must_rent_Gares(NULL, gare, p, proprio); 
+            }
             break;
+        }
+
+        case CASE_COMPAGNIE: {
+            Compagnies *comp = (Compagnies *)current_case->data;
+            if (!comp){
+                break;
+            } 
+
+            if (comp->owner == 0) {
+                if (p->credit >= comp->value) {
+                    printf(">> Compagnie libre (%d ECTS). Acheter ? (1:Oui/0:Non) : ", comp->value);
+                    int choix;
+                    if (scanf("%d", &choix) == 1 && choix == 1) {
+                        player_remove_credits(p, comp->value);
+                        player_add_comp(p, comp);
+                    }
+                }
+            } else if (comp->owner != p->number) {
+                Player *proprio = all_players[comp->owner - 1];
+                printf(">> %s appartient à %s. Calcul du loyer (Dés x Multiplicateur)...\n", comp->name, proprio->name);
+                must_rent_Compagnies(NULL, comp, p, proprio, total_des);
+            }
+            break;
+        }
 
         default:
             printf(">> Case spéciale : pas d'action immédiate.\n");
