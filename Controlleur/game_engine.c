@@ -55,6 +55,33 @@ void engine_play_turn(Player *p, Player *all_players[],
                     }
                 }
             } else if (prop->owner != p->number) {
+                //ches soi : construction
+                if (full_color(tableau_prop, p, prop->color)) {
+                    if (prop->level < 3) {
+                        if (check_uniformity(tableau_prop, prop, 1)) {
+                            printf(">> Voulez-vous améliorer %s ? (%d ECTS)\n", prop->name, prop->construction_cost);
+                            printf("1: Maison | 2: Social | 3: Parc | 0: Non : ");
+                            int type_c;
+                            if (scanf("%d", &type_c) == 1 && type_c >= 1 && type_c <= 3) {
+                                if (p->credit >= prop->construction_cost) {
+                                    add_level(tableau_prop, prop, p, type_c);
+                                    printf(">> Construction validée ! Niveau actuel : %d\n", prop->level);
+                                } else {
+                                    printf(">> Pas assez d'ECTS pour construire.\n");
+                                }
+                            }
+                        } else {
+                            printf(">> Règle d'uniformité : construisez sur vos autres terrains %s d'abord.\n", color_names[prop->color]);
+                        }
+                    } else {
+                        printf(">> Niveau maximum (3) déjà atteint ici.\n");
+                    }
+                } else {
+                    printf(">> Possédez tout le quartier %s pour construire.\n", color_names[prop->color]);
+                }
+            }
+
+            else {
                 // Loyer à payer
                 Player *proprio = all_players[prop->owner - 1]; // On récupère le proprio
                 printf(">> Propriété de %s. Paiement du loyer...\n", proprio->name);
@@ -72,7 +99,7 @@ void engine_play_turn(Player *p, Player *all_players[],
             break;
     }
 
-    // MISE À JOUR ÉCOLOGIQUE (Fin de tour)
+    // Mise à jour écologique (Fin de tour)
     // On prépare une liste propre pour le calcul de l'indice
     Property board_static[NB_PROPRIETE];
     int valid_count = 0;
