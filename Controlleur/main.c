@@ -51,27 +51,71 @@ int main() {
         }
     }
 
+    // Choix du mode de jeu
+    int mode_jeu = 0;
+    int max_tours = -1; // -1 signifie infini (mode faillite)
+
+    printf("\nChoisissez le mode de jeu :\n");
+    printf("1. Nombre de tours limité\n");
+    printf("2. Jusqu'à la première faillite (Mort subite)\n");
+    printf("Choix : ");
+    scanf("%d", &mode_jeu);
+    
+    if (mode_jeu == 1) {
+        printf("Nombre de tours maximum : ");
+        scanf("%d", &max_tours);
+    }
+    vider_buffer();
+
+
     // Boucle principal
     printf("\n=================================");
     printf("\n       BIENVENUE SUR INSA'POLY   ");
     printf("\n=================================\n");
+
+    printf("\n=== QUE LA PARTIE COMMENCE ! ===\n");
     
     int continuer = 1;
-    for (int tour = 1; tour <= 10 && continuer; tour++) {
-        for (int i = 0; i < 2; i++) {
-            engine_play_turn(liste_joueurs[i], liste_joueurs,  tableau_prop, &mon_plateau);
+    int tour_actuel = 1;
+    
+    while (continuer) {
+        
+        if (max_tours != -1 && tour_actuel > max_tours) break;
+
+        printf("\n--- TOUR %d ---\n", tour_actuel);
+        
+        for (int i = 0; i < nb_joueurs; i++) {
+            engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, &mon_plateau);
             
+            // Vérification de la faillite (Mode 2)
+            if (mode_jeu == 2 && liste_joueurs[i]->credit <= 0) {
+                printf("\n!!! %s est en faillite ! FIN DE LA PARTIE !!!\n", liste_joueurs[i]->name);
+                continuer = 0;
+                break;
+            }
             // Gestion de l'arrêt
             printf("\n[Entrée] Continuer | [q + Entrée] Quitter : ");
-            char buffer[10];
-            if (fgets(buffer, sizeof(buffer), stdin)) {
-                if (buffer[0] == 'q' || buffer[0] == 'Q') {
-                    continuer = 0;
-                    break;
-                }
+            char c = getchar();
+            if (c == 'q' || c == 'Q') {
+                continuer = 0;
+                break;
             }
+            if (c != '\n') vider_buffer();
+        }
+        tour_actuel++;
+    }
+    // Fin de partie
+    printf("\n=================================");
+    printf("\n       FIN DE LA PARTIE          ");
+    printf("\n=================================\n");
+
+    Player *gagnant = liste_joueurs[0];
+    for (int i = 1; i < nb_joueurs; i++) {
+        if (liste_joueurs[i]->credit > gagnant->credit) {
+            gagnant = liste_joueurs[i];
         }
     }
+    printf("LE GAGNANT EST : %s avec %d ECTS !\n", gagnant->name, gagnant->credit);
 
     // LIBÉRATION DE LA MÉMOIRE
     printf("\nFermeture du jeu et libération de la mémoire...\n");
