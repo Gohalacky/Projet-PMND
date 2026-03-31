@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "property.h"
-#include "tool.h"
+
 /*récupère le nom des Couleurs avec le typedef enum Color*/
 const char* color_names[] = {
     "Marron",
@@ -54,6 +54,7 @@ Property * init_Property(char *nom,
     p->level = niveau;
     p->type = type_logement;
     p->indice = note;
+    p->hypo = 0;
 
     return p;
 
@@ -70,6 +71,7 @@ Compagnies * init_Compagnies(char *nom, Color couleur, int proprio, int valeur, 
     g->color = couleur;
     g->owner = proprio;
     g->value = valeur;
+    g->hypo = 0;
     for(int i = 0; i < 2; i++){
         g->rent[i]=loyer[i];
     }
@@ -87,6 +89,7 @@ Gares * init_Gares(char *nom, Color couleur ,int proprio, int valeur, int loyer[
     g->color = couleur;
     g->owner = proprio;
     g->value = valeur;
+    g->hypo = 0;
     for(int i = 0; i < 4; i++){
         g->rent[i]=loyer[i];
     }
@@ -229,51 +232,69 @@ int nb_Gare(Gares * tableau[NB_GARE], Player *p){
 void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Player *p, Player * ownr){
     int dut;
     int banqueroute;
-    if(full_color(tableau,ownr,prop->color)){ /*on vérifie si un joueur à toute la couleur avant de vérifié si il y a des maisons dessus*/
-        switch(prop->type){
-            case 0:
-                dut = prop->rent_full_color;
-                break;
-            case 1:
-                dut = prop->rent_maison[(prop->level)-1];
-                break;
-            case 2:
-                dut = prop->rent_logement[(prop->level)-1];
-                break;
-            case 3:
-                dut = prop->rent_parc[(prop->level)-1];
-                break;
+    if(prop->hypo == 0){
+        if(full_color(tableau,ownr,prop->color)){ /*on vérifie si un joueur à toute la couleur avant de vérifié si il y a des maisons dessus*/
+            switch(prop->type){
+                case 0:
+                    dut = prop->rent_full_color;
+                    break;
+                case 1:
+                    dut = prop->rent_maison[(prop->level)-1];
+                    break;
+                case 2:
+                    dut = prop->rent_logement[(prop->level)-1];
+                    break;
+                case 3:
+                    dut = prop->rent_parc[(prop->level)-1];
+                    break;
+            }
+        }
+        else{
+            dut = prop->rent_empty;
+            printf("Le loyer est de %d Crédits. \n",dut);
+        }
+        player_add_credits(ownr,dut);
+        banqueroute = player_remove_credits(p,dut);
+        if(banqueroute == 0){
+            printf("BANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
         }
     }
     else{
-        dut = prop->rent_empty;
-    }
-    player_add_credits(ownr,dut);
-    banqueroute = player_remove_credits(p,dut);
-    if(banqueroute == 0){
-        printf("BANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+        printf("Pas de loyer à payer, la Propriété est placée sous hypothèque.\n");
     }
 }
 
 void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp, Player *p, Player *ownr, int d){
     int dut;
     int banqueroute;
-    dut= (comp->rent[full_Comp(tableau,ownr)])*d; //d est le résultat du lancé de dé précédent
-    player_add_credits(ownr,dut);
-    banqueroute = player_remove_credits(p,dut);
-    if(banqueroute == 0){
-        printf("BANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+    if(comp->hypo == 0){
+        dut= (comp->rent[full_Comp(tableau,ownr)])*d; //d est le résultat du lancé de dé précédent
+        printf("Le loyer est de %d Crédits. \n",dut);
+        player_add_credits(ownr,dut);
+        banqueroute = player_remove_credits(p,dut);
+        if(banqueroute == 0){
+            printf("BANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+        }
+    }
+    else{
+        printf("Pas de loyer à payer, la Compagnie est placée sous hypothèque.\n");
     }
 }
 
 void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *loueur, Player *owner){
     int dut;
     int banqueroute;
-    dut= (g->rent[nb_Gare(tableau,owner)-1]); //-1 car le owner possède déja une gare, ce n'est pas cette fonction qui le vérifie
-    player_add_credits(owner,dut);
-    banqueroute = player_remove_credits(loueur,dut);
-    if(banqueroute == 0){
-        printf("BANQUEROUTE de %s \n", loueur->name); /*il faudra réalisé le protocole de banqueroute*/
+    if(g->hypo == 0){
+        dut= (g->rent[nb_Gare(tableau,owner)-1]); //-1 car le owner possède déja une gare, ce n'est pas cette fonction qui le vérifie
+        printf("Le loyer est de %d Crédits. \n",dut);
+        player_add_credits(owner,dut);
+        banqueroute = player_remove_credits(loueur,dut);
+        if(banqueroute == 0){
+            printf("BANQUEROUTE de %s \n", loueur->name); /*il faudra réalisé le protocole de banqueroute*/
+        }
+    }
+    else{
+        printf("Pas de loyer à payer, la Compagnie est placée sous hypothèque.\n");
     }
 }
 
