@@ -43,7 +43,7 @@ Si vous souhaitez recompiler le projet chez vous (environnement Linux recommand�
 Nous avons configuré un Makefile à la racine pour vous simplifier la vie. 
 
 ### 1. Pour compiler
-* Le modèle : `make`
+* Le modèle uniquement : `make`
 * Juste le moteur de jeu (sans interface) : `make controlleur`
 * Juste l'interface graphique : `make interface`
 * Les tests unitaires : `make test` et `make test_cartes`
