@@ -44,7 +44,7 @@ TradeOffer * init_empty_offer(Player *p);
  * @brief Vérifie si un échange est légal selon les règles.
  * @return 1 si l'échange est valide, 0 si une règle est violée (ex: triche, constructions présentes).
  */
-int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2, Property *plateau[NB_PROPRIETE]);
+int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2);
 
 /**
  * @brief Transfère les titres de propriété et l'argent entre les deux joueurs.

@@ -766,6 +766,59 @@ static void test_init_empty_offer(void **state) {
     free(p1);
 }
 
+static void test_is_trade_valid(void **state) {
+    (void) state;
+
+    // 1. Initialisation des joueurs (p1 et p2)
+    Player *p1 = init_player("Alice", 1);
+    Player *p2 = init_player("Bob", 2);
+    p1->credit = 1000;
+    p2->credit = 1000;
+
+    // 2. Initialisation des offres vides
+    TradeOffer *off1 = init_empty_offer(p1);
+    TradeOffer *off2 = init_empty_offer(p2);
+
+    // --- TEST A : Offres NULL ---
+    assert_int_equal(is_trade_valid(NULL, off2), 0);
+    assert_int_equal(is_trade_valid(off1, NULL), 0);
+
+    // --- TEST B : Manque de crédits ---
+    off1->ects = 1500; // Alice propose plus que ce qu'elle a (1000)
+    assert_int_equal(is_trade_valid(off1, off2), 0);
+    off1->ects = 0; // On remet à zéro pour la suite
+
+    // --- TEST C : Propriété non possédée ---
+    Property *prop1 = calloc(1, sizeof(Property));
+    strcpy(prop1->name, "Rue de la Soif");
+    prop1->owner = 2; // Appartient à Bob (Joueur 2)
+    prop1->level = 0;
+
+    // Alice essaie de mettre la propriété de Bob dans son offre (Triche)
+    off1->props[0] = prop1;
+    off1->nb_props = 1;
+    assert_int_equal(is_trade_valid(off1, off2), 0);
+
+    // --- TEST D : Propriété avec construction ---
+    prop1->owner = 1; // La propriété appartient bien à Alice maintenant
+    prop1->level = 1; // Mais elle contient un bâtiment !
+    assert_int_equal(is_trade_valid(off1, off2), 0);
+
+    // --- TEST E : Échange valide ---
+    prop1->level = 0; // On retire le bâtiment, le terrain est nu
+    off1->ects = 100; // Alice donne la propriété + 100 ECTS
+    off2->ects = 50;  // Bob donne juste 50 ECTS
+
+    assert_int_equal(is_trade_valid(off1, off2), 1); // Cette fois, ça doit passer !
+
+    // 3. Nettoyage de la mémoire
+    free(prop1);
+    free(off1);
+    free(off2);
+    free(p1);
+    free(p2);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
@@ -799,7 +852,8 @@ int main(void) {
         cmocka_unit_test(test_hypotheque_et_rachat_GARE),
         cmocka_unit_test(test_hypotheque_et_rachat_COMP),
         
-        cmocka_unit_test(test_init_empty_offer)
+        cmocka_unit_test(test_init_empty_offer),
+        cmocka_unit_test(test_is_trade_valid)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
