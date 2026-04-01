@@ -819,6 +819,143 @@ static void test_is_trade_valid(void **state) {
     free(p2);
 }
 
+static void test_trade_modifiers(void **state) {
+    (void) state; // Variable inutilisée
+
+    // 1. --- INITIALISATION ---
+    Player *p1 = init_player("Négociateur", 1);
+    TradeOffer *offer = init_empty_offer(p1);
+
+    // On crée quelques fausses cartes pour les tests
+    Property prop1 = {.owner = 1}; strcpy(prop1.name, "Rue 1");
+    Property prop2 = {.owner = 1}; strcpy(prop2.name, "Rue 2");
+    Property prop3 = {.owner = 1}; strcpy(prop3.name, "Rue 3");
+    
+    Gares gare1 = {.owner = 1}; strcpy(gare1.name, "Gare 1");
+    Compagnies comp1 = {.owner = 1}; strcpy(comp1.name, "Compagnie 1");
+
+    // 2. --- TESTS DES CRÉDITS ---
+    trade_set_credits(offer, 500);
+    assert_int_equal(offer->ects, 500);
+
+    // 3. --- TESTS D'AJOUT ET DOUBLONS (PROPRIÉTÉS) ---
+    // Ajout normal
+    assert_int_equal(trade_add_property(offer, &prop1), 1); // Succès (retourne 1)
+    assert_int_equal(offer->nb_props, 1);
+    assert_ptr_equal(offer->props[0], &prop1);
+
+    // Tentative d'ajout en doublon (doit échouer)
+    assert_int_equal(trade_add_property(offer, &prop1), 0); // Échec (retourne 0)
+    assert_int_equal(offer->nb_props, 1); // Le compteur n'a pas bougé
+
+    // On ajoute prop2 et prop3 pour tester le retrait ensuite
+    trade_add_property(offer, &prop2);
+    trade_add_property(offer, &prop3);
+    assert_int_equal(offer->nb_props, 3);
+    // Le tableau est maintenant : [prop1, prop2, prop3, NULL, ...]
+
+    // 4. --- TESTS DE RETRAIT ET DÉCALAGE (PROPRIÉTÉS) ---
+    // On retire la carte du milieu (prop2) pour vérifier le décalage
+    assert_int_equal(trade_remove_property(offer, &prop2), 1); // Succès
+    
+    // Vérifications cruciales :
+    assert_int_equal(offer->nb_props, 2); // Le compteur a bien diminué
+    assert_ptr_equal(offer->props[0], &prop1); // Prop1 n'a pas bougé
+    assert_ptr_equal(offer->props[1], &prop3); // Prop3 a bien glissé vers la gauche !
+    assert_null(offer->props[2]); // L'ancienne place de Prop3 est bien nettoyée à NULL
+
+    // Tentative de retirer une carte qui n'est plus là
+    assert_int_equal(trade_remove_property(offer, &prop2), 0); // Échec
+
+    // 5. --- TESTS BREF SUR GARES ET COMPAGNIES ---
+    // Gares
+    assert_int_equal(trade_add_gare(offer, &gare1), 1);
+    assert_int_equal(offer->nb_gares, 1);
+    assert_int_equal(trade_remove_gare(offer, &gare1), 1);
+    assert_int_equal(offer->nb_gares, 0);
+    assert_null(offer->gares[0]);
+
+    // Compagnies
+    assert_int_equal(trade_add_compagnie(offer, &comp1), 1);
+    assert_int_equal(offer->nb_comps, 1);
+    assert_int_equal(trade_remove_compagnie(offer, &comp1), 1);
+    assert_int_equal(offer->nb_comps, 0);
+    assert_null(offer->comps[0]);
+
+    // 6. --- NETTOYAGE ---
+    free(offer);
+    free(p1);
+}
+
+static void test_execute_trade_full(void **state) {
+    (void) state;
+
+    // 1. --- PRÉPARATION DES JOUEURS ---
+    Player *p1 = init_player("Alice", 1);
+    Player *p2 = init_player("Bob", 2);
+    p1->credit = 1000;
+    p2->credit = 1000;
+
+    // 2. --- PRÉPARATION DES BIENS ---
+    // Une propriété pour Alice
+    Property *prop_alice = calloc(1, sizeof(Property));
+    strcpy(prop_alice->name, "Rue de la Paix");
+    prop_alice->owner = 1; 
+    prop_alice->level = 0; // Important pour que l'échange soit valide
+
+    // Une gare pour Bob
+    Gares *gare_bob = calloc(1, sizeof(Gares));
+    strcpy(gare_bob->name, "Gare de Lyon");
+    gare_bob->owner = 2;
+    gare_bob->hypo = 0;
+
+    // 3. --- PRÉPARATION DES OFFRES ---
+    TradeOffer *off1 = init_empty_offer(p1);
+    TradeOffer *off2 = init_empty_offer(p2);
+
+    // Alice donne : Rue de la Paix + 200 ECTS
+    off1->ects = 200;
+    trade_add_property(off1, prop_alice);
+
+    // Bob donne : Sa Gare + 0 ECTS
+    off2->ects = 0;
+    trade_add_gare(off2, gare_bob);
+
+    // 4. --- EXÉCUTION ---
+    // On vérifie d'abord que c'est valide (pour être sûr)
+    assert_int_equal(is_trade_valid(off1, off2), 1);
+    
+    // On exécute l'échange
+    execute_trade(off1, off2);
+
+    // 5. --- VÉRIFICATIONS (ASSERTIONS) ---
+    
+    // A. Vérification de l'argent
+    // Alice : 1000 - 200 = 800
+    assert_int_equal(p1->credit, 800);
+    // Bob : 1000 + 200 = 1200
+    assert_int_equal(p2->credit, 1200);
+
+    // B. Vérification des Propriétés (Le changement de propriétaire)
+    // La rue d'Alice doit maintenant appartenir à Bob (numéro 2)
+    assert_int_equal(prop_alice->owner, 2);
+    
+    // La gare de Bob doit maintenant appartenir à Alice (numéro 1)
+    assert_int_equal(gare_bob->owner, 1);
+
+    // C. Vérification de la sécurité (l'offre doit être consommée ou nettoyée )
+    // Ici, on vérifie juste que les pointeurs sont toujours là si on n'a pas fait de free
+    assert_ptr_equal(off1->props[0], prop_alice);
+
+    // 6. --- NETTOYAGE FINAL ---
+    free(off1);
+    free(off2);
+    free(prop_alice);
+    free(gare_bob);
+    free(p1);
+    free(p2);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_init_Property_basic),
@@ -853,7 +990,9 @@ int main(void) {
         cmocka_unit_test(test_hypotheque_et_rachat_COMP),
         
         cmocka_unit_test(test_init_empty_offer),
-        cmocka_unit_test(test_is_trade_valid)
+        cmocka_unit_test(test_is_trade_valid),
+        cmocka_unit_test(test_trade_modifiers),
+        cmocka_unit_test(test_execute_trade_full)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
