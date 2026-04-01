@@ -958,6 +958,7 @@ static void test_execute_trade_full(void **state) {
 
 int main(void) {
     const struct CMUnitTest tests[] = {
+        //property
         cmocka_unit_test(test_init_Property_basic),
         cmocka_unit_test(test_init_GARE_basic),
         cmocka_unit_test(test_init_COMPAGNIE_basic),
@@ -974,7 +975,7 @@ int main(void) {
         cmocka_unit_test(test_full_color),
         cmocka_unit_test(test_full_comp),
         cmocka_unit_test(test_nb_Gare),
-        
+        //player
         cmocka_unit_test(test_init_player_values),
         cmocka_unit_test(test_calcul_moyenne_eco_index_player),
         cmocka_unit_test(test_player_move),
@@ -982,13 +983,13 @@ int main(void) {
         cmocka_unit_test(test_player_acquisition_propriete),
         cmocka_unit_test(test_player_addremove_comp),
         cmocka_unit_test(test_player_addremove_gar),
-        
+        //tool
         cmocka_unit_test(test_underscore_conversion),
-
+        //hypo
         cmocka_unit_test(test_hypotheque_et_rachat_PROP),
         cmocka_unit_test(test_hypotheque_et_rachat_GARE),
         cmocka_unit_test(test_hypotheque_et_rachat_COMP),
-        
+        //trade
         cmocka_unit_test(test_init_empty_offer),
         cmocka_unit_test(test_is_trade_valid),
         cmocka_unit_test(test_trade_modifiers),
