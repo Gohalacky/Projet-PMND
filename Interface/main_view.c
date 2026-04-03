@@ -8,6 +8,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_rect.h>
+#include <SDL2/SDL_video.h>
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -22,7 +23,11 @@ int main(int argc, char* args[]){
                                 SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                 1280, 720,
                                 SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+
+    SDL_Window* adminWindow = SDL_CreateWindow("Admin", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1280, 720, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer* rendererAdmin = SDL_CreateRenderer(adminWindow, -1, SDL_RENDERER_ACCELERATED);
+
 
     TTF_Init();
 
@@ -30,7 +35,7 @@ int main(int argc, char* args[]){
     TTF_Font* fontNormal = TTF_OpenFont("FONT/fontPixel.ttf", 32);
     TTF_Font* fontTitle  = TTF_OpenFont("FONT/fontPixel.ttf", 38);
 
-    /* ── Boutons ── */
+    /* Boutons */
     TexturesPack tex;
     ButtonsPack btn = {
         .newGame    = { .ref = {457, 255, 370, 67} },
@@ -51,7 +56,7 @@ int main(int argc, char* args[]){
         &btn.launchGame, &btn.cancel, &btn.validMoney
     };
 
-    /* ── Textes statiques ── */
+    /* Textes statiques */
     TextsPack texts = {
         .titleNewGame   = {"Nouvelle Partie",        541,  53, 38, 0,0,0, {235,221,192,255}},
         .btnLaunchGame  = {"Lancer la partie",        790, 650, 22, 0,0,0, {235,221,192,255}},
@@ -73,20 +78,18 @@ int main(int argc, char* args[]){
         &texts.numbTurns, &texts.event, &texts.btnValid
     };
 
-    /* ── Zones de saisie
-         Positions de référence à 1280×720 : juste à droite des labels
-         Ajuste refX/refY/refW/refH selon ta maquette                    ── */
+    /* Zones de saisie */
     TextBoxPack tboxes;
-    //                        refX  refY  refW  refH
+
     initTextBox(&tboxes.initialMoney, 630, 422,  140, 36);
     initTextBox(&tboxes.numbTurns,    630, 304,  140, 36);
     initTextBox(&tboxes.eventFreq,    630, 528,  140, 36);
 
-    /* ── Compteur joueurs ── */
+    /* Compteur joueurs */
     Counter counterJoueurs;
     initCounter(&counterJoueurs, 2, 4, 2, 716, 172, 526, 172, 37, 37, 634, 176);
 
-    /* ── Scaling initial (ratio 1.0) ── */
+    /* Scaling initial */
     float ratioX = 1.0f;
     float ratioY = 1.0f;
     int count = sizeof(allButtons) / sizeof(allButtons[0]);

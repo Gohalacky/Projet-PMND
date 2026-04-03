@@ -21,23 +21,23 @@
 #define TEXTBOX_MAX_LEN 16
 
 typedef struct {
-    SDL_Rect rect;      // Position/taille actuelles (mises à jour au resize)
-    SDL_Rect ref;       // Position/taille de référence à 1280x720
+    SDL_Rect rect;      
+    SDL_Rect ref;       
 } Button;
 
-/* ── Zone de saisie ─────────────────────────────────────────────────────── */
+/* Zone de saisie */
 typedef struct {
-    char     text[TEXTBOX_MAX_LEN]; // Contenu saisi
-    int      cursor_pos;            // Position du curseur (en caractères)
-    int      active;                // 1 si la box a le focus
-    SDL_Rect rect;                  // Position/taille actuelles
-    SDL_Rect ref;                   // Position/taille de référence à 1280×720
+    char     text[TEXTBOX_MAX_LEN]; 
+    int      cursor_pos;            
+    int      active;                
+    SDL_Rect rect;                  
+    SDL_Rect ref;                   
 } TextBox;
 
 typedef struct {
-    TextBox initialMoney;   // Argent initial
-    TextBox numbTurns;      // Nombre de tours
-    TextBox eventFreq;      // Fréquence d'événements
+    TextBox initialMoney;   
+    TextBox numbTurns;      
+    TextBox eventFreq;      
 } TextBoxPack;
 
 typedef struct{
@@ -125,7 +125,7 @@ void initCounter(Counter* c, int min, int max, int startValue,
 void handleCounter(Counter* c, int mouseX, int mouseY);
 void renderCounter(SDL_Renderer* renderer, Counter* c, TTF_Font* font, int xText, int yText) ;
 
-/* ── TextBox ─────────────────────────────────────────────────────────────── */
+/* TextBox */
 void initTextBox(TextBox* tb, int refX, int refY, int refW, int refH);
 void ScaleTextBox(TextBox* tb, float ratioX, float ratioY);
 void handleTextBoxEvent(SDL_Event* event, TextBox* tb);

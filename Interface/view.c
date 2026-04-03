@@ -7,15 +7,12 @@
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_rect.h>
-#include <SDL2/SDL_video.h>
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   TEXTURES
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* TEXTURES */
 
 int loadTextures(SDL_Renderer* renderer, TexturesPack* tex){
     tex->menu                   = IMG_LoadTexture(renderer, "IMAGE/menu.png");
@@ -42,9 +39,7 @@ int loadTextures(SDL_Renderer* renderer, TexturesPack* tex){
     return 0;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   RENDU
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* RENDU */
 
 void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, ButtonsPack* btn, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes){
     SDL_RenderClear(renderer);
@@ -118,9 +113,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, ButtonsPac
     SDL_RenderPresent(renderer);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   NETTOYAGE
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* NETTOYAGE */
 
 void cleanup(SDL_Window* win, SDL_Renderer* rdr, TexturesPack* tex){
     SDL_DestroyTexture(tex->menu);
@@ -138,9 +131,7 @@ void cleanup(SDL_Window* win, SDL_Renderer* rdr, TexturesPack* tex){
     SDL_Quit();
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   ÉVÈNEMENTS
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* ÉVÈNEMENTS */
 
 bool isClicked(Button* btn, int x, int y) {
     return x >= btn->rect.x && x <= btn->rect.x + btn->rect.w &&
@@ -158,7 +149,7 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
         if (event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE)
             *state = MENU;
 
-        /* ── Saisie texte : déléguer à la box active ── */
+        /* Saisie texte : déléguer à la box active */
         if (*state == NOUVPARTIE) {
             handleTextBoxEvent(event, &tboxes->initialMoney);
             handleTextBoxEvent(event, &tboxes->numbTurns);
@@ -170,7 +161,6 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
             SDL_GetMouseState(&x, &y);
             printf("clic de souris : x=%d, y=%d\n", x, y);
 
-            /* Gestion du focus des TextBox en NOUVPARTIE */
             if (*state == NOUVPARTIE)
                 handleTextBoxClick(tboxes, x, y);
 
@@ -213,7 +203,7 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
             }
         }
 
-        /* ── Resize ── */
+        /* Resize */
         if (event->type == SDL_WINDOWEVENT &&
             event->window.event == SDL_WINDOWEVENT_RESIZED)
         {
@@ -248,9 +238,7 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
     }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   TEXTES
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* TEXTES */
 
 void printText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, int x, int y) {
     if (!font) { printf("Erreur : font NULL\n"); return; }
@@ -281,9 +269,7 @@ void ScaleFonts(TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButt
         printf("Erreur ScaleFonts : %s\n", TTF_GetError());
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   BOUTONS
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* BOUTONS */
 
 void ScaleButton(Button* btn, float ratioX, float ratioY){
     btn->rect.x = (int)(btn->ref.x * ratioX);
@@ -292,9 +278,7 @@ void ScaleButton(Button* btn, float ratioX, float ratioY){
     btn->rect.h = (int)(btn->ref.h * ratioY);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   COMPTEURS
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* COMPTEURS */
 
 void initCounter(Counter* c, int min, int max, int startValue,int xPlus, int yPlus, int xMoins, int yMoins,int w, int h, int xText, int yText){
     c->value = startValue;
@@ -327,9 +311,7 @@ void renderCounter(SDL_Renderer* renderer, Counter* c, TTF_Font* font, int xText
     printText(renderer, font, buf, c->label.color, c->label.x, c->label.y);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   TEXTBOX
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* TEXTBOX */
 
 void initTextBox(TextBox* tb, int refX, int refY, int refW, int refH) {
     memset(tb->text, 0, sizeof(tb->text));
@@ -352,13 +334,11 @@ void ScaleAllTextBoxes(TextBoxPack* tboxes, float ratioX, float ratioY) {
     ScaleTextBox(&tboxes->eventFreq,    ratioX, ratioY);
 }
 
-/* Retourne 1 si (x,y) est dans le rect de la TextBox */
 static int isInTextBox(TextBox* tb, int x, int y) {
     return x >= tb->rect.x && x <= tb->rect.x + tb->rect.w &&
            y >= tb->rect.y && y <= tb->rect.y + tb->rect.h;
 }
 
-/* Met à jour le focus de toutes les boxes selon le clic */
 void handleTextBoxClick(TextBoxPack* tboxes, int mouseX, int mouseY) {
     TextBox* all[] = { &tboxes->initialMoney, &tboxes->numbTurns, &tboxes->eventFreq };
     for (int i = 0; i < 3; i++) {
@@ -369,24 +349,22 @@ void handleTextBoxClick(TextBoxPack* tboxes, int mouseX, int mouseY) {
             all[i]->active = 0;
         }
     }
-    /* Si aucune box n'est active, on peut arrêter la saisie */
     if (!tboxes->initialMoney.active &&
         !tboxes->numbTurns.active    &&
         !tboxes->eventFreq.active)
         SDL_StopTextInput();
 }
 
-/* Traite un SDL_Event pour une TextBox donnée (uniquement si elle est active) */
 void handleTextBoxEvent(SDL_Event* event, TextBox* tb) {
     if (!tb->active) return;
 
     if (event->type == SDL_TEXTINPUT) {
-        /* Ignore si le buffer est plein (laisser de la place pour le '\0') */
+        
         int len = (int)strlen(tb->text);
         int addLen = (int)strlen(event->text.text);
         if (len + addLen >= TEXTBOX_MAX_LEN) return;
 
-        /* Insère à la position du curseur */
+        
         memmove(&tb->text[tb->cursor_pos + addLen],
                 &tb->text[tb->cursor_pos],
                 len - tb->cursor_pos + 1);
@@ -436,25 +414,22 @@ void handleTextBoxEvent(SDL_Event* event, TextBox* tb) {
 }
 
 void renderTextBox(SDL_Renderer* renderer, TTF_Font* font, TextBox* tb) {
-    /* ── Fond ── */
     SDL_SetRenderDrawColor(renderer, 245, 240, 225, 255);
     SDL_RenderFillRect(renderer, &tb->rect);
 
-    /* ── Bordure : dorée si actif, grise sinon ── */
+
     if (tb->active)
         SDL_SetRenderDrawColor(renderer, 180, 140, 60, 255);
     else
         SDL_SetRenderDrawColor(renderer, 120, 110, 90, 255);
     SDL_RenderDrawRect(renderer, &tb->rect);
 
-    /* ── Texte saisi ── */
     if (font && strlen(tb->text) > 0) {
         SDL_Color color = {40, 30, 20, 255};
         SDL_Surface* surf = TTF_RenderUTF8_Blended(font, tb->text, color);
         if (surf) {
             SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
             if (tex) {
-                /* Centrage vertical, aligné à gauche avec padding */
                 int pad = 6;
                 SDL_Rect dst = {
                     tb->rect.x + pad,
@@ -462,7 +437,6 @@ void renderTextBox(SDL_Renderer* renderer, TTF_Font* font, TextBox* tb) {
                     surf->w,
                     surf->h
                 };
-                /* Clipping horizontal si texte trop long */
                 if (dst.w > tb->rect.w - 2 * pad)
                     dst.w = tb->rect.w - 2 * pad;
                 SDL_RenderCopy(renderer, tex, NULL, &dst);
@@ -472,12 +446,11 @@ void renderTextBox(SDL_Renderer* renderer, TTF_Font* font, TextBox* tb) {
         }
     }
 
-    /* ── Curseur clignotant (uniquement si actif) ── */
-    if (tb->active && (SDL_GetTicks() / 500) % 2 == 0) {
-        int cursor_x = tb->rect.x + 6; // padding gauche
 
+    if (tb->active && (SDL_GetTicks() / 500) % 2 == 0) {
+        int cursor_x = tb->rect.x + 6; 
         if (font && tb->cursor_pos > 0) {
-            /* Mesure la largeur du texte jusqu'au curseur */
+
             char tmp[TEXTBOX_MAX_LEN];
             strncpy(tmp, tb->text, tb->cursor_pos);
             tmp[tb->cursor_pos] = '\0';
