@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include <string.h>
+#include <string.h> 
 
 /* TEXTURES */
 
@@ -41,31 +41,37 @@ int loadTextures(SDL_Renderer* renderer, TexturesPack* tex){
 
 /* RENDU */
 
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, ButtonsPack* btn, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes){
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes){
+    
+    int winW, winH;
+    SDL_GetRendererOutputSize(renderer, &winW, &winH);
     SDL_RenderClear(renderer);
 
     switch (state) {
 
         case MENU:
             SDL_RenderCopy(renderer, tex->menu, NULL, NULL);
+            printTextCentered(renderer, fontTitle,  texts->menuLoadGame.text,  texts->menuLoadGame.color,  texts->menuLoadGame.y, winW);
+            printTextCentered(renderer, fontTitle,  texts->menuNewGame.text,  texts->menuNewGame.color,  texts->menuNewGame.y,  winW);
+            printTextCentered(renderer, fontTitle,  texts->menuSave.text,  texts->menuSave.color,  texts->menuSave.y, winW);
             break;
 
         case NOUVPARTIE:
             SDL_RenderCopy(renderer, tex->newGame, NULL, NULL);
-            printText(renderer, fontTitle,  texts->titleNewGame.text,  texts->titleNewGame.color,  texts->titleNewGame.x,  texts->titleNewGame.y);
-            printText(renderer, fontTitle,  texts->chooseParam.text,   texts->chooseParam.color,   texts->chooseParam.x,   texts->chooseParam.y);
-            printText(renderer, fontTitle,  texts->numberPlayer.text,  texts->numberPlayer.color,  texts->numberPlayer.x,  texts->numberPlayer.y);
-            printText(renderer, fontButton, texts->btnLaunchGame.text, texts->btnLaunchGame.color, texts->btnLaunchGame.x, texts->btnLaunchGame.y);
-            printText(renderer, fontButton, texts->btnCancel.text,     texts->btnCancel.color,     texts->btnCancel.x,     texts->btnCancel.y);
-            printText(renderer, fontButton, texts->btnValid.text,      texts->btnValid.color,      texts->btnValid.x,      texts->btnValid.y);
-            printText(renderer, fontNormal, texts->initialMoney.text,  texts->initialMoney.color,  texts->initialMoney.x,  texts->initialMoney.y);
-            printText(renderer, fontNormal, texts->tillBankruptcy.text,texts->tillBankruptcy.color,texts->tillBankruptcy.x,texts->tillBankruptcy.y);
-            printText(renderer, fontNormal, texts->numbTurns.text,     texts->numbTurns.color,     texts->numbTurns.x,     texts->numbTurns.y);
-            printText(renderer, fontNormal, texts->event.text,         texts->event.color,         texts->event.x,         texts->event.y);
+            printTextCentered(renderer, fontTitle,  texts->titleNewGame.text,  texts->titleNewGame.color,  texts->titleNewGame.y,  winW);
+            printTextCentered(renderer, fontTitle,  texts->chooseParam.text,   texts->chooseParam.color,   texts->chooseParam.y,   winW);
+            printTextCentered(renderer, fontTitle,  texts->numberPlayer.text,  texts->numberPlayer.color,  texts->numberPlayer.y,  winW);
+            
+            printTextResponsive(renderer, fontButton, &texts->btnLaunchGame);
+            printTextResponsive(renderer, fontButton, &texts->btnCancel);
+            printTextResponsive(renderer, fontButton, &texts->btnValid);
+            printTextResponsive(renderer, fontNormal, &texts->initialMoney);
+            printTextResponsive(renderer, fontNormal, &texts->tillBankruptcy);
+            printTextResponsive(renderer, fontNormal, &texts->numbTurns);
+            printTextResponsive(renderer, fontNormal, &texts->event);
 
             renderCounter(renderer, counterJoueurs, fontTitle, 634, 176);
 
-            /* Zones de saisie */
             renderTextBox(renderer, fontNormal, &tboxes->initialMoney);
             renderTextBox(renderer, fontNormal, &tboxes->numbTurns);
             renderTextBox(renderer, fontNormal, &tboxes->eventFreq);
@@ -85,26 +91,27 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, ButtonsPac
 
         case PLATEAU3J:
             SDL_RenderCopy(renderer, tex->gameBoard3Player, NULL, NULL);
-            printText(renderer, fontNormal, texts->btnThrowDice.text,  texts->btnThrowDice.color,  texts->btnThrowDice.x,  texts->btnThrowDice.y);
-            printText(renderer, fontNormal, texts->btnProperties.text, texts->btnProperties.color, texts->btnProperties.x, texts->btnProperties.y);
-            printText(renderer, fontNormal, texts->btnEndTurn.text,    texts->btnEndTurn.color,    texts->btnEndTurn.x,    texts->btnEndTurn.y);
+            printTextResponsive(renderer, fontNormal, &texts->btnThrowDice);
+            printTextResponsive(renderer, fontNormal, &texts->btnProperties);
+            printTextResponsive(renderer, fontNormal, &texts->btnEndTurn);
             break;
 
         case PLATEAU4J:
             SDL_RenderCopy(renderer, tex->gameBoard4Player, NULL, NULL);
-            printText(renderer, fontNormal, texts->btnThrowDice.text,  texts->btnThrowDice.color,  texts->btnThrowDice.x,  texts->btnThrowDice.y);
-            printText(renderer, fontNormal, texts->btnProperties.text, texts->btnProperties.color, texts->btnProperties.x, texts->btnProperties.y);
-            printText(renderer, fontNormal, texts->btnEndTurn.text,    texts->btnEndTurn.color,    texts->btnEndTurn.x,    texts->btnEndTurn.y);
+            printTextResponsive(renderer, fontNormal, &texts->btnThrowDice);
+            printTextResponsive(renderer, fontNormal, &texts->btnProperties);
+            printTextResponsive(renderer, fontNormal, &texts->btnEndTurn);
             break;
 
         case PLATEAU2J:
         case LANCER:
             SDL_RenderCopy(renderer, tex->gameBoard2Player, NULL, NULL);
-            printText(renderer, fontNormal, texts->btnThrowDice.text,  texts->btnThrowDice.color,  texts->btnThrowDice.x,  texts->btnThrowDice.y);
-            printText(renderer, fontNormal, texts->btnProperties.text, texts->btnProperties.color, texts->btnProperties.x, texts->btnProperties.y);
-            printText(renderer, fontNormal, texts->btnEndTurn.text,    texts->btnEndTurn.color,    texts->btnEndTurn.x,    texts->btnEndTurn.y);
+            printTextResponsive(renderer, fontNormal, &texts->btnThrowDice);
+            printTextResponsive(renderer, fontNormal, &texts->btnProperties);
+            printTextResponsive(renderer, fontNormal, &texts->btnEndTurn);
+
             if (state == LANCER) {
-                SDL_Rect fenetreLancer = {340, 100, 600, 400};
+                SDL_Rect fenetreLancer = {340*winW/REF_W, 100*winH/REF_H, 600*winW/REF_W,400/REF_H};
                 SDL_RenderCopy(renderer, tex->throws, NULL, &fenetreLancer);
             }
             break;
@@ -131,7 +138,7 @@ void cleanup(SDL_Window* win, SDL_Renderer* rdr, TexturesPack* tex){
     SDL_Quit();
 }
 
-/* ÉVÈNEMENTS */
+/* EVENEMENTS */
 
 bool isClicked(Button* btn, int x, int y) {
     return x >= btn->rect.x && x <= btn->rect.x + btn->rect.w &&
@@ -169,7 +176,6 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
                     if (isClicked(&btn->newGame,  x, y)) *state = NOUVPARTIE;
                     if (isClicked(&btn->loadGame, x, y)) *state = CHARGERPARTIE;
                     if (isClicked(&btn->save,     x, y)) *state = TEST;
-                    if (isClicked(&btn->ranking,  x, y)) *state = TEST;
                     break;
 
                 case NOUVPARTIE:
@@ -203,20 +209,19 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
             }
         }
 
-        /* Resize */
-        if (event->type == SDL_WINDOWEVENT &&
-            event->window.event == SDL_WINDOWEVENT_RESIZED)
+        if (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_RESIZED)
         {
             float ratioX = (float)event->window.data1 / REF_W;
             float ratioY = (float)event->window.data2 / REF_H;
 
             Button* allButtons[] = {
-                &btn->newGame, &btn->loadGame, &btn->save, &btn->ranking,
+                &btn->newGame, &btn->loadGame, &btn->save,
                 &btn->backToMenu, &btn->throwDice, &btn->properties,
                 &btn->launchGame, &btn->cancel, &btn->validMoney
             };
-            int count = sizeof(allButtons) / sizeof(allButtons[0]);
-            for (int i = 0; i < count; i++) {
+            
+            int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
+            for (int i = 0; i < btnCount; i++) {
                 ScaleButton(allButtons[i], ratioX, ratioY);
                 ScaleButton(&counterJoueurs->btnPlus,  ratioX, ratioY);
                 ScaleButton(&counterJoueurs->btnMoins, ratioX, ratioY);
@@ -224,13 +229,22 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
             }
 
             Text* allTexts[] = {
-                &texts->titleNewGame, &texts->btnLaunchGame, &texts->btnCancel, &texts->event,
-                &texts->numberPlayer, &texts->chooseParam, &texts->initialMoney,
-                &texts->tillBankruptcy, &texts->numbTurns, &texts->btnValid
+                &texts->btnLaunchGame, &texts->btnCancel, &texts->btnValid, &texts->initialMoney,
+                &texts->tillBankruptcy, &texts->numbTurns, &texts->event, &texts->btnThrowDice, &texts->btnProperties,
+                &texts->btnEndTurn,
             };
             int textCount = sizeof(allTexts) / sizeof(allTexts[0]);
-            for (int i = 0; i < textCount; i++)
-                ScaleText(allTexts[i], ratioX, ratioY);
+            scaleAllTexts(allTexts, textCount, ratioX, ratioY);
+
+            Text* centeredTexts[]={
+                &texts->menuNewGame, &texts->menuLoadGame, &texts->menuSave, &texts->titleNewGame,
+                &texts->chooseParam, &texts->numberPlayer
+            };
+            int centeredCount= sizeof(centeredTexts)/sizeof(centeredTexts[0]);
+            for (int i =0 ; i<centeredCount; i++){
+                centeredTexts[i]->y=(int)(centeredTexts[i]->refY*ratioY);
+            }
+
 
             ScaleAllTextBoxes(tboxes, ratioX, ratioY);
             ScaleFonts(fontNormal, fontTitle, fontButton, ratioY);
@@ -252,10 +266,30 @@ void printText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Col
     SDL_DestroyTexture(texture);
 }
 
+void printTextCentered(SDL_Renderer *renderer, TTF_Font *font, const char *text, SDL_Color color, int y, int winW){
+    if (!font || !text) return;
+
+    int textW=0, textH=0;
+    TTF_SizeUTF8(font, text, &textW, &textH);
+
+    int x=(winW-textW)/2;
+    printText(renderer,font,text,color,x,y);
+}
+
+void printTextResponsive(SDL_Renderer *renderer, TTF_Font *font, const Text *t){
+    if (!font || !t || !t->text) return;
+        printText(renderer, font, t->text, t->color, t->x, t->y);
+}
+
 void ScaleText(Text* t, float ratioX, float ratioY){
     t->x    = (int)(t->refX    * ratioX);
     t->y    = (int)(t->refY    * ratioY);
     t->size = (int)(t->refSize * ratioY);
+}
+
+void scaleAllTexts(Text **texts, int count, float ratioX, float ratioY){
+    for (int i=0; i<count; i++)
+        ScaleText(texts[i], ratioX, ratioY);
 }
 
 void ScaleFonts(TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, float ratioY) {
@@ -268,6 +302,8 @@ void ScaleFonts(TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButt
     if (!*fontNormal || !*fontTitle)
         printf("Erreur ScaleFonts : %s\n", TTF_GetError());
 }
+
+
 
 /* BOUTONS */
 

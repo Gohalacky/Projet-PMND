@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "Struct.h"
 
 void handleEventsAdmin(SDL_Event* event, bool* quit);
 
