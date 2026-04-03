@@ -12,4 +12,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+
+void handleEventsAdmin(SDL_Event* event, bool* quit);
+
 #endif

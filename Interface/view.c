@@ -149,7 +149,7 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
         if (event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE)
             *state = MENU;
 
-        /* Saisie texte : déléguer à la box active */
+
         if (*state == NOUVPARTIE) {
             handleTextBoxEvent(event, &tboxes->initialMoney);
             handleTextBoxEvent(event, &tboxes->numbTurns);

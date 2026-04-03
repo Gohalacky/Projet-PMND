@@ -1,4 +1,6 @@
 #include "view.h"
+#include "adminWindow.h"
+#include "anim.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
@@ -12,7 +14,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-int main(int argc, char* args[]){
+int main(){
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0 || !(IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG)) {
         printf("Erreur SDL : %s\n", SDL_GetError());
@@ -112,6 +114,7 @@ int main(int argc, char* args[]){
         handleEvents(&event, &state, &btn, &texts,
                      &fontNormal, &fontTitle, &fontButton,
                      &quit, &counterJoueurs, &tboxes);
+        handleEventsAdmin(&event, &quit);
         render(renderer, state, &tex, &btn, &texts,
                fontButton, fontNormal, fontTitle,
                &counterJoueurs, &tboxes);
@@ -121,5 +124,6 @@ int main(int argc, char* args[]){
     TTF_CloseFont(fontTitle);
     TTF_CloseFont(fontButton);
     cleanup(window, renderer, &tex);
+    cleanup(adminWindow, rendererAdmin, &tex);
     return 0;
 }
