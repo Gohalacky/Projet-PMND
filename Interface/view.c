@@ -64,7 +64,6 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             
             printTextResponsive(renderer, fontButton, &texts->btnLaunchGame);
             printTextResponsive(renderer, fontButton, &texts->btnCancel);
-            printTextResponsive(renderer, fontButton, &texts->btnValid);
             printTextResponsive(renderer, fontNormal, &texts->initialMoney);
             printTextResponsive(renderer, fontNormal, &texts->tillBankruptcy);
             printTextResponsive(renderer, fontNormal, &texts->numbTurns);
@@ -180,6 +179,10 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
 
                 case NOUVPARTIE:
                     if (isClicked(&btn->launchGame, x, y)) {
+                        printf("Argent initial : %s | Tours : %s | Evenements : %s\n",
+                               tboxes->initialMoney.text,
+                               tboxes->numbTurns.text,
+                               tboxes->eventFreq.text);
                         switch (counterJoueurs->value) {
                             case 2: *state = PLATEAU2J; break;
                             case 3: *state = PLATEAU3J; break;
@@ -187,12 +190,6 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
                         }
                     }
                     if (isClicked(&btn->cancel,     x, y)) *state = MENU;
-                    if (isClicked(&btn->validMoney, x, y)) {
-                        printf("Argent initial : %s | Tours : %s | Evenements : %s\n",
-                               tboxes->initialMoney.text,
-                               tboxes->numbTurns.text,
-                               tboxes->eventFreq.text);
-                    }
                     handleCounter(counterJoueurs, x, y);
                     break;
 
@@ -217,7 +214,7 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
             Button* allButtons[] = {
                 &btn->newGame, &btn->loadGame, &btn->save,
                 &btn->backToMenu, &btn->throwDice, &btn->properties,
-                &btn->launchGame, &btn->cancel, &btn->validMoney
+                &btn->launchGame, &btn->cancel,
             };
             
             int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
@@ -229,7 +226,7 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
             }
 
             Text* allTexts[] = {
-                &texts->btnLaunchGame, &texts->btnCancel, &texts->btnValid, &texts->initialMoney,
+                &texts->btnLaunchGame, &texts->btnCancel, &texts->initialMoney,
                 &texts->tillBankruptcy, &texts->numbTurns, &texts->event, &texts->btnThrowDice, &texts->btnProperties,
                 &texts->btnEndTurn,
             };

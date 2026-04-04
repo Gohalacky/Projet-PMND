@@ -44,7 +44,7 @@ typedef struct{
     /*Game Board*/
     Button backToMenu, throwDice, properties;
     /*New Game*/
-    Button launchGame, cancel, validMoney;
+    Button launchGame, cancel;
 } ButtonsPack;
 
 typedef struct {
@@ -58,7 +58,6 @@ typedef struct {
     Text chooseParam;
     Text btnLaunchGame;
     Text btnCancel;
-    Text btnValid;
     Text initialMoney;
     Text tillBankruptcy;
     Text numbTurns;

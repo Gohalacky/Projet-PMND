@@ -28,6 +28,7 @@ int main(){
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     TTF_Init();
+    TTF_Font* fontPetit  =TTF_OpenFont("FONT/fontPixel.ttf",18);
     TTF_Font* fontButton = TTF_OpenFont("FONT/fontPixel.ttf", 22);
     TTF_Font* fontNormal = TTF_OpenFont("FONT/fontPixel.ttf", 32);
     TTF_Font* fontTitle  = TTF_OpenFont("FONT/fontPixel.ttf", 38);
@@ -43,7 +44,6 @@ int main(){
         .properties = { .ref = {1107, 615, 160, 44} },
         .launchGame = { .ref = { 747, 636, 193, 45} },
         .cancel     = { .ref = { 359, 636, 134, 45} },
-        .validMoney = { .ref = { 785, 422, 105, 36} },
     };
 
     
@@ -63,7 +63,6 @@ int main(){
         /*Nouvelle partie*/
         .btnLaunchGame  = { "Lancer la partie",  790, 650, 22, 790,650,22, ALIGN_LEFT, {235,221,192,255} },
         .btnCancel      = { "Annuler",           392, 650, 22, 392,650,22, ALIGN_LEFT, {235,221,192,255} },
-        .btnValid       = { "Valider",           810, 432, 22, 810,432,22, ALIGN_LEFT, {235,221,192,255} },
         .numbTurns      = { "Nombre de tours",   380, 310, 22, 380,310,22, ALIGN_LEFT, {235,221,192,255} },
         .tillBankruptcy = { "Ou jusqu'a la faillite", 380, 355, 22, 380,355,22, ALIGN_LEFT, {235,221,192,255} },
         .initialMoney   = { "Argent initial",    380, 430, 22, 380,430,22, ALIGN_LEFT, {235,221,192,255} },
@@ -82,16 +81,16 @@ int main(){
     }
 
     
-    initTextBox(&tboxes.initialMoney, 630, 422,  140, 36);
-    initTextBox(&tboxes.numbTurns,    630, 304,  140, 36);
-    initTextBox(&tboxes.eventFreq,    630, 528,  140, 36);
+    initTextBox(&tboxes.initialMoney, 680, 422,  140, 36);
+    initTextBox(&tboxes.numbTurns,    680, 304,  140, 36);
+    initTextBox(&tboxes.eventFreq,    680, 528,  140, 36);
 
     initCounter(&counterJoueurs, 2, 4, 2, 716, 172, 526, 172, 37, 37, 634, 176);
     
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,
         &btn.backToMenu, &btn.throwDice, &btn.properties,
-        &btn.launchGame, &btn.cancel, &btn.validMoney
+        &btn.launchGame, &btn.cancel,
     };
 
     int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
@@ -105,7 +104,7 @@ int main(){
         &texts.menuNewGame,&texts.menuLoadGame, &texts.menuSave,
         &texts.titleNewGame, &texts.btnLaunchGame, &texts.btnCancel, &texts.numberPlayer,
         &texts.chooseParam, &texts.initialMoney, &texts.tillBankruptcy,
-        &texts.numbTurns, &texts.event, &texts.btnValid
+        &texts.numbTurns, &texts.event
     };
     int textCount = sizeof(allTexts) / sizeof(allTexts[0]);
     scaleAllTexts(allTexts, textCount,ratioX, ratioY);
