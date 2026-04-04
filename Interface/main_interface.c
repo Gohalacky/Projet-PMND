@@ -1,40 +1,50 @@
-#include "view.h"
-#include "adminWindow.h"
-#include "anim.h"
-
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_events.h>
 #include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mouse.h>
-#include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_rect.h>
-#include <SDL2/SDL_video.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 
+#include "Struct.h"
+#include "assets.h"
+#include "view.h"
+#include "events.h"
+#include "bridge.h"
+#include "ui/counter.h"
+#include "ui/textbox.h"
+#include "ui/button.h"
+#include "ui/text.h"
+
+#define FONT "FONT/fontPixel.ttf"
+
 int main(){
-    float ratioX = 1.0f;
-    float ratioY = 1.0f;
-    EtatJeu   state = MENU;
-    bool      quit  = false;
-    SDL_Event event;
+    if (SDL_Init(SDL_INIT_VIDEO) < 0 || !(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        printf("Erreur SDL : %s\n", SDL_GetError());
+        SDL_Quit();
+        return -1;
+    }
 
-    Counter counterJoueurs;
-    TextBoxPack tboxes;
-
+    if(TTF_Init()<0){
+        printf("Erreur TTF_Init : %s\n",TTF_GetError());
+        IMG_Quit();
+        SDL_Quit();
+        return -1;
+    }
+    
     SDL_Window*   window   = SDL_CreateWindow("INSAPOLY",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,1280, 720,SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    TTF_Init();
-    TTF_Font* fontPetit  =TTF_OpenFont("FONT/fontPixel.ttf",18);
+    TTF_Font* fontPetit  = TTF_OpenFont("FONT/fontPixel.ttf",18);
     TTF_Font* fontButton = TTF_OpenFont("FONT/fontPixel.ttf", 22);
     TTF_Font* fontNormal = TTF_OpenFont("FONT/fontPixel.ttf", 32);
     TTF_Font* fontTitle  = TTF_OpenFont("FONT/fontPixel.ttf", 38);
 
-    /* Boutons */
     TexturesPack tex;
+    if(loadTextures(renderer, &tex)<0){
+        cleanup(window, renderer, &tex);
+        return-1;
+    }
+    
     ButtonsPack btn = {
         .newGame    = { .ref = {457, 255, 370, 67} },
         .loadGame   = { .ref = {457, 337, 370, 67} },
@@ -46,9 +56,6 @@ int main(){
         .cancel     = { .ref = { 359, 636, 134, 45} },
     };
 
-    
-
-    /* Textes */
     TextsPack texts = {
         /*Menu*/
         .menuNewGame    = { "NOUVELLE PARTIE",      0, 275, 38, 0,290,38, ALIGN_CENTER_X, {235,221,192,255} },
@@ -62,31 +69,32 @@ int main(){
  
         /*Nouvelle partie*/
         .btnLaunchGame  = { "Lancer la partie",  790, 650, 22, 790,650,22, ALIGN_LEFT, {235,221,192,255} },
-        .btnCancel      = { "Annuler",           392, 650, 22, 392,650,22, ALIGN_LEFT, {235,221,192,255} },
+        .btnCancel      = { "Annuler",           395, 650, 22, 395,650,22, ALIGN_LEFT, {235,221,192,255} },
         .numbTurns      = { "Nombre de tours",   380, 310, 22, 380,310,22, ALIGN_LEFT, {235,221,192,255} },
         .tillBankruptcy = { "Ou jusqu'a la faillite", 380, 355, 22, 380,355,22, ALIGN_LEFT, {235,221,192,255} },
         .initialMoney   = { "Argent initial",    380, 430, 22, 380,430,22, ALIGN_LEFT, {235,221,192,255} },
         .event          = { "Frequence d'evenement", 380, 536, 22, 380,536,22, ALIGN_LEFT, {235,221,192,255} },
  
         /*Plateau*/
-        .btnThrowDice   = { "Lancer les des",    1110, 570, 22, 1110,570,22, ALIGN_LEFT, {235,221,192,255} },
-        .btnProperties  = { "Proprietes",        1110, 625, 22, 1110,625,22, ALIGN_LEFT, {235,221,192,255} },
-        .btnEndTurn     = { "Fin de tour",       1110, 660, 22, 1110,660,22, ALIGN_LEFT, {235,221,192,255} },
+        .btnThrowDice   = { "Lancer les dés",    1125, 575, 22, 1125,575,22, ALIGN_LEFT, {235,221,192,255} },
+        .btnProperties  = { "Proprietes",        1145, 626, 22, 1145,626,22, ALIGN_LEFT, {235,221,192,255} },
+        .btnEndTurn     = { "Fin de tour",       1145, 678, 22, 1145,678,22, ALIGN_LEFT, {235,221,192,255} },
+        .indNbTurn      = { "Tour",              105, 582, 22, 105,582,22, ALIGN_LEFT, {235,221,192,255} },
     };
 
-    if (loadTextures(renderer, &tex) < 0) return -1;
-    if (SDL_Init(SDL_INIT_VIDEO) < 0 || !(IMG_Init(IMG_INIT_JPG) & IMG_INIT_JPG)) {
-        printf("Erreur SDL : %s\n", SDL_GetError());
-        return -1;
-    }
-
-    
+    TextBoxPack tboxes;
     initTextBox(&tboxes.initialMoney, 680, 422,  140, 36);
     initTextBox(&tboxes.numbTurns,    680, 304,  140, 36);
     initTextBox(&tboxes.eventFreq,    680, 528,  140, 36);
-
+    
+    Counter counterJoueurs;
     initCounter(&counterJoueurs, 2, 4, 2, 716, 172, 526, 172, 37, 37, 634, 176);
     
+    EtatPartie partie = {.nbJoueurs = 2, .joueursActif = 0, .tourActuel = 1, .tourMax = 20};
+
+    ContexteJeu ctx;
+    memset(&ctx,0,sizeof(ctx));
+
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,
         &btn.backToMenu, &btn.throwDice, &btn.properties,
@@ -95,10 +103,10 @@ int main(){
 
     int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
     for (int i = 0; i < btnCount; i++) {
-        ScaleButton(allButtons[i], ratioX, ratioY);
+        ScaleButton(allButtons[i], 1.0f, 1.0f);
     }
-    ScaleButton(&counterJoueurs.btnPlus, ratioX, ratioY);
-    ScaleButton(&counterJoueurs.btnMoins, ratioX, ratioY);
+    ScaleButton(&counterJoueurs.btnPlus, 1.0f, 1.0f);
+    ScaleButton(&counterJoueurs.btnMoins, 1.0f, 1.0f);
 
     Text* allTexts[] = {
         &texts.menuNewGame,&texts.menuLoadGame, &texts.menuSave,
@@ -107,20 +115,29 @@ int main(){
         &texts.numbTurns, &texts.event
     };
     int textCount = sizeof(allTexts) / sizeof(allTexts[0]);
-    scaleAllTexts(allTexts, textCount,ratioX, ratioY);
+    ScaleAllTexts(allTexts, textCount,1.0f, 1.0f);
+
+    Joueur joueurs[4]={{"Etudiant 1",1500,10.0f},{"Etudiant 2",1500,10.0f},{"Etudiant 3",1500,10.0f},{"Etudiant 4",1500,10.0f}};
+
+    EtatJeu   state = MENU;
+    bool      quit  = false;
+    SDL_Event event;
 
     while (!quit) {
         handleEvents(&event, &state, &btn, &texts,
                      &fontNormal, &fontTitle, &fontButton,
-                     &quit, &counterJoueurs, &tboxes);
+                     &quit, &counterJoueurs, &tboxes, &partie, &ctx);
         render(renderer, state, &tex, &texts,
                fontButton, fontNormal, fontTitle,
-               &counterJoueurs, &tboxes);
+               &counterJoueurs, &tboxes,&partie);
+
     }
 
     TTF_CloseFont(fontNormal);
     TTF_CloseFont(fontTitle);
     TTF_CloseFont(fontButton);
+    TTF_CloseFont(fontPetit);
+    TTF_Quit();
     cleanup(window, renderer, &tex);
     return 0;
 }

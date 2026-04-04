@@ -1,0 +1,181 @@
+#include "events.h"
+
+#include "Struct.h"
+#include "bridge.h"
+#include "ui/button.h"
+#include "ui/text.h"
+#include "ui/counter.h"
+#include "ui/textbox.h"
+#include "view.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define FONT "FONT/fontPixel.ttf"
+
+static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack* texts,TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,Counter* counterJoueurs, TextBoxPack* tboxes){
+    
+    Button* allButtons[] = {
+       &btn->newGame, &btn->loadGame, &btn->save,
+       &btn->backToMenu, &btn->throwDice, &btn->properties,
+       &btn->launchGame, &btn->cancel,
+    };
+    int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
+    for (int i = 0; i < btnCount; i++) {
+        ScaleButton(allButtons[i], ratioX, ratioY);
+    }
+    ScaleButton(&counterJoueurs->btnPlus,  ratioX, ratioY);
+    ScaleButton(&counterJoueurs->btnMoins, ratioX, ratioY);
+    ScaleText(&counterJoueurs->label, ratioX, ratioY);
+
+    Text* allTexts[] = {
+        &texts->btnLaunchGame, &texts->btnCancel, &texts->initialMoney,
+        &texts->tillBankruptcy, &texts->numbTurns, &texts->event, 
+        &texts->btnThrowDice, &texts->btnProperties,&texts->btnEndTurn,
+    };
+    int textCount = sizeof(allTexts) / sizeof(allTexts[0]);
+    ScaleAllTexts(allTexts, textCount, ratioX, ratioY);
+
+    Text* centeredTexts[]={
+        &texts->menuNewGame, &texts->menuLoadGame, &texts->menuSave, 
+        &texts->titleNewGame,&texts->chooseParam, &texts->numberPlayer
+    };
+    int centeredCount= sizeof(centeredTexts)/sizeof(centeredTexts[0]);
+    for (int i =0 ; i<centeredCount; i++){
+        centeredTexts[i]->y=(int)(centeredTexts[i]->refY*ratioY);
+    }
+    ScaleAllTextBoxes(tboxes, ratioX, ratioY);
+    ScaleFonts(fontNormal, fontTitle, fontButton, ratioY,FONT);
+}
+
+static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter* counterJoueurs,
+                        TextBoxPack* tboxes, EtatPartie* partie,ContexteJeu* ctx){
+
+    if (*state == NOUVPARTIE) handleTextBoxClick(tboxes, x, y);
+
+    switch(*state){
+        case MENU: 
+            if (isClicked(&btn->newGame,  x, y)) *state = NOUVPARTIE;
+            if (isClicked(&btn->loadGame, x, y)) *state = CHARGERPARTIE;
+            if (isClicked(&btn->save,     x, y)) *state = TEST;
+            break;
+        
+        case NOUVPARTIE:
+            if (isClicked(&btn->launchGame, x, y)) {
+                int argentInitial = atoi(tboxes->initialMoney.text);
+                if(argentInitial <=0) argentInitial =1500;
+
+                int tourMax = atoi(tboxes->numbTurns.text);
+                if(tourMax<=0) tourMax=30;
+
+                partie->nbJoueurs=counterJoueurs->value;
+                partie->joueursActif=0;
+                partie->tourActuel=1;
+                partie->tourMax=tourMax;
+
+                for(int i=0; i<partie->nbJoueurs;i++){
+                    partie->joueurs[i].credits=argentInitial;
+                    partie->joueurs[i].noteEco=10.0f;
+                    snprintf(partie->joueurs[i].nom,32,"Etudiant %d",i+1);
+                }
+
+                if(bridge_init(ctx,partie)<0){
+                    printf("Erreur : bridge_init a échoué, partie annulée.\n");
+                    break;
+                }
+
+                printf("Argent initial : %s | Tours : %s | Evenements : %s\n",
+                        tboxes->initialMoney.text,
+                        tboxes->numbTurns.text,
+                        tboxes->eventFreq.text);
+
+                switch (counterJoueurs->value) {
+                    case 2: *state = PLATEAU2J; break;
+                    case 3: *state = PLATEAU3J; break;
+                    case 4: *state = PLATEAU4J; break;
+                }
+            }
+            if (isClicked(&btn->cancel,     x, y)) *state = MENU;
+            handleCounter(counterJoueurs, x, y);
+            break;
+
+        case PLATEAU2J:
+        case PLATEAU3J:
+        case PLATEAU4J:
+            if (isClicked(&btn->backToMenu, x, y)) {
+                bridge_free(ctx);      
+                *state = MENU;
+            }
+            if (isClicked(&btn->throwDice, x, y)) {
+                *state = LANCER;
+            }
+            if (isClicked(&btn->properties, x, y)) *state = PROPRIETE;
+            break;
+        case LANCER:
+                        if (isClicked(&btn->backToMenu, x, y)) {
+                bridge_free(ctx);
+                *state = MENU;
+                break;
+            }
+            if (isClicked(&btn->throwDice, x, y)) {
+                bridge_play_turn(ctx, partie);
+
+                int fini = bridge_next_turn(partie);
+                if (fini) {
+                    printf("Fin de partie !\n");
+                    bridge_free(ctx);
+                    *state = MENU;
+                } else {
+
+                    switch (partie->nbJoueurs) {
+                        case 2: *state = PLATEAU2J; break;
+                        case 3: *state = PLATEAU3J; break;
+                        case 4: *state = PLATEAU4J; break;
+                    }
+                }
+            }
+            if (isClicked(&btn->properties, x, y)) *state = PROPRIETE;
+            break;
+
+        default: break;
+            
+
+    }
+}
+
+void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* texts, TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes,
+                  EtatPartie* partie, ContexteJeu* ctx) {
+ 
+    while (SDL_PollEvent(event)) {
+ 
+        if (event->type == SDL_QUIT) {
+            bridge_free(ctx);
+            *quit = true;
+            return;
+        }
+ 
+        if (event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
+            bridge_free(ctx);
+            *state = MENU;
+        }
+ 
+        if (*state == NOUVPARTIE) {
+            handleTextBoxEvent(event, &tboxes->initialMoney);
+            handleTextBoxEvent(event, &tboxes->numbTurns);
+            handleTextBoxEvent(event, &tboxes->eventFreq);
+        }
+ 
+        if (event->type == SDL_MOUSEBUTTONDOWN) {
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+            handleClick(x, y, state, btn, counterJoueurs, tboxes, partie, ctx);
+        }
+ 
+        if (event->type == SDL_WINDOWEVENT &&
+            event->window.event == SDL_WINDOWEVENT_RESIZED) {
+            float ratioX = (float)event->window.data1 / REF_W;
+            float ratioY = (float)event->window.data2 / REF_H;
+            handleResize(ratioX, ratioY, btn, texts, fontNormal, fontTitle, fontButton, counterJoueurs, tboxes);
+        }
+    }
+}

@@ -1,3 +1,11 @@
 *.o
+*.info
+*.gcda
+*.gcno
 unit_tests
+test_cartes
 insapoly
+out
+interface
+controlleur
+docs/

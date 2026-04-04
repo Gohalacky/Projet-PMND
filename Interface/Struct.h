@@ -2,11 +2,7 @@
 #define STRUCT
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_rect.h>
 
 #define TEXTBOX_MAX_LEN 16
 
@@ -44,4 +40,20 @@ typedef struct {
     Button btnPlus;
     Button btnMoins;
 } Counter;
+
+/*A MODIFIER LORS DU LIEN INTERFACE <-> CONTROLEUR*/
+typedef struct{
+    char nom[32];
+    int  credits;
+    float noteEco;
+}Joueur;
+
+typedef struct{
+    Joueur joueurs[4];
+    int nbJoueurs;
+    int joueursActif;
+    int tourActuel;
+    int tourMax;
+}EtatPartie;
+
 #endif

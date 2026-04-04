@@ -1,15 +1,7 @@
-#ifndef ADMIN
-#define ADMIN
+#ifndef ADMIN_H
+#define ADMIN_H
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_pixels.h>
-#include <SDL2/SDL_ttf.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_rect.h>
-
-#include <stdio.h>
-#include <string.h>
 #include <stdbool.h>
 
 #include "Struct.h"
