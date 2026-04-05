@@ -12,13 +12,14 @@
 #include <stdlib.h>
 
 #define FONT "FONT/fontPixel.ttf"
+#define DELAI_LANCER 5000 //en ms
 
 static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack* texts,TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,Counter* counterJoueurs, TextBoxPack* tboxes){
     
     Button* allButtons[] = {
        &btn->newGame, &btn->loadGame, &btn->save,
        &btn->backToMenu, &btn->throwDice, &btn->properties,
-       &btn->launchGame, &btn->cancel,
+       &btn->launchGame, &btn->cancel, &btn->endTurn,
     };
     int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
     for (int i = 0; i < btnCount; i++) {
@@ -31,7 +32,7 @@ static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack
     Text* allTexts[] = {
         &texts->btnLaunchGame, &texts->btnCancel, &texts->initialMoney,
         &texts->tillBankruptcy, &texts->numbTurns, &texts->event, 
-        &texts->btnThrowDice, &texts->btnProperties,&texts->btnEndTurn,
+        &texts->btnThrowDice, &texts->btnProperties,&texts->btnEndTurn, &texts->indNbTurn
     };
     int textCount = sizeof(allTexts) / sizeof(allTexts[0]);
     ScaleAllTexts(allTexts, textCount, ratioX, ratioY);
@@ -107,34 +108,32 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 *state = MENU;
             }
             if (isClicked(&btn->throwDice, x, y)) {
+                bridge_roll_and_move(ctx, partie);
+                partie->temps_lancer = SDL_GetTicks();
                 *state = LANCER;
+            }
+            if (isClicked(&btn->endTurn, x, y)) {   // ← fin de tour depuis le plateau
+                bridge_play_turn(ctx, partie);
+                int fini = bridge_next_turn(partie);
+                if (fini) { bridge_free(ctx); *state = MENU; }
+                else { switch(partie->nbJoueurs){ case 2: *state=PLATEAU2J; break; case 3: *state=PLATEAU3J; break; case 4: *state=PLATEAU4J; break; } }
             }
             if (isClicked(&btn->properties, x, y)) *state = PROPRIETE;
             break;
+
         case LANCER:
-                        if (isClicked(&btn->backToMenu, x, y)) {
+            if (isClicked(&btn->backToMenu, x, y)) {
+                partie->temps_lancer = 0;
                 bridge_free(ctx);
                 *state = MENU;
-                break;
             }
-            if (isClicked(&btn->throwDice, x, y)) {
+            if (isClicked(&btn->endTurn, x, y)) {   // ← fin de tour depuis la fenêtre throws
                 bridge_play_turn(ctx, partie);
-
                 int fini = bridge_next_turn(partie);
-                if (fini) {
-                    printf("Fin de partie !\n");
-                    bridge_free(ctx);
-                    *state = MENU;
-                } else {
-
-                    switch (partie->nbJoueurs) {
-                        case 2: *state = PLATEAU2J; break;
-                        case 3: *state = PLATEAU3J; break;
-                        case 4: *state = PLATEAU4J; break;
-                    }
-                }
+                partie->temps_lancer = 0;
+                if (fini) { bridge_free(ctx); *state = MENU; }
+                else { switch(partie->nbJoueurs){ case 2: *state=PLATEAU2J; break; case 3: *state=PLATEAU3J; break; case 4: *state=PLATEAU4J; break; } }
             }
-            if (isClicked(&btn->properties, x, y)) *state = PROPRIETE;
             break;
 
         default: break;
@@ -143,9 +142,26 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
     }
 }
 
+static void endThrow(EtatJeu* state, EtatPartie* partie){
+    partie->temps_lancer=0;
+    switch(partie->nbJoueurs){
+        case 2: *state=PLATEAU2J; break;
+        case 3: *state=PLATEAU3J; break;
+        case 4: *state=PLATEAU4J; break;
+    }
+}
+
 void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* texts, TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes,
                   EtatPartie* partie, ContexteJeu* ctx) {
  
+    
+    if(*state==LANCER && partie->temps_lancer>0){
+        if(SDL_GetTicks()- partie->temps_lancer>= DELAI_LANCER){
+            endThrow(state, partie);
+            return;
+        }
+    }
+    
     while (SDL_PollEvent(event)) {
  
         if (event->type == SDL_QUIT) {

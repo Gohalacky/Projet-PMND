@@ -40,10 +40,12 @@ int bridge_init(ContexteJeu* ctx, const EtatPartie* partie) {
 void bridge_play_turn(ContexteJeu* ctx, EtatPartie* partie) {
     int ja = partie->joueursActif;
     Player* p = ctx->joueurs[ja];
- 
+
     if (!p) return;
- 
-    engine_play_turn(p,ctx->joueurs,ctx->tableau_prop,ctx->tableau_gar,ctx->tableau_comp,&ctx->plateau,ctx->admin_mode);
+
+    /* Résout uniquement la case — le déplacement a déjà été fait par bridge_roll_and_move */
+    engine_resolve_case(p, ctx->joueurs, ctx->tableau_prop, ctx->tableau_gar,
+                        ctx->tableau_comp, &ctx->plateau, ctx->dernier_de);
     bridge_sync(ctx, partie);
 }
  
@@ -71,6 +73,9 @@ int bridge_next_turn(EtatPartie* partie) {
     return 0;
 }
 
+const char* bridge_get_case_joueur_actif(const ContexteJeu* ctx, const EtatPartie* partie) {
+    return engine_get_case_joueur_actif(partie->joueursActif,(Player**)ctx->joueurs,&ctx->plateau);
+}
  
 void bridge_free(ContexteJeu* ctx) {
     for (int i = 0; i < 4; i++) {
@@ -85,4 +90,14 @@ void bridge_free(ContexteJeu* ctx) {
         if (ctx->tableau_gar[i])  { free(ctx->tableau_gar[i]);  ctx->tableau_gar[i]  = NULL; }
     for (int i = 0; i < NB_COMPAGNIE; i++)
         if (ctx->tableau_comp[i]) { free(ctx->tableau_comp[i]); ctx->tableau_comp[i] = NULL; }
+}
+
+int bridge_roll_and_move(ContexteJeu* ctx, EtatPartie* partie) {
+    int ja = partie->joueursActif;
+    Player* p = ctx->joueurs[ja];
+    if (!p) return 0;
+
+    ctx->dernier_de = engine_roll_and_move(p, &ctx->plateau);
+    bridge_sync(ctx, partie);
+    return ctx->dernier_de;
 }

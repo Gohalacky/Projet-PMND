@@ -1,6 +1,7 @@
 #include "view.h"
 #include "Struct.h"
 #include "assets.h"
+#include "bridge.h"
 #include "ui/playercard.h"
 #include "ui/text.h"
 
@@ -9,7 +10,7 @@
 #include <SDL2/SDL_video.h>
 
 
-static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, EtatPartie* partie){
+static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, EtatPartie* partie, const ContexteJeu* ctx){
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
 
@@ -17,6 +18,7 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
     if      (state == PLATEAU3J) board = tex->gameBoard3Player;
     else if (state == PLATEAU4J) board = tex->gameBoard4Player;
     SDL_RenderCopy(renderer, board, NULL, NULL);
+    renderJoueurActif(renderer, fontButton, partie, ctx);
  
     printTextResponsive(renderer, fontButton, &texts->btnThrowDice);
     printTextResponsive(renderer, fontButton, &texts->btnProperties);
@@ -54,6 +56,7 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
             (int)(cards[ja].w * winW / REF_W),
             (int)(cards[ja].h * winH / REF_H),
         };
+        
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
         SDL_SetRenderDrawColor(renderer, 235, 221, 192, 255);
         SDL_RenderFillRect(renderer, &rect);
@@ -67,24 +70,41 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
             (int)(400.0f * winH / REF_H),
         };
         SDL_RenderCopy(renderer, tex->throws, NULL, &fenetreLancer);
+
+        SDL_Color blanc = {235,221,192,255};
+        if(ctx->dernier_de>0){
+            char bufferDe[8];
+            snprintf(bufferDe, sizeof(bufferDe), "%d",ctx->dernier_de);
+            printTextCentered(renderer, fontNormal, bufferDe, blanc, fenetreLancer.y+fenetreLancer.h/3,winW);
+        }
+
+        char bufferCase[64];
+        snprintf(bufferCase, sizeof(bufferCase), "Case : %s",bridge_get_case_joueur_actif(ctx, partie));
+        printTextCentered(renderer, fontNormal, bufferCase, blanc,fenetreLancer.y + (int)(fenetreLancer.h * 0.65f),winW);
     }
 }
 
-static void renderJoueurs(SDL_Renderer* renderer, TTF_Font* font,EtatJeu state, EtatPartie* partie, int winW, int winH){
-    const CardRef* cards;
-    switch (state){
-        case PLATEAU3J: cards=CARDS_3J; break;
-        case PLATEAU4J: cards=CARDS_4J; break;
-        default: cards=CARDS_2J; break;
+void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie* partie, const ContexteJeu* ctx){
+    if(!partie || partie->joueursActif<0 || partie->joueursActif>=partie->nbJoueurs){
+        return;
     }
 
-    for (int i=0; i<partie->nbJoueurs; i++){
-        SDL_Rect rect = { (int)(cards[i].x*winW/REF_W), (int)(cards[i].y*winH/REF_H),(int)(cards[i].w*winW/REF_W),(int)(cards[i].h*winH/REF_H)};
-        renderPlayerCard(renderer, font, &partie->joueurs[i], i+1, rect);
-    }
+    int winW, winH;
+    SDL_GetRendererOutputSize(renderer, &winW, &winH);
+    SDL_Color blanc = {0,0,0,255}; //A CHANGER
+
+    char bufferJoueur[64];
+    snprintf(bufferJoueur, sizeof(bufferJoueur), "Au tour de : %s", partie->joueurs[partie->joueursActif].nom);
+    printTextCentered(renderer, font, bufferJoueur, blanc, 10*winW/REF_H, winW);
+
+    char bufferCase[64];
+    snprintf(bufferCase, sizeof(bufferCase), "Case : %s", bridge_get_case_joueur_actif(ctx, partie));
+    printTextCentered(renderer, font, bufferCase, blanc, 40*winH/REF_H, winW);
+
+
 }
 
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, EtatPartie* partie){
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, EtatPartie* partie, const ContexteJeu* ctx){
     
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
@@ -134,9 +154,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
         case PLATEAU3J:
         case PLATEAU4J:
         case LANCER:
-            renderPlateau(renderer, state, tex, texts, fontButton, partie);
-            renderJoueurs(renderer, fontNormal, state, partie, winW, winH);
-            printTextResponsive(renderer, fontButton, &texts->indNbTurn);
+            renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie,ctx);
             break;
     }
     SDL_RenderPresent(renderer);

@@ -6,6 +6,7 @@
 
 #include "Struct.h"
 #include "assets.h"
+#include "bridge.h"
 #include "ui/text.h"
 #include "ui/counter.h"
 #include "ui/textbox.h"
@@ -17,7 +18,7 @@ typedef struct{
     /*Main Menu*/
     Button newGame, loadGame, save;
     /*Game Board*/
-    Button backToMenu, throwDice, properties;
+    Button backToMenu, throwDice, properties, endTurn;
     /*New Game*/
     Button launchGame, cancel;
 } ButtonsPack;
@@ -43,12 +44,14 @@ typedef struct {
     Text btnProperties;
     Text btnEndTurn;
     Text indNbTurn;
+    Text indJoueurActif;
 } TextsPack;
 
+void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font,const EtatPartie* partie, const ContexteJeu* ctx);
 
 void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex,
             TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,
-            Counter* counterJoueurs, TextBoxPack* tboxes, EtatPartie* partie);
+            Counter* counterJoueurs, TextBoxPack* tboxes, EtatPartie* partie, const ContexteJeu* ctx);
 
 void cleanup(SDL_Window* win, SDL_Renderer* rdr, TexturesPack* tex);
 

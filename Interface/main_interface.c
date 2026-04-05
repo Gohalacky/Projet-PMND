@@ -54,6 +54,7 @@ int main(){
         .properties = { .ref = {1107, 615, 160, 44} },
         .launchGame = { .ref = { 747, 636, 193, 45} },
         .cancel     = { .ref = { 359, 636, 134, 45} },
+        .endTurn    = { .ref = {1107,630,160,44}},
     };
 
     TextsPack texts = {
@@ -79,7 +80,7 @@ int main(){
         .btnThrowDice   = { "Lancer les dés",    1125, 575, 22, 1125,575,22, ALIGN_LEFT, {235,221,192,255} },
         .btnProperties  = { "Proprietes",        1145, 626, 22, 1145,626,22, ALIGN_LEFT, {235,221,192,255} },
         .btnEndTurn     = { "Fin de tour",       1145, 678, 22, 1145,678,22, ALIGN_LEFT, {235,221,192,255} },
-        .indNbTurn      = { "Tour",              105, 582, 22, 105,582,22, ALIGN_LEFT, {235,221,192,255} },
+        .indNbTurn      = { "Tour",              105, 584, 22, 105,584,22, ALIGN_LEFT, {235,221,192,255} },
     };
 
     TextBoxPack tboxes;
@@ -98,7 +99,7 @@ int main(){
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,
         &btn.backToMenu, &btn.throwDice, &btn.properties,
-        &btn.launchGame, &btn.cancel,
+        &btn.launchGame, &btn.cancel, &btn.endTurn
     };
 
     int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
@@ -129,7 +130,7 @@ int main(){
                      &quit, &counterJoueurs, &tboxes, &partie, &ctx);
         render(renderer, state, &tex, &texts,
                fontButton, fontNormal, fontTitle,
-               &counterJoueurs, &tboxes,&partie);
+               &counterJoueurs, &tboxes,&partie,&ctx);
 
     }
 

@@ -54,6 +54,7 @@ typedef struct{
     int joueursActif;
     int tourActuel;
     int tourMax;
+    Uint32 temps_lancer;
 }EtatPartie;
 
 #endif
