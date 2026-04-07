@@ -18,10 +18,8 @@ void engine_play_turn(Player *p, Player *all_players[],
 
     // DÉPLACEMENT
     int compteur_doubles =0; // compteur de double pour la case prison = 0 au début de tour
+    do{                            // on fait notre tour une premiere fois, le do while sert si le premier lancé était un double de rejoué et de refaire son tour
     int total_des = engine_roll_dice(admin_mode,&compteur_doubles);
-    while((compteur_doubles == 1) || (compteur_doubles == 2) ){
-        total_des = total_des + engine_roll_dice(admin_mode,&compteur_doubles);
-    }
     printf("[Dés] : Résultat = %d\n", total_des);
     player_move(p, total_des);
 
@@ -156,4 +154,5 @@ void engine_play_turn(Player *p, Player *all_players[],
     if (valid_count > 0) {
         calcul_moyenne_eco_index_player(p, board_static, valid_count);
     }
+    }while((compteur_doubles == 1) || (compteur_doubles == 2));
 }
