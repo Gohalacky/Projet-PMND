@@ -22,9 +22,9 @@ void ScaleFonts(TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButt
     TTF_CloseFont(*fontTitle);
     TTF_CloseFont(*fontButton);
 
-    *fontNormal = TTF_OpenFont("FONT/fontPixel.ttf", (int)(32 * ratioY));
-    *fontTitle  = TTF_OpenFont("FONT/fontPixel.ttf", (int)(38 * ratioY));
-    *fontButton = TTF_OpenFont("FONT/fontPixel.ttf", (int)(22 * ratioY));
+    *fontNormal = TTF_OpenFont(fontPath, (int)(32 * ratioY));
+    *fontTitle  = TTF_OpenFont(fontPath, (int)(38 * ratioY));
+    *fontButton = TTF_OpenFont(fontPath, (int)(22 * ratioY));
 
     if (!*fontNormal || !*fontTitle || !*fontButton)
         printf("Erreur ScaleFonts : %s\n", TTF_GetError());

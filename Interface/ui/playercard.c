@@ -9,6 +9,7 @@
 #define REF_OFFSET_CR_ECO__X 55
 #define REF_FONT_SIZE 22
 
+// {0,200,139,93,}
 const CardRef CARDS_2J[2] = { {11,175,110,110,},{1130,175,110,110}};
 const CardRef CARDS_3J[3] = {{11,175,110,110,},{11,335,110,110},{1130,175,110,110}};
 const CardRef CARDS_4J[4] = { {11,175,110,110,},{18,335,110,110},{1130,175,110,110},{1130,335,110,110}};
@@ -18,9 +19,8 @@ void renderPlayerCard(SDL_Renderer *renderer, TTF_Font *font, const Joueur *j, i
     SDL_Color blanc = {235,221,192,255};
 
     float ratioW = (float)rect.w/CARD_REF_W;
-    float ratioH = (float)rect.h/CARD_REF_H;
 
-    int fontSize=rect.h*22/110;
+    int fontSize=rect.h*REF_FONT_SIZE/CARD_REF_H;
     if(fontSize<8){
         fontSize=8;
     } 
@@ -38,13 +38,13 @@ void renderPlayerCard(SDL_Renderer *renderer, TTF_Font *font, const Joueur *j, i
     int offsetCrEco = rect.x+(int)(REF_OFFSET_CR_ECO__X*ratioW);
 
     snprintf(buffer,sizeof(buffer), "Etudiant %d",numero);
-    printText(renderer, font, buffer, blanc,offsetEdutiant,baseY);
+    printText(renderer, scaledFont, buffer, blanc,offsetEdutiant,baseY);
 
     snprintf(buffer,sizeof(buffer), "CR : %d",j->credits);
-    printText(renderer, font, buffer, blanc,offsetCrEco,baseY+lineH*1.7);
+    printText(renderer, scaledFont, buffer, blanc,offsetCrEco,baseY+lineH*1.7);
 
     snprintf(buffer,sizeof(buffer), "Eco : %1.f",j->noteEco);
-    printText(renderer, font, buffer, blanc,offsetCrEco,baseY+lineH*2.9);
+    printText(renderer, scaledFont, buffer, blanc,offsetCrEco,baseY+lineH*2.9);
 
     if(scaledFont!=font){
         TTF_CloseFont(scaledFont);

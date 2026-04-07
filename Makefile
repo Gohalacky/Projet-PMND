@@ -1,7 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall -Wextra -std=c11 -g \
-           -I. -IInterface -IModele -IControlleur \
-           $(shell sdl2-config --cflags)
+CFLAGS  = -Wall -Wextra -std=c11 -g -I. -IInterface -IModele -IControlleur $(shell sdl2-config --cflags)
 LIBS    = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf
 
 IFACE_DIR = Interface
@@ -24,16 +22,19 @@ SRC_CTRL = $(CTRL_DIR)/game_engine.c \
 
 SRC_IFACE = $(IFACE_DIR)/main_interface.c  \
              $(IFACE_DIR)/view.c           \
+             $(IFACE_DIR)/building.c      \
              $(IFACE_DIR)/events.c         \
              $(IFACE_DIR)/assets.c         \
              $(IFACE_DIR)/bridge.c         \
              $(IFACE_DIR)/adminWindow.c    \
              $(IFACE_DIR)/anim.c           \
+             $(IFACE_DIR)/propwindow.c     \
              $(UI_DIR)/button.c            \
              $(UI_DIR)/text.c              \
              $(UI_DIR)/textbox.c           \
              $(UI_DIR)/counter.c           \
-             $(UI_DIR)/playercard.c
+             $(UI_DIR)/playercard.c        \
+             $(UI_DIR)/checkbox.c
 
 OBJ_MOD   = $(SRC_MOD:.c=.o)
 OBJ_CTRL  = $(SRC_CTRL:.c=.o)
@@ -50,6 +51,16 @@ all: $(TARGET)
 $(TARGET): $(ALL_OBJ)
 	$(CC) $^ -o $@ $(LIBS)
 	@echo "✔  Compilation réussie → ./$(TARGET)"
+
+valgrind: $(TARGET)
+	@echo "🔍 Lancement de Valgrind (analyse de mémoire)..."
+	cd $(IFACE_DIR) && valgrind --leak-check=full \
+		--show-leak-kinds=all \
+		--track-origins=yes \
+		--log-file=../valgrind_report.txt \
+		../$(TARGET)
+	@echo "📑 Analyse terminée. Consultez le fichier valgrind_report.txt"
+
 
 
 %.o: %.c

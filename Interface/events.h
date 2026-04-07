@@ -7,10 +7,12 @@
 
 #include "Struct.h"
 #include "bridge.h"
+#include "propwindow.h"
 #include "view.h"
 
 void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack* texts,
                   TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,
-                  bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes, EtatPartie* partie, ContexteJeu* ctx);
+                  bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes,
+                  CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, PropButtonsPack* pb);
 
 #endif

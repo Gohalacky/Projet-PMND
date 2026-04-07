@@ -13,7 +13,8 @@
 #include "ui/counter.h"
 #include "ui/textbox.h"
 #include "ui/button.h"
-#include "ui/text.h"
+#include "ui/checkbox.h"
+#include "propwindow.h"
 
 #define FONT "FONT/fontPixel.ttf"
 
@@ -50,11 +51,14 @@ int main(){
         .loadGame   = { .ref = {457, 337, 370, 67} },
         .save       = { .ref = {457, 417, 370, 67} },
         .backToMenu = { .ref = {1233,  2,  40, 40} },
-        .throwDice  = { .ref = {1107, 559, 160, 50} },
-        .properties = { .ref = {1107, 615, 160, 44} },
-        .launchGame = { .ref = { 747, 636, 193, 45} },
-        .cancel     = { .ref = { 359, 636, 134, 45} },
-        .endTurn    = { .ref = {1107,630,160,44}},
+
+        .throwDice  = { .ref = {1107, 559, 160, 50}},
+        .properties = { .ref = {1107, 615, 160, 44}},
+        .endTurn    = { .ref = {1107, 666, 160, 44}},
+
+        .launchGame = { .ref = { 747, 636, 193, 45}},
+        .cancel     = { .ref = { 359, 636, 134, 45}},
+        
     };
 
     TextsPack texts = {
@@ -87,6 +91,13 @@ int main(){
     initTextBox(&tboxes.initialMoney, 680, 422,  140, 36);
     initTextBox(&tboxes.numbTurns,    680, 304,  140, 36);
     initTextBox(&tboxes.eventFreq,    680, 528,  140, 36);
+
+    CheckboxPack checkboxes;
+    checkboxes.tourInfini = (Checkbox){ .ref = {680, 355, 20, 20}, .checked = 0 };
+    ScaleCheckbox(&checkboxes.tourInfini, 1.0f, 1.0f);
+
+    PropButtonsPack pb;
+    initPropButtons(&pb);
     
     Counter counterJoueurs;
     initCounter(&counterJoueurs, 2, 4, 2, 716, 172, 526, 172, 37, 37, 634, 176);
@@ -118,7 +129,6 @@ int main(){
     int textCount = sizeof(allTexts) / sizeof(allTexts[0]);
     ScaleAllTexts(allTexts, textCount,1.0f, 1.0f);
 
-    Joueur joueurs[4]={{"Etudiant 1",1500,10.0f},{"Etudiant 2",1500,10.0f},{"Etudiant 3",1500,10.0f},{"Etudiant 4",1500,10.0f}};
 
     EtatJeu   state = MENU;
     bool      quit  = false;
@@ -127,11 +137,10 @@ int main(){
     while (!quit) {
         handleEvents(&event, &state, &btn, &texts,
                      &fontNormal, &fontTitle, &fontButton,
-                     &quit, &counterJoueurs, &tboxes, &partie, &ctx);
+                     &quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb);
         render(renderer, state, &tex, &texts,
                fontButton, fontNormal, fontTitle,
-               &counterJoueurs, &tboxes,&partie,&ctx);
-
+               &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb);
     }
 
     TTF_CloseFont(fontNormal);

@@ -2,15 +2,19 @@
 #include "Struct.h"
 #include "assets.h"
 #include "bridge.h"
+#include "building.h"
+#include "propwindow.h"
 #include "ui/playercard.h"
 #include "ui/text.h"
+#include "ui/button.h"
+#include "ui/checkbox.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
 
 
-static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, EtatPartie* partie, const ContexteJeu* ctx){
+static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn){
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
 
@@ -18,12 +22,26 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
     if      (state == PLATEAU3J) board = tex->gameBoard3Player;
     else if (state == PLATEAU4J) board = tex->gameBoard4Player;
     SDL_RenderCopy(renderer, board, NULL, NULL);
+    renderBuildings(renderer, ctx, tex, winW, winH);
     renderJoueurActif(renderer, fontButton, partie, ctx);
+    renderButtonDisabled(renderer, &btn->throwDice);
+    
  
     printTextResponsive(renderer, fontButton, &texts->btnThrowDice);
     printTextResponsive(renderer, fontButton, &texts->btnProperties);
     printTextResponsive(renderer, fontButton, &texts->btnEndTurn);
     printTextResponsive(renderer, fontButton, &texts->indNbTurn);
+
+    /* Numéro du tour affiché sous le label "Tour" */
+    {
+        char bufferTour[16];
+        int lineH = TTF_FontHeight(fontButton);
+        snprintf(bufferTour, sizeof(bufferTour), "%d", partie->tourActuel);
+        SDL_Color couleur = {235, 221, 192, 255};
+        printText(renderer, fontButton, bufferTour, couleur,
+                  texts->indNbTurn.x,
+                  texts->indNbTurn.y + lineH);
+    }
  
     const CardRef* cards;
     switch (partie->nbJoueurs) {
@@ -43,12 +61,6 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
 
     if (state == LANCER) {
 
-        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
-        SDL_Rect overlay = { 0, 0, winW, winH };
-        SDL_RenderFillRect(renderer, &overlay);
-        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-
         int ja = partie->joueursActif;
         SDL_Rect rect = {
             (int)(cards[ja].x * winW / REF_W),
@@ -58,10 +70,12 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
         };
         
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(renderer, 235, 221, 192, 255);
-        SDL_RenderFillRect(renderer, &rect);
+        SDL_SetRenderDrawColor(renderer,0,0,0,180);
+        SDL_Rect overlay ={0,0,winW,winH};
+        SDL_RenderFillRect(renderer,&overlay);
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-        renderPlayerCard(renderer, fontButton,&partie->joueurs[ja], ja + 1, rect);
+
+        renderPlayerCard(renderer, fontButton, &partie->joueurs[ja],ja+1,rect);
 
         SDL_Rect fenetreLancer = {
             (int)(340.0f * winW / REF_W),
@@ -84,10 +98,9 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
     }
 }
 
-void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie* partie, const ContexteJeu* ctx){
-    if(!partie || partie->joueursActif<0 || partie->joueursActif>=partie->nbJoueurs){
-        return;
-    }
+void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie* partie, ContexteJeu* ctx){
+    if(!partie || partie->joueursActif < 0 || partie->joueursActif >= partie->nbJoueurs) return;
+    if(!ctx || !ctx->joueurs[partie->joueursActif]) return;  /* partie pas encore initialisée */
 
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
@@ -104,7 +117,7 @@ void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie*
 
 }
 
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, EtatPartie* partie, const ContexteJeu* ctx){
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb){
     
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
@@ -137,6 +150,10 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             renderTextBox(renderer, fontNormal, &tboxes->initialMoney);
             renderTextBox(renderer, fontNormal, &tboxes->numbTurns);
             renderTextBox(renderer, fontNormal, &tboxes->eventFreq);
+
+            SDL_Color couleur = {235, 221, 192, 255};
+            renderCheckbox(renderer, fontNormal, &checkboxes->tourInfini,
+                           "Tours infinis", couleur);
             break;
 
         case CHARGERPARTIE:
@@ -144,7 +161,9 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             break;
 
         case PROPRIETE:
-            SDL_RenderCopy(renderer, tex->menuProperties, NULL, NULL);
+            renderPlateau(renderer, PLATEAU2J, tex, texts, fontButton, fontNormal, partie, ctx, btn);
+            renderPropWindow(renderer, fontTitle, fontNormal, fontButton,
+                             tex, ctx, partie, pb, winW, winH);
             break;
 
         case TEST:
@@ -154,7 +173,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
         case PLATEAU3J:
         case PLATEAU4J:
         case LANCER:
-            renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie,ctx);
+            renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie,ctx,btn);
             break;
     }
     SDL_RenderPresent(renderer);

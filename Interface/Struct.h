@@ -11,7 +11,8 @@ typedef enum {MENU,NOUVPARTIE,CHARGERPARTIE,PLATEAU2J,PLATEAU3J,PLATEAU4J,LANCER
 
 typedef struct {
     SDL_Rect rect;      
-    SDL_Rect ref;       
+    SDL_Rect ref;  
+    int disabled;     
 } Button;
 
 typedef struct {
@@ -54,6 +55,7 @@ typedef struct{
     int joueursActif;
     int tourActuel;
     int tourMax;
+    int dejaLance;
     Uint32 temps_lancer;
 }EtatPartie;
 

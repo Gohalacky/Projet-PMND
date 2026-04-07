@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_render.h>
 
 typedef struct{
     SDL_Texture* menu;
@@ -14,6 +15,11 @@ typedef struct{
     SDL_Texture* throws; 
     SDL_Texture* menuProperties;
     SDL_Texture* test;
+
+    SDL_Texture* maison[3];
+    SDL_Texture* immeuble[3];
+    SDL_Texture* parc[3];
+    SDL_Texture* fondProp;   
 } TexturesPack;
 
 int loadTextures(SDL_Renderer* renderer, TexturesPack* tex);
