@@ -2,24 +2,8 @@
 #include <stdlib.h>
 #include "game_engine.h"
 #include "plateau.h"
+#include "tool.h"
 
-/**
- * Simule un lancer de 2 dés de 6 faces.
- */
-int engine_roll_dice(int admin_mode) {
-    if (admin_mode) {
-        int choix = 0;
-        while (choix < 1 || choix > 40) {
-            printf("\n[MODE ADMIN] Entrez le nombre de cases à avancer (1-40) : ");
-            if (scanf("%d", &choix) != 1) {
-                while(getchar() != '\n'); // Nettoyer si erreur
-            }
-        }
-        return choix;
-    }
-    // Mode normal
-    return (rand() % 6 + 1) + (rand() % 6 + 1);
-}
 
 
 
@@ -33,7 +17,11 @@ void engine_play_turn(Player *p, Player *all_players[],
     printf("Portefeuille : %d ECTS | Grade Éco : %d\n", p->credit, p->eco_index);
 
     // DÉPLACEMENT
-    int total_des = engine_roll_dice(admin_mode);
+    int compteur_doubles =0; // compteur de double pour la case prison = 0 au début de tour
+    int total_des = engine_roll_dice(admin_mode,&compteur_doubles);
+    while((compteur_doubles == 1) || (compteur_doubles == 2) ){
+        total_des = total_des + engine_roll_dice(admin_mode,&compteur_doubles);
+    }
     printf("[Dés] : Résultat = %d\n", total_des);
     player_move(p, total_des);
 

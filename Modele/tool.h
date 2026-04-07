@@ -23,4 +23,13 @@
 
 void replace_underscore_with_space(char *str);  /*Fait*/ //fonciton outil pour le nom des propriété, remplace les underscore du chargement par des espaces
 
+/**
+ * @brief fonction qui représente le lancé de 2 dés à 6 faces, elle compte aussi le nombre de double d'affilé
+ * 
+ * @param admin_mode qui est utilisé pour choisir le lancé de dé depuis la console
+ * @param compteur_doubles est un pointeur vers la valeur qui compte le nombre de double d'affilé 
+ * @return int du lancé de dé
+ */
+int engine_roll_dice(int admin_mode, int *compteur_doubles);
+
 #endif

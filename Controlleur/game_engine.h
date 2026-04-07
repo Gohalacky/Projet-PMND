@@ -9,8 +9,7 @@
 void engine_play_turn(Player *p, Player *all_players[],
                       Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[], Plateau *plateau, int admin_mode) ;
 
-// Fonction pour lancer les dés
-int engine_roll_dice(int admin_mode);
+// Fonction pour lancer les dés maintenant déplacé dans le modèle dans tool
 
 
 

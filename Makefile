@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=c11 -g -I. -IInterface -IModele
+CFLAGS = -Wall -Wextra -Werror -std=c11 -g -I. -IInterface -IModele 
 LDFLAGS = -lcmocka
 LIBS = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf
 
@@ -41,7 +41,7 @@ interface: $(INTERFACE_DIR)/main_view.o $(OBJ_COMMON)
 	$(CC) $(CFLAGS) $^ -o $(VIEW) $(LIBS)
 
 test: $(MODELE_DIR)/test.o $(OBJ_COMMON)
-	$(CC) $(CFLAGS) $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) -Wl,--wrap=rand $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS)
 
 test_cartes: $(MODELE_DIR)/main_test_cartes.o $(OBJ_COMMON)
 	$(CC) $(CFLAGS) $^ -o $(TEST_CARTES) $(LDFLAGS) $(LIBS)

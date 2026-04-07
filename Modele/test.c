@@ -620,6 +620,74 @@ static void test_underscore_conversion(void **state) {
     assert_string_equal(nom_test, "Rue de Vaugirard");
 }
 
+// --- MOCK DE RAND() ---
+// Cette fonction va remplacer le vrai rand() pendant les tests
+int __wrap_rand(void) {
+    // mock_type(int) récupère la valeur qu'on a préparée avec will_return()
+    return mock_type(int); 
+}
+
+// --- TESTS ---
+
+// Test 1 : Lancer normal, pas de double
+static void test_normal_mode_no_double(void **state) {
+    (void) state; // Paramètre non utilisé
+    int compteur = 0;
+
+    // On prépare les valeurs que rand() va renvoyer.
+    // Attention : la fonction fait "rand() % 6 + 1". 
+    // Si rand() renvoie 2, le dé vaudra 3 (2 % 6 + 1).
+    // Si rand() renvoie 4, le dé vaudra 5 (4 % 6 + 1).
+    will_return(__wrap_rand, 2); 
+    will_return(__wrap_rand, 4); 
+
+    int resultat = engine_roll_dice(0, &compteur);
+
+    assert_int_equal(resultat, 8); // 3 + 5 = 8
+    assert_int_equal(compteur, 0); // Pas de double, le compteur reste à 0
+}
+
+// Test 2 : Lancer avec un double
+static void test_normal_mode_double(void **state) {
+    (void) state;
+    int compteur = 0;
+
+    // rand() renvoie 3 et 3 -> dé 1 = 4, dé 2 = 4
+    will_return(__wrap_rand, 3);
+    will_return(__wrap_rand, 3);
+
+    int resultat = engine_roll_dice(0, &compteur);
+
+    assert_int_equal(resultat, 8); // 4 + 4 = 8
+    assert_int_equal(compteur, 1); // C'est un double, le compteur passe à 1
+}
+
+// Test 3 : Chaîne de doubles et remise à zéro
+static void test_normal_mode_multiple_doubles_and_reset(void **state) {
+    (void) state;
+    int compteur = 0;
+
+    // 1er lancer : Double (dé = 1, dé = 1 -> rand() doit renvoyer 0)
+    will_return(__wrap_rand, 0);
+    will_return(__wrap_rand, 0);
+    engine_roll_dice(0, &compteur);
+    assert_int_equal(compteur, 1);
+
+    // 2ème lancer : Double (dé = 6, dé = 6 -> rand() doit renvoyer 5)
+    will_return(__wrap_rand, 5);
+    will_return(__wrap_rand, 5);
+    engine_roll_dice(0, &compteur);
+    assert_int_equal(compteur, 2); // Le compteur s'accumule !
+
+    // 3ème lancer : Raté, pas de double (dé = 1, dé = 2)
+    will_return(__wrap_rand, 0);
+    will_return(__wrap_rand, 1);
+    engine_roll_dice(0, &compteur);
+    
+    // Le compteur doit être retombé à zéro
+    assert_int_equal(compteur, 0); 
+}
+
 
 /*
 printf("==========================================================\n");
@@ -985,6 +1053,9 @@ int main(void) {
         cmocka_unit_test(test_player_addremove_gar),
         //tool
         cmocka_unit_test(test_underscore_conversion),
+        cmocka_unit_test(test_normal_mode_no_double),
+        cmocka_unit_test(test_normal_mode_double),
+        cmocka_unit_test(test_normal_mode_multiple_doubles_and_reset),
         //hypo
         cmocka_unit_test(test_hypotheque_et_rachat_PROP),
         cmocka_unit_test(test_hypotheque_et_rachat_GARE),
