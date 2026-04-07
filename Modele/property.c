@@ -193,7 +193,7 @@ int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){
     for(i=0; i<NB_PROPRIETE; i++){
         if(tableau[i]->color == couleur){
             if(tableau[i]->owner != p->number){
-                printf("%s possède ne possède pas toute la couleur %s \n",p->name,color_names[couleur]);
+                /*printf("%s ne possède pas toute la couleur %s \n",p->name,color_names[couleur]);*/ //inutile 
                 return 0 ; /*ne possède pas toute la couleur*/
             }
         }

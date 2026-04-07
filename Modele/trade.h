@@ -46,10 +46,55 @@ TradeOffer * init_empty_offer(Player *p);
  */
 int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2, Property *plateau[NB_PROPRIETE]);
 
+
+
 /**
  * @brief Transfère les titres de propriété et l'argent entre les deux joueurs.
- * @pre La fonction is_trade_valid DOIT avoir retourné 1 avant d'appeler celle-ci, de plus elle free l'espace mémoire alloué au trade offer.
+ * @pre La fonction is_trade_valid DOIT avoir retourné 1 avant d'appeler celle-ci
  */
 void execute_trade(TradeOffer *off_p1, TradeOffer *off_p2);
 
+
+// --- GESTION DES CRÉDITS ---
+/**
+ * @brief Met à jour les crédit de l'offre.
+ */
+void trade_set_credits(TradeOffer *offer, int amount);
+
+// --- GESTION DES PROPRIÉTÉS ---
+/**
+ * @brief ajoute une propriété à l'offre
+ * @return 1 si reussi valide, 0 sinon.
+ */
+int trade_add_property(TradeOffer *offer, Property *prop);
+/**
+ * @brief enleve une propriété à l'offre
+ * @return 1 si reussi valide, 0 sinon.
+ */
+int trade_remove_property(TradeOffer *offer, Property *prop);
+
+// --- GESTION DES GARES ---
+/**
+ * @brief ajoute une gare à l'offre
+ * @return 1 si reussi valide, 0 sinon.
+ */
+int trade_add_gare(TradeOffer *offer, Gares *gare);
+/**
+ * @brief enleve une gare à l'offre
+ * @return 1 si reussi valide, 0 sinon.
+ */
+int trade_remove_gare(TradeOffer *offer, Gares *gare);
+
+// --- GESTION DES COMPAGNIES ---
+/**
+ * @brief ajoute une compagnie à l'offre
+ * @return 1 si reussi valide, 0 sinon.
+ */
+int trade_add_compagnie(TradeOffer *offer, Compagnies *comp);
+
+ /**
+ * @brief enleve une compagnie à l'offre
+ * @return 1 si reussi valide, 0 sinon.
+ */
+int trade_remove_compagnie(TradeOffer *offer, Compagnies *comp);
 #endif

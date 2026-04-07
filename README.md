@@ -20,7 +20,8 @@ Pour garder un code propre et testable, nous avons structuré le projet selon le
 
 À ce stade du développement, le jeu gère :
 * La création de partie jusqu'à 4 joueurs avec des paramètres personnalisables (argent initial, nombre de tours, etc.).
-* Un système de propriétés où l'on peut construire des aménagements (maisons, logements sociaux, parcs) qui influencent directement l'indice écologique global et personnel.
+* Un système de propriétés où l'on peut construire des aménagements (maisons, logements sociaux, parcs) qui influencent directement l'indice écologique global et personnel et la possibilité d'hypothéqué.
+* Un système d'échanges entre les joueurs
 * La gestion des événements aléatoires (cartes Chance et Caisse Communauté).
 * Une couverture de tests sur la logique grâce à CMocka.
 
@@ -42,7 +43,7 @@ Si vous souhaitez recompiler le projet chez vous (environnement Linux recommand�
 Nous avons configuré un Makefile à la racine pour vous simplifier la vie. 
 
 ### 1. Pour compiler
-* Tout le projet : `make`
+* Le modèle uniquement : `make`
 * Juste le moteur de jeu (sans interface) : `make controlleur`
 * Juste l'interface graphique : `make interface`
 * Les tests unitaires : `make test` et `make test_cartes`
