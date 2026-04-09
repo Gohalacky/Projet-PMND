@@ -11,6 +11,7 @@
 #include "tool.h"
 #include "hypo.h"
 #include "trade.h"
+#include "prison.h"
 /*
 printf("==========================================================\n");
 printf("              TESTS DE property                \n");
@@ -1024,6 +1025,113 @@ static void test_execute_trade_full(void **state) {
     free(p2);
 }
 
+/*
+printf("==========================================================\n");
+printf("              TESTS DE prison              \n");
+printf("==========================================================\n");
+*/
+
+static void test_init_prison(void **state) {
+    (void) state;
+    printf("==========================================================\n");
+    printf("              TESTS DE prison              \n");
+    printf("==========================================================\n");
+    Prison *jail = init_prison();
+    assert_non_null(jail);
+    assert_int_equal(jail->nb_j, 0);
+    free(jail);
+}
+
+static void test_go_to_jail_and_limit(void **state) {
+    (void) state;
+    Prison *jail = init_prison();
+    Player * p1 = init_player("p1", 1); // Création de 5 joueurs factices
+    Player * p2 = init_player("p2", 2);
+    Player * p3 = init_player("p3", 3);
+    Player * p4 = init_player("p4", 4);
+    Player * p5 = init_player("p5", 5);
+
+    // On ajoute 4 joueurs (la limite NB_J_MAX)
+    go_to_jail(p1, jail);
+    go_to_jail(p2, jail);
+    go_to_jail(p3, jail);
+    go_to_jail(p4, jail);
+    
+    assert_int_equal(jail->nb_j, 4);
+    assert_int_equal(is_in_jail(p4, jail), 1);
+
+    // On essaie d'en ajouter un 5ème (ne doit pas planter et ne doit pas s'ajouter)
+    go_to_jail(p5, jail);
+    assert_int_equal(jail->nb_j, 4); 
+    assert_int_equal(is_in_jail(p5, jail), 0);
+}
+
+static void test_get_out_of_jail(void **state) {
+    (void) state;
+    Prison *jail = init_prison();
+    Player * p1 = init_player("p1", 1);
+    Player * p2 = init_player("p2", 2);
+    Player * p3 = init_player("p3", 3);
+    
+    go_to_jail(p1, jail);
+    go_to_jail(p2, jail);
+    go_to_jail(p3, jail);
+    
+    // p2 sort de prison (il est au milieu de la liste, teste bien le décalage)
+    get_out_of_jail(p2, jail);
+    
+    assert_int_equal(jail->nb_j, 2);
+    assert_int_equal(is_in_jail(p2, jail), 0); // p2 n'y est plus
+    assert_int_equal(is_in_jail(p1, jail), 1); // p1 y est toujours
+    assert_int_equal(is_in_jail(p3, jail), 1); // p3 y est toujours
+    
+    // p3 devrait avoir été décalé à l'indice 1
+    assert_ptr_equal(jail->liste[1], p3);
+    free(p1);
+    free(p2);
+    free(p3);
+    free(jail);
+}
+
+static void test_tours_in_jail(void **state) {
+    (void) state;
+    Prison *jail = init_prison();
+    Player  * p1 = init_player("p1", 1);
+    
+    go_to_jail(p1, jail);
+    
+    assert_int_equal(istreetour_in_jail(p1, jail), 0); // 0 tour
+    
+    add_tour_jail(p1, jail);
+    assert_int_equal(istreetour_in_jail(p1, jail), 0); // 1 tour
+    
+    add_tour_jail(p1, jail);
+    add_tour_jail(p1, jail);
+    
+    // Après 3 appels à add_tour_jail, le joueur a atteint 3 tours
+    assert_int_equal(istreetour_in_jail(p1, jail), 1);
+    free(p1);
+    free(jail);
+}
+
+static void test_pay_to_get_out(void **state) {
+    (void) state;
+    Prison *jail = init_prison();
+    Player * p1 = init_player("p1", 1);
+    
+    go_to_jail(p1, jail);
+    
+    
+    pay_to_get_out(p1, jail);
+    assert_int_equal(p1->credit, 1450);
+    
+    // Le joueur ne doit plus être en prison
+    assert_int_equal(is_in_jail(p1, jail), 0);
+    assert_int_equal(jail->nb_j, 0);
+    free(jail);
+    free(p1);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         //property
@@ -1064,7 +1172,13 @@ int main(void) {
         cmocka_unit_test(test_init_empty_offer),
         cmocka_unit_test(test_is_trade_valid),
         cmocka_unit_test(test_trade_modifiers),
-        cmocka_unit_test(test_execute_trade_full)
+        cmocka_unit_test(test_execute_trade_full),
+        //prison
+        cmocka_unit_test(test_init_prison),
+        cmocka_unit_test(test_go_to_jail_and_limit),
+        cmocka_unit_test(test_get_out_of_jail),
+        cmocka_unit_test(test_tours_in_jail),
+        cmocka_unit_test(test_pay_to_get_out)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
