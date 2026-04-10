@@ -91,7 +91,7 @@ int main() {
         printf("\n--- TOUR %d ---\n", tour_actuel);
         
         for (int i = 0; i < nb_joueurs; i++) {
-            engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, tableau_gar ,tableau_comp,  &mon_plateau, admin_mode);
+            engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, tableau_gar ,tableau_comp,  &mon_plateau);
             
             // Vérification de la faillite (Mode 2)
             if (mode_jeu == 2 && liste_joueurs[i]->credit <= 0) {

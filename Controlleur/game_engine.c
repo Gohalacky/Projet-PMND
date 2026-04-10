@@ -15,17 +15,17 @@ const char* engine_get_case_joueur_actif(int joueurActif,Player* joueurs[],const
 /**  
  * Simule un lancer de 2 dés de 6 faces.
  */
-int engine_roll_dice(int admin_mode) {
+int engine_roll_dice(void){
     return (rand() % 6 + 1) + (rand() % 6 + 1);
 }
 
 
 void engine_play_turn(Player *p, Player *all_players[],Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[],
-                      Plateau *plateau, int admin_mode) {
+                      Plateau *plateau) {
  
     if (!p || !plateau) return;
   
-    int total_des = engine_roll_dice(admin_mode);
+    int total_des = engine_roll_dice();
     printf("[Dés] : Résultat = %d\n", total_des);
     player_move(p, total_des);
  
@@ -34,7 +34,7 @@ void engine_play_turn(Player *p, Player *all_players[],Property *tableau_prop[],
 
 int engine_roll_and_move(Player* p, const Plateau* plateau) {
     if (!p || !plateau) return 0;
-    int total_des = engine_roll_dice(0);
+    int total_des = engine_roll_dice();
     player_move(p, total_des);
     return total_des;
 }
