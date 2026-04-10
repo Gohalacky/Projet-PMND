@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "game_engine.h"
 #include "plateau.h"
+#include "tool.h"
+#include "prison.h"
 
 
 
@@ -15,26 +17,64 @@ const char* engine_get_case_joueur_actif(int joueurActif,Player* joueurs[],const
 /**  
  * Simule un lancer de 2 dés de 6 faces.
  */
-int engine_roll_dice(void){
-    return (rand() % 6 + 1) + (rand() % 6 + 1);
+int engine_roll_dice( int *compteur_doubles) {
+    
+    int de1 = rand() % 6 + 1;
+    int de2 = rand() % 6 + 1;
+    
+    // Si c'est un double, on incrémente la valeur pointée. 
+    // Sinon, on la remet à zéro.
+    if (de1 == de2) {
+        (*compteur_doubles)++; // Attention aux parenthèses, elles sont obligatoires 
+        printf("Double de %d !\n",de1);
+    } else {
+        *compteur_doubles = 0;
+        printf("%d + %d = %d\n",de1,de2,de1+de2);
+    }
+    
+    return de1 + de2;
 }
 
 
 void engine_play_turn(Player *p, Player *all_players[],Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[],
-                      Plateau *plateau) {
+                      Plateau *plateau, Prison * jail) {
  
     if (!p || !plateau) return;
   
-    int total_des = engine_roll_dice();
-    printf("[Dés] : Résultat = %d\n", total_des);
-    player_move(p, total_des);
+    int compteur_doubles =0; // compteur de double pour la case prison = 0 au début de tour
+    do{                            // on fait notre tour une premiere fois, le do while sert si le premier lancé était un double de rejoué et de refaire son tour
+        int total_des = engine_roll_dice(&compteur_doubles);
+        printf("[Dés] : Résultat = %d\n", total_des);
+        if((compteur_doubles == 1) && is_in_jail(p,jail)){
+            get_out_of_jail(p,jail);
+        }
+        if((compteur_doubles == 0) && is_in_jail(p,jail)){
+            if(istreetour_in_jail(p,jail))
+                pay_to_get_out(p,jail);
+            else{
+                printf("Voulez vous payez 50 pour sortir de prison ? (1:Oui/0:Non)\n");
+                int rep;
+                if (scanf("%d", &rep) == 1 && rep == 1){
+                    pay_to_get_out(p,jail);
+                }
+            }
+        }
+        if((compteur_doubles == 3 )&& ( is_in_jail(p,jail) == 0)){
+            printf("%s à fait 3 doubles à la suite !", p->name);
+            go_to_jail(p,jail);
+        }
+        if(is_in_jail(p,jail) == 0){
+            player_move(p, total_des);
+        }
  
-    engine_resolve_case(p, all_players, tableau_prop, tableau_gare, tableau_comp, plateau, total_des);
+        engine_resolve_case(p, all_players, tableau_prop, tableau_gare, tableau_comp, plateau, total_des);
+    }while((compteur_doubles == 1) || (compteur_doubles == 2));
+    add_tour_jail(p,jail);
 }
 
-int engine_roll_and_move(Player* p, const Plateau* plateau) {
+int engine_roll_and_move(Player* p, const Plateau* plateau, int * compteur_doubles) {
     if (!p || !plateau) return 0;
-    int total_des = engine_roll_dice();
+    int total_des = engine_roll_dice(compteur_doubles);
     player_move(p, total_des);
     return total_des;
 }

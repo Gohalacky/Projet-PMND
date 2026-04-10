@@ -16,7 +16,8 @@ SRC_MOD = $(MOD_DIR)/alea.c        \
           $(MOD_DIR)/player.c       \
           $(MOD_DIR)/property.c     \
           $(MOD_DIR)/tool.c         \
-          $(MOD_DIR)/trade.c
+          $(MOD_DIR)/trade.c		\
+		  $(MOD_DIR)/prison.c		\
 
 SRC_CTRL = $(CTRL_DIR)/game_engine.c \
            $(CTRL_DIR)/plateau.c
@@ -59,7 +60,7 @@ $(TARGET): $(ALL_OBJ)
 	@echo "✔  Compilation réussie → ./$(TARGET)"
 
 test: $(MOD_DIR)/test.o $(OBJ_COMMON)
-	$(CC) $(CFLAGS) $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) -Wl,--wrap=rand $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS)
 
 test_cartes: $(MOD_DIR)/main_test_cartes.o $(OBJ_COMMON)
 	$(CC) $(CFLAGS) $^ -o $(TEST_CARTES) $(LDFLAGS) $(LIBS)

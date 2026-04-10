@@ -11,6 +11,7 @@
 #include "tool.h"
 #include "hypo.h"
 #include "trade.h"
+#include "prison.h"
 /*
 printf("==========================================================\n");
 printf("              TESTS DE property                \n");
@@ -619,7 +620,75 @@ static void test_underscore_conversion(void **state) {
     replace_underscore_with_space(nom_test);
     assert_string_equal(nom_test, "Rue de Vaugirard");
 }
+/* TEST SUPPRIMÉ CAR FONCTION DÉPLACÉ DANS LE CONTROLLEUR
+// --- MOCK DE RAND() ---
+// Cette fonction va remplacer le vrai rand() pendant les tests
+int __wrap_rand(void) {
+    // mock_type(int) récupère la valeur qu'on a préparée avec will_return()
+    return mock_type(int); 
+}
 
+// --- TESTS ---
+
+// Test 1 : Lancer normal, pas de double
+static void test_normal_mode_no_double(void **state) {
+    (void) state; // Paramètre non utilisé
+    int compteur = 0;
+
+    // On prépare les valeurs que rand() va renvoyer.
+    // Attention : la fonction fait "rand() % 6 + 1". 
+    // Si rand() renvoie 2, le dé vaudra 3 (2 % 6 + 1).
+    // Si rand() renvoie 4, le dé vaudra 5 (4 % 6 + 1).
+    will_return(__wrap_rand, 2); 
+    will_return(__wrap_rand, 4); 
+
+    int resultat = engine_roll_dice(0, &compteur);
+
+    assert_int_equal(resultat, 8); // 3 + 5 = 8
+    assert_int_equal(compteur, 0); // Pas de double, le compteur reste à 0
+}
+
+// Test 2 : Lancer avec un double
+static void test_normal_mode_double(void **state) {
+    (void) state;
+    int compteur = 0;
+
+    // rand() renvoie 3 et 3 -> dé 1 = 4, dé 2 = 4
+    will_return(__wrap_rand, 3);
+    will_return(__wrap_rand, 3);
+
+    int resultat = engine_roll_dice(0, &compteur);
+
+    assert_int_equal(resultat, 8); // 4 + 4 = 8
+    assert_int_equal(compteur, 1); // C'est un double, le compteur passe à 1
+}
+
+// Test 3 : Chaîne de doubles et remise à zéro
+static void test_normal_mode_multiple_doubles_and_reset(void **state) {
+    (void) state;
+    int compteur = 0;
+
+    // 1er lancer : Double (dé = 1, dé = 1 -> rand() doit renvoyer 0)
+    will_return(__wrap_rand, 0);
+    will_return(__wrap_rand, 0);
+    engine_roll_dice(0, &compteur);
+    assert_int_equal(compteur, 1);
+
+    // 2ème lancer : Double (dé = 6, dé = 6 -> rand() doit renvoyer 5)
+    will_return(__wrap_rand, 5);
+    will_return(__wrap_rand, 5);
+    engine_roll_dice(0, &compteur);
+    assert_int_equal(compteur, 2); // Le compteur s'accumule !
+
+    // 3ème lancer : Raté, pas de double (dé = 1, dé = 2)
+    will_return(__wrap_rand, 0);
+    will_return(__wrap_rand, 1);
+    engine_roll_dice(0, &compteur);
+    
+    // Le compteur doit être retombé à zéro
+    assert_int_equal(compteur, 0); 
+}
+*/
 
 /*
 printf("==========================================================\n");
@@ -956,6 +1025,113 @@ static void test_execute_trade_full(void **state) {
     free(p2);
 }
 
+/*
+printf("==========================================================\n");
+printf("              TESTS DE prison              \n");
+printf("==========================================================\n");
+*/
+
+static void test_init_prison(void **state) {
+    (void) state;
+    printf("==========================================================\n");
+    printf("              TESTS DE prison              \n");
+    printf("==========================================================\n");
+    Prison *jail = init_prison();
+    assert_non_null(jail);
+    assert_int_equal(jail->nb_j, 0);
+    free(jail);
+}
+
+static void test_go_to_jail_and_limit(void **state) {
+    (void) state;
+    Prison *jail = init_prison();
+    Player * p1 = init_player("p1", 1); // Création de 5 joueurs factices
+    Player * p2 = init_player("p2", 2);
+    Player * p3 = init_player("p3", 3);
+    Player * p4 = init_player("p4", 4);
+    Player * p5 = init_player("p5", 5);
+
+    // On ajoute 4 joueurs (la limite NB_J_MAX)
+    go_to_jail(p1, jail);
+    go_to_jail(p2, jail);
+    go_to_jail(p3, jail);
+    go_to_jail(p4, jail);
+    
+    assert_int_equal(jail->nb_j, 4);
+    assert_int_equal(is_in_jail(p4, jail), 1);
+
+    // On essaie d'en ajouter un 5ème (ne doit pas planter et ne doit pas s'ajouter)
+    go_to_jail(p5, jail);
+    assert_int_equal(jail->nb_j, 4); 
+    assert_int_equal(is_in_jail(p5, jail), 0);
+}
+
+static void test_get_out_of_jail(void **state) {
+    (void) state;
+    Prison *jail = init_prison();
+    Player * p1 = init_player("p1", 1);
+    Player * p2 = init_player("p2", 2);
+    Player * p3 = init_player("p3", 3);
+    
+    go_to_jail(p1, jail);
+    go_to_jail(p2, jail);
+    go_to_jail(p3, jail);
+    
+    // p2 sort de prison (il est au milieu de la liste, teste bien le décalage)
+    get_out_of_jail(p2, jail);
+    
+    assert_int_equal(jail->nb_j, 2);
+    assert_int_equal(is_in_jail(p2, jail), 0); // p2 n'y est plus
+    assert_int_equal(is_in_jail(p1, jail), 1); // p1 y est toujours
+    assert_int_equal(is_in_jail(p3, jail), 1); // p3 y est toujours
+    
+    // p3 devrait avoir été décalé à l'indice 1
+    assert_ptr_equal(jail->liste[1], p3);
+    free(p1);
+    free(p2);
+    free(p3);
+    free(jail);
+}
+
+static void test_tours_in_jail(void **state) {
+    (void) state;
+    Prison *jail = init_prison();
+    Player  * p1 = init_player("p1", 1);
+    
+    go_to_jail(p1, jail);
+    
+    assert_int_equal(istreetour_in_jail(p1, jail), 0); // 0 tour
+    
+    add_tour_jail(p1, jail);
+    assert_int_equal(istreetour_in_jail(p1, jail), 0); // 1 tour
+    
+    add_tour_jail(p1, jail);
+    add_tour_jail(p1, jail);
+    
+    // Après 3 appels à add_tour_jail, le joueur a atteint 3 tours
+    assert_int_equal(istreetour_in_jail(p1, jail), 1);
+    free(p1);
+    free(jail);
+}
+
+static void test_pay_to_get_out(void **state) {
+    (void) state;
+    Prison *jail = init_prison();
+    Player * p1 = init_player("p1", 1);
+    
+    go_to_jail(p1, jail);
+    
+    
+    pay_to_get_out(p1, jail);
+    assert_int_equal(p1->credit, 1450);
+    
+    // Le joueur ne doit plus être en prison
+    assert_int_equal(is_in_jail(p1, jail), 0);
+    assert_int_equal(jail->nb_j, 0);
+    free(jail);
+    free(p1);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         //property
@@ -993,7 +1169,13 @@ int main(void) {
         cmocka_unit_test(test_init_empty_offer),
         cmocka_unit_test(test_is_trade_valid),
         cmocka_unit_test(test_trade_modifiers),
-        cmocka_unit_test(test_execute_trade_full)
+        cmocka_unit_test(test_execute_trade_full),
+        //prison
+        cmocka_unit_test(test_init_prison),
+        cmocka_unit_test(test_go_to_jail_and_limit),
+        cmocka_unit_test(test_get_out_of_jail),
+        cmocka_unit_test(test_tours_in_jail),
+        cmocka_unit_test(test_pay_to_get_out)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

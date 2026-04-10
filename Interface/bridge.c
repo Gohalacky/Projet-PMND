@@ -58,9 +58,10 @@ void bridge_free(ContexteJeu* ctx) {
 
 int bridge_roll_and_move(ContexteJeu* ctx, EtatPartie* partie) {
     int ja = partie->joueursActif;
+    int compteur_doubles = 0;
     Player* p = ctx->joueurs[ja];
     if (!p) return 0;
-    ctx->dernier_de = engine_roll_and_move(p, &ctx->plateau);
+    ctx->dernier_de = engine_roll_and_move(p, &ctx->plateau,&compteur_doubles);
     bridge_sync(ctx, partie);
     return ctx->dernier_de;
 }
