@@ -14,6 +14,7 @@ void go_to_jail(Player * p, Prison * jail){
         jail->liste[jail->nb_j] = p;
         jail->comptage[jail->nb_j] = 0;
         jail->nb_j++;
+        printf("%s va en prison !\n",p->name);
     }
 }
 
@@ -33,7 +34,7 @@ void get_out_of_jail(Player *p, Prison * jail){
             // On nettoie la dernière case pour éviter les pointeurs fantômes
             jail->liste[jail->nb_j] = NULL;
             jail->comptage[jail->nb_j] = 0;
-            
+            printf("%s sort de prison !\n",p->name);
             return; // On sort directement de la fonction
         }
     }
@@ -68,6 +69,7 @@ int istreetour_in_jail(Player * p, Prison * jail){
     int i;
     for(i=0 ;i<=jail->nb_j;i++){
         if((jail->liste[i] == p) && (jail->comptage[i] >= 3 )){
+            printf("Cela fait 3 tour que %s est en prison ! \n",p->name);
             return 1; 
         }
     }

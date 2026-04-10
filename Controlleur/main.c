@@ -21,6 +21,7 @@ int main() {
     Property *tableau_prop[NB_PROPRIETE] = {NULL};
     Gares *tableau_gar[NB_GARE] = {NULL};
     Compagnies *tableau_comp[NB_COMPAGNIE] = {NULL};
+    Prison * jail = init_prison();
 
     printf("Chargement des fichiers...\n");
     int nbp = chargement_propriete_loyer(tableau_prop, "loyer_insapoly.txt");
@@ -91,7 +92,7 @@ int main() {
         printf("\n--- TOUR %d ---\n", tour_actuel);
         
         for (int i = 0; i < nb_joueurs; i++) {
-            engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, tableau_gar ,tableau_comp,  &mon_plateau, admin_mode);
+            engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, tableau_gar ,tableau_comp,  &mon_plateau, jail, admin_mode);
             
             // Vérification de la faillite (Mode 2)
             if (mode_jeu == 2 && liste_joueurs[i]->credit <= 0) {
@@ -130,6 +131,8 @@ int main() {
     for (int i = 0; i < NB_PROPRIETE; i++) if (tableau_prop[i]) free(tableau_prop[i]);
     for (int i = 0; i < NB_GARE; i++) if (tableau_gar[i]) free(tableau_gar[i]);
     for (int i = 0; i < NB_COMPAGNIE; i++) if (tableau_comp[i]) free(tableau_comp[i]);
+
+    free(jail);
 
     return 0;
 }
