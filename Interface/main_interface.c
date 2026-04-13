@@ -15,6 +15,7 @@
 #include "ui/button.h"
 #include "ui/checkbox.h"
 #include "propwindow.h"
+#include "pawn.h"
 
 #define FONT "FONT/fontPixel.ttf"
 
@@ -41,6 +42,7 @@ int main(){
     TTF_Font* fontTitle  = TTF_OpenFont("FONT/fontPixel.ttf", 38);
 
     TexturesPack tex;
+    memset(&tex,0,sizeof(tex));
     if(loadTextures(renderer, &tex)<0){
         cleanup(window, renderer, &tex);
         return-1;
@@ -71,8 +73,7 @@ int main(){
         .titleNewGame   = { "Nouvelle Partie",      0,  53, 38, 0, 53,38, ALIGN_CENTER_X, {235,221,192,255} },
         .chooseParam    = { "Choix des parametres", 0, 256, 38, 0,256,38, ALIGN_CENTER_X, {235,221,192,255} },
         .numberPlayer   = { "Choix du nombre de joueurs", 0, 108, 38, 0,108,38, ALIGN_CENTER_X, {235,221,192,255} },
- 
-        /*Nouvelle partie*/
+
         .btnLaunchGame  = { "Lancer la partie",  790, 650, 22, 790,650,22, ALIGN_LEFT, {235,221,192,255} },
         .btnCancel      = { "Annuler",           395, 650, 22, 395,650,22, ALIGN_LEFT, {235,221,192,255} },
         .numbTurns      = { "Nombre de tours",   380, 310, 22, 380,310,22, ALIGN_LEFT, {235,221,192,255} },
@@ -107,6 +108,9 @@ int main(){
     ContexteJeu ctx;
     memset(&ctx,0,sizeof(ctx));
 
+    Pawn pawns[MAX_PLAYERS];
+    initPawns(pawns, 2);
+
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,
         &btn.backToMenu, &btn.throwDice, &btn.properties,
@@ -133,14 +137,16 @@ int main(){
     EtatJeu   state = MENU;
     bool      quit  = false;
     SDL_Event event;
+    Uint32 lastTime=SDL_GetTicks();
 
     while (!quit) {
-        handleEvents(&event, &state, &btn, &texts,
-                     &fontNormal, &fontTitle, &fontButton,
-                     &quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb);
-        render(renderer, state, &tex, &texts,
-               fontButton, fontNormal, fontTitle,
-               &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb);
+        Uint32 now = SDL_GetTicks();
+        Uint32 delta = now-lastTime;
+        lastTime=now;
+
+        handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb,pawns);
+        updatePawns(pawns, partie.nbJoueurs, delta);
+        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb,pawns);
     }
 
     TTF_CloseFont(fontNormal);

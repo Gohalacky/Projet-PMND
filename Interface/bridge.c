@@ -9,7 +9,7 @@ int bridge_init(ContexteJeu* ctx, const EtatPartie* partie) {
     memset(ctx, 0, sizeof(ContexteJeu));
 
     int nbp = chargement_propriete_loyer(ctx->tableau_prop, "loyer_insapoly.txt");
-    int nbg = chargement_GARE_loyer(ctx->tableau_gar,       "gares.txt");
+    int nbg = chargement_GARE_loyer(ctx->tableau_gar,"gares.txt");
     int nbc = chargement_COMPAGNIE_loyer(ctx->tableau_comp, "compagnie.txt");
 
     if (nbp <= 0 || nbg <= 0 || nbc <= 0) {
@@ -103,9 +103,7 @@ static Property* _get_current_property(const ContexteJeu* ctx, const EtatPartie*
     return (Property*)c->data;
 }
 
-int bridge_get_current_prop_info(const ContexteJeu* ctx, const EtatPartie* partie,
-                                  char name_out[50], int* prix_out,
-                                  int* credits_joueur_out, int* owner_out) {
+int bridge_get_current_prop_info(const ContexteJeu* ctx, const EtatPartie* partie,char name_out[50], int* prix_out,int* credits_joueur_out, int* owner_out) {
     Property* prop = _get_current_property(ctx, partie);
     if (!prop) return 0;
 
@@ -124,8 +122,7 @@ int bridge_can_buy_current(const ContexteJeu* ctx, const EtatPartie* partie) {
     return ctx->joueurs[ja] && ctx->joueurs[ja]->credit >= prop->value;
 }
 
-int bridge_get_owned_props(ContexteJeu* ctx, const EtatPartie* partie,
-                            PropInfo result[], int max) {
+int bridge_get_owned_props(ContexteJeu* ctx, const EtatPartie* partie,PropInfo result[], int max) {
     int ja  = partie->joueursActif;
     Player* joueur = ctx->joueurs[ja];
     if (!joueur) return 0;
@@ -139,9 +136,7 @@ int bridge_get_owned_props(ContexteJeu* ctx, const EtatPartie* partie,
         result[count].name[49]   = '\0';
         result[count].level      = p->level;
         result[count].prop_index = i;
-        result[count].canBuild   = (full_color(ctx->tableau_prop, joueur, p->color)
-                                    && p->level < 3
-                                    && check_uniformity(ctx->tableau_prop, p, 1));
+        result[count].canBuild   = (full_color(ctx->tableau_prop, joueur, p->color) && p->level < 3 && check_uniformity(ctx->tableau_prop, p, 1));
         count++;
     }
     return count;

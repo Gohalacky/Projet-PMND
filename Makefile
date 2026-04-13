@@ -1,7 +1,7 @@
 CC      = gcc
-CFLAGS  = -Wall -Wextra -Werror -std=c11 -g -I. -IInterface -IModele -IControlleur $(shell sdl2-config --cflags)
+CFLAGS  = -Wall -Wextra -Werror -g -I. -IInterface -IModele -IControlleur $(shell sdl2-config --cflags)
 LDFLAGS = -lcmocka
-LIBS    = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf
+LIBS    = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf -lm
 
 IFACE_DIR   = Interface
 UI_DIR      = Interface/ui
@@ -31,12 +31,14 @@ SRC_IFACE = $(IFACE_DIR)/main_interface.c \
             $(IFACE_DIR)/adminWindow.c    \
             $(IFACE_DIR)/anim.c           \
             $(IFACE_DIR)/propwindow.c     \
+            $(IFACE_DIR)/pawn.c           \
             $(UI_DIR)/button.c            \
             $(UI_DIR)/text.c              \
             $(UI_DIR)/textbox.c           \
             $(UI_DIR)/counter.c           \
             $(UI_DIR)/playercard.c        \
-            $(UI_DIR)/checkbox.c
+            $(UI_DIR)/checkbox.c          \
+            
 
 OBJ_MOD   = $(SRC_MOD:.c=.o)
 OBJ_CTRL  = $(SRC_CTRL:.c=.o)

@@ -8,6 +8,7 @@
 #include "ui/counter.h"
 #include "ui/textbox.h"
 #include "view.h"
+#include "pawn.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +53,7 @@ static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack
     scalePropButtons(pb, ratioX, ratioY);
 }
 
-static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter* counterJoueurs,TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie,ContexteJeu* ctx, PropButtonsPack* pb){
+static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter* counterJoueurs,TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie,ContexteJeu* ctx, PropButtonsPack* pb, Pawn pawns[MAX_PLAYERS]){
     if (*state == NOUVPARTIE) handleTextBoxClick(tboxes, x, y);
  
     switch(*state){
@@ -71,7 +72,7 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 int tourMax = 0;
                 if (!checkboxes->tourInfini.checked) {
                     tourMax = atoi(tboxes->numbTurns.text);
-                    if(tourMax <= 0) tourMax = 30;
+                    if(tourMax <= 0) tourMax = 10;
                 }
  
                 partie->nbJoueurs    = counterJoueurs->value;
@@ -89,6 +90,8 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                     printf("Erreur : bridge_init a échoué, partie annulée.\n");
                     break;
                 }
+
+                initPawns(pawns,partie->nbJoueurs);
  
                 printf("Argent initial : %s | Tours : %s | Evenements : %s\n",
                         tboxes->initialMoney.text,
@@ -115,8 +118,15 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 bridge_free(ctx);
                 *state = MENU;
             }
+
+            //A MODIFIER AVEC LA POSSIBILITE DE DOUBLE VOIR DE TRIPLE => prison
             if (isClicked(&btn->throwDice, x, y) && btn->throwDice.disabled != 1) {
+                int ja = partie->joueursActif;
+                int previousPos=ctx->joueurs[ja]->position;
                 bridge_roll_and_move(ctx, partie);
+
+                int dice=ctx->dernier_de;
+                startPawnMove(&pawns[ja], previousPos, dice);
                 partie->temps_lancer = SDL_GetTicks();
                 partie->dejaLance = 1;
                 btn->throwDice.disabled = 1;
@@ -150,8 +160,21 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 partie->temps_lancer = 0;
                 partie->dejaLance = 0;
                 btn->throwDice.disabled = 0;
-                if (fini) { bridge_free(ctx); *state = MENU; }
-                else { switch(partie->nbJoueurs){ case 2: *state=PLATEAU2J; break; case 3: *state=PLATEAU3J; break; case 4: *state=PLATEAU4J; break; } }
+                if (fini) { 
+                    bridge_free(ctx); *state = MENU; 
+                }else{ 
+                    switch(partie->nbJoueurs){ 
+                        case 2: 
+                            *state=PLATEAU2J; 
+                            break; 
+                        case 3: 
+                            *state=PLATEAU3J; 
+                            break; 
+                        case 4: 
+                            *state=PLATEAU4J; 
+                            break; 
+                    }
+                }
             }
             break;
 
@@ -172,7 +195,7 @@ static void endThrow(EtatJeu* state, EtatPartie* partie){
     }
 }
 
-void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* texts, TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, PropButtonsPack* pb) {
+void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* texts, TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, PropButtonsPack* pb, Pawn pawns[MAX_PLAYERS]) {
 
     if(*state==LANCER && partie->temps_lancer>0){
         if(SDL_GetTicks()- partie->temps_lancer>= DELAI_LANCER){
@@ -204,7 +227,7 @@ void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* 
             int x, y;
             SDL_GetMouseState(&x, &y);
             printf("Click en x : %d ; y : %d\n", x,y);
-            handleClick(x, y, state, btn, counterJoueurs, tboxes, checkboxes, partie, ctx, pb);
+            handleClick(x, y, state, btn, counterJoueurs, tboxes, checkboxes, partie, ctx, pb,pawns);
         }
  
         if (event->type == SDL_WINDOWEVENT &&
