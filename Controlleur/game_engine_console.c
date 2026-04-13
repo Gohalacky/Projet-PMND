@@ -54,7 +54,7 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
         rejouer = 0;
         int total_des = engine_roll_dice(admin_mode, &compteur_doubles);
 
-        // --- GESTION PRISON ---
+        // GESTION PRISON
         if (is_in_jail(p, jail)) {
             if (compteur_doubles > 0) {
                 printf(">> Coup de chance ! Un double vous fait sortir de prison.\n");
@@ -77,14 +77,14 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
             }
         }
 
-        // --- GESTION 3 DOUBLES ---
+        //  GESTION 3 DOUBLES 
         if (compteur_doubles == 3) {
             printf("!! %s a fait 3 doubles consécutifs ! Direction la PRISON !!\n", p->name);
             go_to_jail(p, jail);
             return;
         }
 
-        // --- DÉPLACEMENT ET RÉSOLUTION ---
+        // DÉPLACEMENT ET RÉSOLUTION
         player_move(p, total_des);
         engine_resolve_case(p, all_players, tableau_prop, tableau_gare, tableau_comp, plateau, jail, total_des);
 
@@ -190,13 +190,13 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
             break;
         }
     
-        case CASE_PRISON:{ // Si tu as ce type dans ton enum
+        case CASE_PRISON:{ 
             printf(">> Malchance ! Direction la prison !\n");
             go_to_jail(p, jail); 
             
             break;
         }
-        
+
         default:
             printf(">> Case spéciale : repos.\n");
             break;
