@@ -22,6 +22,9 @@ SRC_MOD = $(MOD_DIR)/alea.c        \
 SRC_CTRL = $(CTRL_DIR)/game_engine.c \
            $(CTRL_DIR)/plateau.c
 
+SRC_CTRL_CONSOLE = $(CTRL_DIR)/game_engine_console.c \
+                   $(CTRL_DIR)/plateau.c
+
 SRC_IFACE = $(IFACE_DIR)/main_interface.c \
             $(IFACE_DIR)/view.c           \
             $(IFACE_DIR)/building.c       \
@@ -40,6 +43,7 @@ SRC_IFACE = $(IFACE_DIR)/main_interface.c \
 
 OBJ_MOD   = $(SRC_MOD:.c=.o)
 OBJ_CTRL  = $(SRC_CTRL:.c=.o)
+OBJ_CTRL_CONSOLE = $(SRC_CTRL_CONSOLE:.c=.o)
 OBJ_IFACE = $(SRC_IFACE:.c=.o)
 OBJ_COMMON = $(OBJ_MOD)
 
@@ -65,7 +69,7 @@ test: $(MOD_DIR)/test.o $(OBJ_COMMON)
 test_cartes: $(MOD_DIR)/main_test_cartes.o $(OBJ_COMMON)
 	$(CC) $(CFLAGS) $^ -o $(TEST_CARTES) $(LDFLAGS) $(LIBS)
 
-controlleur: $(CTRL_DIR)/main.o $(OBJ_CTRL) $(OBJ_COMMON)
+controlleur: $(CTRL_DIR)/main.o $(OBJ_CTRL_CONSOLE) $(OBJ_COMMON)
 	$(CC) $(CFLAGS) $^ -o $(CONTROLLEUR) $(LDFLAGS) $(LIBS)
 
 %.o: %.c
@@ -90,7 +94,7 @@ doc:
 	xdg-open docs/html/index.html
 
 clean:
-	rm -f $(ALL_OBJ) $(MOD_DIR)/test.o $(MOD_DIR)/main_test_cartes.o $(CTRL_DIR)/main.o
+	rm -f $(ALL_OBJ) $(MOD_DIR)/test.o $(MOD_DIR)/main_test_cartes.o $(CTRL_DIR)/main.o $(CTRL_DIR)/game_engine_console.ov
 	rm -f $(TARGET) $(TEST_EXEC) $(TEST_CARTES) $(CONTROLLEUR)
 	@echo "✔  Nettoyage terminé"
 

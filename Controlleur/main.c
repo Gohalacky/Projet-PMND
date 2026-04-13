@@ -4,7 +4,7 @@
 #include <string.h>
 #include "plateau.h"
 #include "../Modele/player.h"
-#include "game_engine.h"
+#include "game_engine_console.h"
 
 
 void vider_buffer() {
