@@ -70,7 +70,7 @@ void bridge_play_turn(ContexteJeu* ctx, EtatPartie* partie) {
     int ja = partie->joueursActif;
     Player* p = ctx->joueurs[ja];
     if (!p) return;
-    engine_resolve_case(p, ctx->joueurs, ctx->tableau_prop, ctx->tableau_gar,ctx->tableau_comp, &ctx->plateau, ctx->dernier_de);
+    engine_resolve_case(p, ctx->joueurs, ctx->tableau_prop, ctx->tableau_gar,ctx->tableau_comp, &ctx->plateau, ctx->dernier_de, ctx->prisonactu);
     bridge_sync(ctx, partie);
 }
 

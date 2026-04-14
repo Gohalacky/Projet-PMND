@@ -19,6 +19,10 @@ void init_plateau(Plateau *plt, Property *t_prop[], Gares *t_gar[], Compagnies *
     // Configuration de la case départ
     plt->cases[0].type = CASE_DEPART;
     strcpy(plt->cases[0].nom_affichage, "DÉPART");
+    
+    // Configuration de la case allez en prison
+    plt->cases[30].type = CASE_GOTOJAIL;
+    strcpy(plt->cases[0].nom_affichage, "ALLEZ EN PRISON");
 
     // Placement des terrains (22 propriétés)
     // Liste des indices officiels du plateau pour les terrains

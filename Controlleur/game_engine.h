@@ -23,7 +23,7 @@ int engine_roll_and_move(Player* p, const Plateau* plateau, int * compteur_doubl
 
 //Résout uniquement la case sur laquelle le joueur se trouve déjà sans relancer les dés
 void engine_resolve_case(Player *p, Player *all_players[],Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[],
-                         Plateau *plateau, int total_des);
+                         Plateau *plateau, int total_des, Prison * jail);
 
                          
 

@@ -15,6 +15,7 @@ typedef struct{
     Plateau plateau;
     int admin_mode; /*0 dés aléatoires ou 1 mode admin*/
     int dernier_de;
+    Prison * prisonactu;
 }ContexteJeu;
 
 typedef struct{
