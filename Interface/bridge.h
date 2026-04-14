@@ -15,6 +15,7 @@ typedef struct{
     Plateau plateau;
     int admin_mode; /*0 dés aléatoires ou 1 mode admin*/
     int dernier_de;
+    int compteur_doubles; /* compteur de doubles pour le tour en cours */
 }ContexteJeu;
 
 typedef struct{
@@ -28,6 +29,8 @@ int bridge_init(ContexteJeu* ctx, const EtatPartie* partie);
 void bridge_free(ContexteJeu* ctx);
 
 int bridge_roll_and_move(ContexteJeu* ctx, EtatPartie* partie);
+int bridge_is_double(const ContexteJeu* ctx);
+void bridge_reset_doubles(ContexteJeu* ctx);
 void bridge_play_turn(ContexteJeu* ctx, EtatPartie* partie);
 int bridge_next_turn(EtatPartie* partie);
 void bridge_sync(const ContexteJeu* ctx, EtatPartie* partie);

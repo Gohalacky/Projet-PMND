@@ -119,23 +119,28 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 *state = MENU;
             }
 
-            //A MODIFIER AVEC LA POSSIBILITE DE DOUBLE VOIR DE TRIPLE => prison
             if (isClicked(&btn->throwDice, x, y) && btn->throwDice.disabled != 1) {
                 int ja = partie->joueursActif;
-                int previousPos=ctx->joueurs[ja]->position;
+                int previousPos = ctx->joueurs[ja]->position;
                 bridge_roll_and_move(ctx, partie);
 
-                int dice=ctx->dernier_de;
+                int dice = ctx->dernier_de;
                 startPawnMove(&pawns[ja], previousPos, dice);
                 partie->temps_lancer = SDL_GetTicks();
                 partie->dejaLance = 1;
-                btn->throwDice.disabled = 1;
+
+                if (bridge_is_double(ctx)) {
+                    btn->throwDice.disabled = 0; 
+                } else {
+                    btn->throwDice.disabled = 1;
+                }
                 *state = LANCER;
             }
-            if (isClicked(&btn->endTurn, x, y)) {
+            if (isClicked(&btn->endTurn, x, y) && partie->dejaLance) {
                 bridge_play_turn(ctx, partie);
                 partie->dejaLance = 0;
                 btn->throwDice.disabled = 0;
+                bridge_reset_doubles(ctx);
                 int fini = bridge_next_turn(partie);
                 if (fini) {
                     bridge_free(ctx); *state = MENU;
@@ -154,12 +159,13 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 bridge_free(ctx);
                 *state = MENU;
             }
-            if (isClicked(&btn->endTurn, x, y)) {
+            if (isClicked(&btn->endTurn, x, y) && partie->dejaLance) {
                 bridge_play_turn(ctx, partie);
                 int fini = bridge_next_turn(partie);
                 partie->temps_lancer = 0;
                 partie->dejaLance = 0;
                 btn->throwDice.disabled = 0;
+                bridge_reset_doubles(ctx);
                 if (fini) { 
                     bridge_free(ctx); *state = MENU; 
                 }else{ 

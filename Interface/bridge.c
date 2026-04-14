@@ -58,12 +58,19 @@ void bridge_free(ContexteJeu* ctx) {
 
 int bridge_roll_and_move(ContexteJeu* ctx, EtatPartie* partie) {
     int ja = partie->joueursActif;
-    int compteur_doubles = 0;
     Player* p = ctx->joueurs[ja];
     if (!p) return 0;
-    ctx->dernier_de = engine_roll_and_move(p, &ctx->plateau,&compteur_doubles);
+    ctx->dernier_de = engine_roll_and_move(p, &ctx->plateau, &ctx->compteur_doubles);
     bridge_sync(ctx, partie);
     return ctx->dernier_de;
+}
+
+int bridge_is_double(const ContexteJeu* ctx) {
+    return ctx->compteur_doubles > 0;
+}
+
+void bridge_reset_doubles(ContexteJeu* ctx) {
+    ctx->compteur_doubles = 0;
 }
 
 void bridge_play_turn(ContexteJeu* ctx, EtatPartie* partie) {
@@ -76,7 +83,7 @@ void bridge_play_turn(ContexteJeu* ctx, EtatPartie* partie) {
 
 int bridge_next_turn(EtatPartie* partie) {
     partie->joueursActif = (partie->joueursActif + 1) % partie->nbJoueurs;
-    if (partie->joueursActif == 0)partie->tourActuel++;
+    if (partie->joueursActif == 0) partie->tourActuel++;
     if (partie->tourMax > 0 && partie->tourActuel > partie->tourMax) return 1;
     return 0;
 }
