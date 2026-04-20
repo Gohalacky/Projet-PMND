@@ -18,6 +18,7 @@ SRC_MOD = $(MOD_DIR)/alea.c        \
           $(MOD_DIR)/tool.c         \
           $(MOD_DIR)/trade.c		\
 		  $(MOD_DIR)/prison.c		\
+          $(MOD_DIR)/voe.c		\
 
 SRC_CTRL = $(CTRL_DIR)/game_engine.c \
            $(CTRL_DIR)/plateau.c
