@@ -113,22 +113,53 @@ void engine_manage_assets(Player *p, Property *tableau_prop[]) {
         Property *prop = tableau_prop[i];
         if (prop->owner == p->number && full_color(tableau_prop, p, prop->color)) {
             if (prop->level < 3 && check_uniformity(tableau_prop, prop, 1)) {
-                printf("\n%d. %-15s (Niveau %d -> %d | Coût: %d)", 
-                       count + 1, prop->name, prop->level, prop->level + 1, prop->construction_cost);
+                
+                //vérification du type de batiment déjà existant dans la couleur
+                int type_impose = Vide;
+                for (int j = 0; j < NB_PROPRIETE; j++) {
+                    if (tableau_prop[j]->color == prop->color && tableau_prop[j]->type != Vide) {
+                        type_impose = tableau_prop[j]->type;
+                        break;
+                    }
+                }
+
+                if (type_impose != Vide) {
+                    printf("\n%d. %-15s (Niveau %d -> %d | Type : %d imposé | Coût: %d)", 
+                           count + 1, prop->name, prop->level, prop->level + 1, type_impose, prop->construction_cost);
+                } else {
+                    printf("\n%d. %-15s (Niveau %d -> %d | Coût: %d)", 
+                           count + 1, prop->name, prop->level, prop->level + 1, prop->construction_cost);
+                }
                 list[count++] = i;
             }
         }
     }
+
     if (count == 0) { printf("\n Construction impossible (Uniformité ou Monopole requis).\n"); return; }
     
     printf("\nChoix (0 pour quitter) : ");
     int choix; scanf("%d", &choix);
     if (choix > 0 && choix <= count) {
         Property *sel = tableau_prop[list[choix-1]];
+        
+        // On cherche si un type est déjà imposé pour cette couleur
+        int t = Vide;
+        for (int j = 0; j < NB_PROPRIETE; j++) {
+            if (tableau_prop[j]->color == sel->color && tableau_prop[j]->type != Vide) {
+                t = tableau_prop[j]->type;
+                break;
+            }
+        }
+
+        // Si aucun type n'est imposé, on demande au joueur
+        if (t == Vide) {
+            printf("Type de bâtiment (1:Maison, 2:Social, 3:Parc) : ");
+            scanf("%d", &t);
+        }
+
         if (p->credit >= sel->construction_cost) {
-            printf("Bâtiment (1:Maison, 2:Social, 3:Parc) : ");
-            int t; scanf("%d", &t);
             add_level(tableau_prop, sel, p, t);
+            printf(" Chantier terminé !");
         } else printf(" Pas assez d'ECTS !\n");
     }
 }
@@ -289,5 +320,3 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
 }
 
 
-
-//il faut que je rajout le fait qu'on puisse construire que un seul type de batiment par couleur
