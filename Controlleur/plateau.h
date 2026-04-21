@@ -9,8 +9,10 @@ typedef enum {
     CASE_TERRAIN,
     CASE_GARE,
     CASE_COMPAGNIE,
-    CASE_SPECIAL, // Taxes, Chance,
-    CASE_PRISON
+    CASE_SPECIAL, // Chance/Communauté
+    CASE_PRISON,
+    CASE_TAXE,
+    CASE_ALLEZ_PRISON
 } TypeCase;
 
 // Structure d'une case du plateau

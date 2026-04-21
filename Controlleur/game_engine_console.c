@@ -160,6 +160,24 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
             else if (cp->owner != p->number) must_rent_Compagnies(tableau_comp, cp, p, all_players[cp->owner-1], total_des);
             break;
         }
+        case CASE_TAXE: {
+            // Si c'est la case 4 (Impôt), on retire 200, sinon 100 (Taxe de luxe)
+            int montant = 0;
+            if (p->position == 4) {
+                montant= 200;
+            }else{
+                montant=100;
+            } 
+            printf("\n Vous devez payer l'administration : %d ECTS.", montant);
+            player_remove_credits(p, montant);
+            break;
+        }
+        case CASE_ALLEZ_PRISON: {
+            printf("\n Direction la cellule ! Ne passez pas par la case départ.");
+            p->position = 10;
+            go_to_jail(p, jail);
+            break;
+        }
         default: printf("\n Rien à signaler."); break;
     }
 }
@@ -222,7 +240,7 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
         rejouer = 0;
         int menu_boucle = 1;
 
-        // MENU D'AVANT-LANCER (On peut construire/échanger/Etat avant chaque lancer)
+        // MENU D'AVANT LANCER (On peut construire/échanger/Etat avant chaque lancer)
         while (menu_boucle) {
             printf("\n\n--- MENU (%s - %d ECTS) ---", p->name, p->credit);
             printf("\n1.  Lancer les dés%s", (d_count > 0 ? " (REJOUER)" : ""));
@@ -243,7 +261,7 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
 
         // VÉRIFICATION DE LA RÈGLE DES 3 DOUBLES
         if (d_count == 3) {
-            printf("\n🚔 3 DOUBLES D'AFFILÉE ! C'est suspect... Direction la PRISON !");
+            printf("\n 3 DOUBLES D'AFFILÉE ! C'est suspect... Direction la PRISON !");
             // On déplace le joueur sur la case prison (position 10)
             p->position = 10; 
             go_to_jail(p, jail); 
@@ -252,9 +270,12 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
             // MOUVEMENT ET RÉSOLUTION
             player_move(p, des);
             engine_resolve_case(p, all_players, tableau_prop, tableau_gare, tableau_comp, plateau, jail, des);
-            
+            // Si après la résolution de la case, le joueur est en prison on annule le double
+            if (is_in_jail(p, jail)) {
+                rejouer = 0; 
+            }
             // Si c'était un double, on prépare le tour suivant
-            if (d_count > 0) {
+            else if (d_count > 0) {
                 printf("\n DOUBLE ! Vous avez le droit de rejouer.");
                 rejouer = 1;
             }
