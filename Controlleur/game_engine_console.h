@@ -5,6 +5,7 @@
 #include "../Modele/property.h"
 #include "plateau.h"
 #include "../Modele/prison.h"
+#include "../Modele/trade.h" 
 
 /**
  * @brief Simule un lancer de dés avec gestion du mode Admin.
@@ -20,7 +21,7 @@ int engine_roll_dice(int admin_mode, int *compteur_doubles);
  */
 void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[], 
                       Gares *tableau_gare[], Compagnies *tableau_comp[], 
-                      Plateau *plateau, Prison *jail, int admin_mode);
+                      Plateau *plateau, Prison *jail, int admin_mode, int nb_joueurs);
 
 /**
  * @brief Analyse la case d'arrivée et propose les options d'achat/loyer/construction.
@@ -28,5 +29,11 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
 void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_prop[], 
                          Gares *tableau_gare[], Compagnies *tableau_comp[], 
                          Plateau *plateau, Prison *jail, int total_des);
+
+// Actions et Affichage
+void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]);
+void engine_handle_purchase(Player *p, void *asset, int type);
+void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs);
+void engine_manage_assets(Player *p, Property *tableau_prop[]);
 
 #endif

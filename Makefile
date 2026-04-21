@@ -94,7 +94,7 @@ doc:
 	xdg-open docs/html/index.html
 
 clean:
-	rm -f $(ALL_OBJ) $(MOD_DIR)/test.o $(MOD_DIR)/main_test_cartes.o $(CTRL_DIR)/main.o $(CTRL_DIR)/game_engine_console.ov
+	rm -f $(ALL_OBJ) $(MOD_DIR)/test.o $(MOD_DIR)/main_test_cartes.o $(CTRL_DIR)/main.o $(CTRL_DIR)/game_engine_console.o
 	rm -f $(TARGET) $(TEST_EXEC) $(TEST_CARTES) $(CONTROLLEUR)
 	@echo "✔  Nettoyage terminé"
 
