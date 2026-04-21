@@ -106,62 +106,177 @@ void engine_handle_purchase(Player *p, void *asset, int type) {
 }
 
 /* CONSTRUCTION (RÈGLE D'UNIFORMITÉ) */
-void engine_manage_assets(Player *p, Property *tableau_prop[]) {
-    printf("\n CHANTIER ");
-    int list[NB_PROPRIETE], count = 0;
-    for (int i = 0; i < NB_PROPRIETE; i++) {
-        Property *prop = tableau_prop[i];
-        if (prop->owner == p->number && full_color(tableau_prop, p, prop->color)) {
-            if (prop->level < 3 && check_uniformity(tableau_prop, prop, 1)) {
-                
-                //vérification du type de batiment déjà existant dans la couleur
-                int type_impose = Vide;
-                for (int j = 0; j < NB_PROPRIETE; j++) {
-                    if (tableau_prop[j]->color == prop->color && tableau_prop[j]->type != Vide) {
-                        type_impose = tableau_prop[j]->type;
-                        break;
-                    }
-                }
-
-                if (type_impose != Vide) {
-                    printf("\n%d. %-15s (Niveau %d -> %d | Type : %d imposé | Coût: %d)", 
-                           count + 1, prop->name, prop->level, prop->level + 1, type_impose, prop->construction_cost);
-                } else {
-                    printf("\n%d. %-15s (Niveau %d -> %d | Coût: %d)", 
-                           count + 1, prop->name, prop->level, prop->level + 1, prop->construction_cost);
-                }
-                list[count++] = i;
-            }
-        }
-    }
-
-    if (count == 0) { printf("\n Construction impossible (Uniformité ou Monopole requis).\n"); return; }
+void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
+    printf("\n Gestion des biens ");
+    printf("\n1. Construire / Améliorer");
+    printf("\n2. Hypothéquer un bien (Gagner des ECTS)");
+    printf("\n3. Racheter une hypothèque (Retrouver les loyers)");
+    printf("\n4. Vendre un bâtiment (Remboursement)");
+    printf("\n0. Retour");
+    printf("\nChoix : ");
     
-    printf("\nChoix (0 pour quitter) : ");
-    int choix; scanf("%d", &choix);
-    if (choix > 0 && choix <= count) {
-        Property *sel = tableau_prop[list[choix-1]];
-        
-        // On cherche si un type est déjà imposé pour cette couleur
-        int t = Vide;
-        for (int j = 0; j < NB_PROPRIETE; j++) {
-            if (tableau_prop[j]->color == sel->color && tableau_prop[j]->type != Vide) {
-                t = tableau_prop[j]->type;
-                break;
+    int action; scanf("%d", &action);
+    if (action == 0) return;
+
+    // Construction 
+    if (action == 1) {
+        int list[NB_PROPRIETE], count = 0;
+        for (int i = 0; i < NB_PROPRIETE; i++) {
+            Property *prop = tableau_prop[i];
+            if (prop->owner == p->number && full_color(tableau_prop, p, prop->color)) {
+                if (prop->level < 3 && check_uniformity(tableau_prop, prop, 1)) {
+                
+                    //vérification du type de batiment déjà existant dans la couleur
+                    int type_impose = Vide;
+                    for (int j = 0; j < NB_PROPRIETE; j++) {
+                        if (tableau_prop[j]->color == prop->color && tableau_prop[j]->type != Vide) {
+                            type_impose = tableau_prop[j]->type;
+                            break;
+                        }
+                    }
+
+                    if (type_impose != Vide) {
+                        printf("\n%d. %-15s (Niveau %d -> %d | Type : %d imposé | Coût: %d)", 
+                        count + 1, prop->name, prop->level, prop->level + 1, type_impose, prop->construction_cost);
+                    }else {
+                        printf("\n%d. %-15s (Niveau %d -> %d | Coût: %d)", 
+                        count + 1, prop->name, prop->level, prop->level + 1, prop->construction_cost);
+                    }   
+                    list[count++] = i;
+                }
             }
         }
 
-        // Si aucun type n'est imposé, on demande au joueur
-        if (t == Vide) {
-            printf("Type de bâtiment (1:Maison, 2:Social, 3:Parc) : ");
-            scanf("%d", &t);
-        }
+        if (count == 0) { printf("\n Construction impossible (Uniformité ou Monopole requis).\n"); return; }
+    
+        printf("\nChoix (0 pour quitter) : ");
+        int choix; scanf("%d", &choix);
+        if (choix > 0 && choix <= count) {
+            Property *sel = tableau_prop[list[choix-1]];
+        
+            // On cherche si un type est déjà imposé pour cette couleur
+            int t = Vide;
+            for (int j = 0; j < NB_PROPRIETE; j++) {
+                if (tableau_prop[j]->color == sel->color && tableau_prop[j]->type != Vide) {
+                    t = tableau_prop[j]->type;
+                    break;
+                }
+            }   
 
-        if (p->credit >= sel->construction_cost) {
-            add_level(tableau_prop, sel, p, t);
-            printf(" Chantier terminé !");
-        } else printf(" Pas assez d'ECTS !\n");
+            // Si aucun type n'est imposé, on demande au joueur
+            if (t == Vide) {
+                printf("Type de bâtiment (1:Maison, 2:Social, 3:Parc) : ");
+                scanf("%d", &t);
+            }
+
+            if (p->credit >= sel->construction_cost) {
+                add_level(tableau_prop, sel, p, t);
+                printf(" Chantier terminé !");
+            } else printf(" Pas assez d'ECTS !\n");
+        }
     }
+    
+    // Hypothèque
+    else if (action == 2) {
+        printf("\n HYPOTHÈQUES DISPONIBLES");
+        // On utilise 3 listes pour stocker les indices des biens affichés
+        int lp[NB_PROPRIETE], lg[NB_GARE], lc[NB_COMPAGNIE];
+        int cp, cg, cc, global_count;
+        cp = 0;
+        cg = 0;
+        cc = 0;
+        global_count = 1;
+
+        for(int i=0; i<NB_PROPRIETE; i++)
+            if(tableau_prop[i]->owner == p->number && !tableau_prop[i]->hypo && tableau_prop[i]->level == 0) {
+                printf("\n%d. [TERRAIN] %-15s (+%d ECTS)", global_count++, tableau_prop[i]->name, tableau_prop[i]->value/2);
+                lp[cp++] = i;
+            }
+        for(int i=0; i<NB_GARE; i++)
+            if(tableau_gare[i]->owner == p->number && !tableau_gare[i]->hypo) {
+                printf("\n%d. [GARE]    %-15s (+%d ECTS)", global_count++, tableau_gare[i]->name, tableau_gare[i]->value/2);
+                lg[cg++] = i;
+            }
+        for(int i=0; i<NB_COMPAGNIE; i++)
+            if(tableau_comp[i]->owner == p->number && !tableau_comp[i]->hypo) {
+                printf("\n%d. [COMP]    %-15s (+%d ECTS)", global_count++, tableau_comp[i]->name, tableau_comp[i]->value/2);
+                lc[cc++] = i;
+            }
+
+        if (global_count == 1) { printf("\nAucun bien hypothéquable (Vendez les bâtiments d'abord).\n"); return; }
+        
+        int choix; printf("\nChoix : "); scanf("%d", &choix);
+
+        if (choix > 0 && choix <= cp) {
+            hypotheque_PROP(tableau_prop[lp[choix-1]], p);
+        }
+        else if (choix > cp && choix <= (cp + cg)) {
+            hypotheque_GARE(tableau_gare[lg[choix - cp - 1]], p);
+        }
+        else if (choix > (cp + cg) && choix <= (cp + cg + cc)) {
+            hypotheque_COMP(tableau_comp[lc[choix - cp - cg - 1]], p);
+        }
+    }
+
+    // Rachat d'hypothèque
+    else if (action == 3) {
+        printf("\n RACHAT D'HYPOTHÈQUES (Coût +10%%)");
+        int lp[NB_PROPRIETE], lg[NB_GARE], lc[NB_COMPAGNIE];
+        int cp, cg, cc, global_count;
+        cp = 0;
+        cg = 0;
+        cc = 0;
+        global_count = 1;
+
+        for(int i=0; i<NB_PROPRIETE; i++)
+            if(tableau_prop[i]->owner == p->number && tableau_prop[i]->hypo) {
+                printf("\n%d. [TERRAIN] %-15s (%d ECTS)", global_count++, tableau_prop[i]->name, (int)((tableau_prop[i]->value/2)*1.1));
+                lp[cp++] = i;
+            }
+        for(int i=0; i<NB_GARE; i++)
+            if(tableau_gare[i]->owner == p->number && tableau_gare[i]->hypo) {
+                printf("\n%d. [GARE]    %-15s (%d ECTS)", global_count++, tableau_gare[i]->name, (int)((tableau_gare[i]->value/2)*1.1));
+                lg[cg++] = i;
+            }
+
+        for(int i=0; i<NB_COMPAGNIE; i++)
+            if(tableau_comp[i]->owner == p->number && tableau_comp[i]->hypo) {
+                printf("\n%d. [COMP]    %-15s (%d ECTS)", global_count++, tableau_comp[i]->name, (int)((tableau_comp[i]->value/2)*1.1));
+                lc[cc++] = i;
+            }
+
+        if (global_count == 1) { printf("\nAucune hypothèque en cours.\n"); return; }
+
+        int choix; printf("\nChoix : "); scanf("%d", &choix);
+        if (choix > 0 && choix <= cp) {
+            rachathypo_PROP(tableau_prop[lp[choix-1]], p);
+        }
+        else if (choix > cp && choix <= cp + cg) {
+            rachathypo_GARE(tableau_gare[lg[choix-cp-1]], p);
+        }
+        else if (choix > cp + cg && choix <= cp + cg + cc) {
+            rachathypo_COMP(tableau_comp[lc[choix-cp-cg-1]], p);
+        }
+    }
+
+    // Vendre un batiment
+    else if (action == 4) {
+        printf("\n DÉCONSTRUCTION ");
+        int list[NB_PROPRIETE], count = 0;
+        for (int i = 0; i < NB_PROPRIETE; i++) {
+            if (tableau_prop[i]->owner == p->number && tableau_prop[i]->level > 0) {
+                if (check_uniformity(tableau_prop, tableau_prop[i], -1)) {
+                    printf("\n%d. %s (Niveau %d -> %d | Remboursement: %d)", 
+                           count + 1, tableau_prop[i]->name, tableau_prop[i]->level, tableau_prop[i]->level - 1, tableau_prop[i]->construction_cost);
+                    list[count++] = i;
+                }
+            }
+        }
+        if (count == 0) { printf("\nAucun bâtiment à vendre.\n"); return; }
+        int choix; printf("\nChoix : "); scanf("%d", &choix);
+        if (choix > 0 && choix <= count) remove_level(tableau_prop, tableau_prop[list[choix-1]], p);
+    }
+
 }
 
 /* RÉSOLUTION DE CASE */
@@ -246,7 +361,7 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
 
     // GESTION DE LA SORTIE DE PRISON
     if (is_in_jail(p, jail)) {
-        printf("\n⛓️ EN PRISON ! 1: Payer (50 ECTS) | 2: Tenter un double\nChoix : ");
+        printf("\n EN PRISON ! 1: Payer (50 ECTS) | 2: Tenter un double\nChoix : ");
         int c; scanf("%d", &c);
         if (c == 1) {
             pay_to_get_out(p, jail);
@@ -275,14 +390,14 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
         while (menu_boucle) {
             printf("\n\n--- MENU (%s - %d ECTS) ---", p->name, p->credit);
             printf("\n1.  Lancer les dés%s", (d_count > 0 ? " (REJOUER)" : ""));
-            printf("\n2.  Construire");
+            printf("\n2.  Gestion des biens");
             printf("\n3.  Échanger");
             printf("\n4.  État");
             printf("\nVotre choix : ");
             int choix; scanf("%d", &choix);
 
             if (choix == 1) menu_boucle = 0;
-            else if (choix == 2) engine_manage_assets(p, tableau_prop);
+            else if (choix == 2) engine_manage_assets(p, tableau_prop, tableau_gare, tableau_comp);
             else if (choix == 3) engine_handle_trade(p, all_players, nb_joueurs);
             else if (choix == 4) display_player_status(p, tableau_prop, tableau_gare, tableau_comp);
         }
