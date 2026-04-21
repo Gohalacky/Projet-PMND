@@ -4,7 +4,7 @@
 #include <string.h>
 #include "plateau.h"
 #include "../Modele/player.h"
-#include "game_engine.h"
+#include "game_engine_console.h"
 
 
 void vider_buffer() {
@@ -85,14 +85,17 @@ int main() {
     int continuer = 1;
     int tour_actuel = 1;
     
-    while (continuer) {
-        
+     while (continuer) {
         if (max_tours != -1 && tour_actuel > max_tours) break;
 
         printf("\n--- TOUR %d ---\n", tour_actuel);
         
         for (int i = 0; i < nb_joueurs; i++) {
-            engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, tableau_gar ,tableau_comp,  &mon_plateau, jail, admin_mode);
+            // On vérifie si le joueur est toujours en jeu
+            if (liste_joueurs[i]->credit <= 0 && mode_jeu == 2) continue;
+
+            // APPEL MIS À JOUR : modification de la signature des arguments de ma fontions 
+            engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, tableau_gar, tableau_comp, &mon_plateau, jail, admin_mode, nb_joueurs);
             
             // Vérification de la faillite (Mode 2)
             if (mode_jeu == 2 && liste_joueurs[i]->credit <= 0) {
@@ -100,14 +103,12 @@ int main() {
                 continuer = 0;
                 break;
             }
-            // Gestion de l'arrêt
-            printf("\n[Entrée] Continuer | [q + Entrée] Quitter : ");
-            char c = getchar();
-            if (c == 'q' || c == 'Q') {
-                continuer = 0;
-                break;
+
+            // Message pour passer au joueur suivant
+            if (i < nb_joueurs - 1) {
+                printf("\nAppuyez sur Entrée pour le tour de %s...", liste_joueurs[i+1]->name);
+                getchar(); 
             }
-            if (c != '\n') vider_buffer();
         }
         tour_actuel++;
     }

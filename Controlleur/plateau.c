@@ -16,9 +16,24 @@ void init_plateau(Plateau *plt, Property *t_prop[], Gares *t_gar[], Compagnies *
         sprintf(plt->cases[i].nom_affichage, "Case Spéciale %d", i);
     }
 
-    // Configuration de la case départ
+    // Configuration case fixes
     plt->cases[0].type = CASE_DEPART;
-    strcpy(plt->cases[0].nom_affichage, "DÉPART");
+    strcpy(plt->cases[0].nom_affichage, "DÉPART ( +200 ECTS )");
+
+    plt->cases[4].type = CASE_TAXE; // Impôt sur le revenu
+    strcpy(plt->cases[4].nom_affichage, "IMPÔT SUR LE REVENU ( -200 ECTS )");
+
+    plt->cases[10].type = CASE_PRISON;
+    strcpy(plt->cases[10].nom_affichage, "PRISON ( Visite Simple )");
+
+    plt->cases[20].type = CASE_SPECIAL; // Parc Gratuit
+    strcpy(plt->cases[20].nom_affichage, "PARC GRATUIT");
+
+    plt->cases[30].type = CASE_ALLEZ_PRISON;
+    strcpy(plt->cases[30].nom_affichage, "ALLEZ EN PRISON !");
+
+    plt->cases[38].type = CASE_TAXE; // Taxe de luxe
+    strcpy(plt->cases[38].nom_affichage, "TAXE DE LUXE ( -100 ECTS )");
 
     // Placement des terrains (22 propriétés)
     // Liste des indices officiels du plateau pour les terrains
