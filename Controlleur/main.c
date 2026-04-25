@@ -7,10 +7,7 @@
 #include "game_engine_console.h"
 
 
-void vider_buffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
-}
+
 
 
 int main() {
@@ -88,32 +85,33 @@ int main() {
     while (continuer) {
         if (max_tours != -1 && tour_actuel > max_tours) break;
 
-        printf("\n--- TOUR %d ---\n", tour_actuel);
-        
         for (int i = 0; i < nb_joueurs; i++) {
-            if (liste_joueurs[i]->credit < 0) continue; // Joueur éliminé
+            // 1. On saute les joueurs éliminés (crédit -1)
+            if (liste_joueurs[i]->credit < 0) continue;
 
+            // 2. Le joueur joue (le moteur gère les dettes tout seul dedans)
             engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, tableau_gar, tableau_comp, &mon_plateau, jail, admin_mode, nb_joueurs);
             
-            // Gestion de la faillite immédiate
-            if (liste_joueurs[i]->credit == 0) {
-                engine_handle_bankruptcy(liste_joueurs[i], tableau_prop, tableau_gar, tableau_comp);
-            }
-
-            // Vérification : reste-t-il plus d'un joueur ?
+            // 3. On vérifie s'il reste assez de monde pour continuer
             int survivants = 0;
             for (int k = 0; k < nb_joueurs; k++) if (liste_joueurs[k]->credit >= 0) survivants++;
 
-            if (survivants <= 1) {
+            if (survivants <= 1 && mode_jeu == 2) {
                 continuer = 0;
                 break;
             }
-
-            // Attente entre les joueurs
-            if (i < nb_joueurs - 1) {
-                printf("\n[Entrée] Joueur suivant...");
-                getchar();
+        }
+        int survivants = 0;
+        for (int k = 0; k < nb_joueurs; k++) {
+            if (liste_joueurs[k]->credit >= 0) {
+                survivants++;
             }
+        }
+
+        // Si tout le monde a fait faillite sauf un (ou moins)
+        if (survivants <= 1) {
+            continuer = 0; // On sort du while au prochain tour
+            // On peut aussi mettre un 'break;' pour sortir immédiatement
         }
         tour_actuel++;
     }

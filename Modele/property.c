@@ -365,6 +365,7 @@ int remove_level(Property * tableau[NB_PROPRIETE], Property * prop, Player * p) 
         // Remboursement ( 100% du prix de construction)
         int remboursement = prop->construction_cost ;
         player_add_credits(p, remboursement);
+        printf("\n Vente réussie ! +%d ECTS (Niveau actuel : %d)\n", remboursement, prop->level);
         
         return 1;
     }

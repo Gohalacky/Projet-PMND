@@ -3,6 +3,13 @@
 //#include <string.h>
 #include "game_engine_console.h"
 
+
+void vider_buffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}   
+
+
 /* AFFICHAGE DE L'ÉTAT DU JOUEUR */
 void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
     printf("\n==================================================");
@@ -260,21 +267,46 @@ void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_ga
     }
 
     // Vendre un batiment
+    // Vendre un bâtiment (Déconstruction)
     else if (action == 4) {
-        printf("\n DÉCONSTRUCTION ");
+        printf("\n DÉCONSTRUCTION");
         int list[NB_PROPRIETE], count = 0;
+
+        // On parcourt les propriétés pour lister celles qui ont des bâtiments
         for (int i = 0; i < NB_PROPRIETE; i++) {
+            // Le joueur doit être propriétaire et avoir au moins 1 niveau
             if (tableau_prop[i]->owner == p->number && tableau_prop[i]->level > 0) {
+                // On vérifie si la vente respecte la règle d'uniformité (-1)
                 if (check_uniformity(tableau_prop, tableau_prop[i], -1)) {
-                    printf("\n%d. %s (Niveau %d -> %d | Remboursement: %d)", 
-                           count + 1, tableau_prop[i]->name, tableau_prop[i]->level, tableau_prop[i]->level - 1, tableau_prop[i]->construction_cost);
-                    list[count++] = i;
+                    // Remboursement standard : 50% du prix d'achat initial
+                    int remboursement = tableau_prop[i]->construction_cost / 2;
+                    
+                    printf("\n%d. %-15s (Niveau %d -> %d | Remboursement: +%d ECTS)", 
+                           count + 1, 
+                           tableau_prop[i]->name, 
+                           tableau_prop[i]->level, 
+                           tableau_prop[i]->level - 1, 
+                           remboursement);
+                    
+                    list[count++] = i; // On mémorise l'indice réel
                 }
             }
         }
-        if (count == 0) { printf("\nAucun bâtiment à vendre.\n"); return; }
-        int choix; printf("\nChoix : "); scanf("%d", &choix);
-        if (choix > 0 && choix <= count) remove_level(tableau_prop, tableau_prop[list[choix-1]], p);
+
+        if (count == 0) { 
+            printf("\nAucun bâtiment ne peut être vendu pour le moment (vérifiez l'uniformité).\n"); 
+            return; 
+        }
+
+        printf("\n0. Retour");
+        printf("\nChoix : ");
+        int choix; 
+        scanf("%d", &choix);
+
+        if (choix > 0 && choix <= count) {
+            // Appel de ta fonction de déconstruction
+            remove_level(tableau_prop, tableau_prop[list[choix-1]], p);
+        }
     }
 
 }
@@ -328,7 +360,7 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
     }
     // Si le joueur n'a plus d'argent et qu'il n'est pas déjà marqué éliminé
     if (p->credit == 0) {
-        engine_handle_bankruptcy(p, tableau_prop, tableau_gare, tableau_comp);
+        engine_resolve_debt(p, tableau_prop, tableau_gare, tableau_comp);
     }
 }
 
@@ -353,6 +385,46 @@ void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs)
     }
     free(off1); free(off2);
 }
+
+
+// Vérifie si le joueur possède encore quelque chose de vendable ou d'hypothécable
+int engine_has_assets_left(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
+    for (int i = 0; i < NB_PROPRIETE; i++)
+        if (tableau_prop[i]->owner == p->number && (tableau_prop[i]->level > 0 || !tableau_prop[i]->hypo)) return 1;
+    
+    for (int i = 0; i < NB_GARE; i++)
+        if (tableau_gare[i]->owner == p->number && !tableau_gare[i]->hypo) return 1;
+
+    for (int i = 0; i < NB_COMPAGNIE; i++)
+        if (tableau_comp[i]->owner == p->number && !tableau_comp[i]->hypo) return 1;
+
+    return 0; // Rien à vendre, c'est la fin
+}
+
+// Boucle de sauvetage : force le joueur à vendre jusqu'à ce qu'il soit positif
+void engine_resolve_debt(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
+    while (p->credit < 0) {
+        printf("\n  DETTE  : %d ECTS !", -p->credit);
+        
+        if (!engine_has_assets_left(p, tableau_prop, tableau_gare, tableau_comp)) {
+            printf("\n[DÉFAITE] %s n'a plus aucune ressource...", p->name);
+            engine_handle_bankruptcy(p, tableau_prop, tableau_gare, tableau_comp);
+            return; // Sortie vers la faillite (crédit passera à -1)
+        }
+
+        printf("\nVous devez vous séparer de vos biens pour payer vos dettes.");
+        printf("\nAppuyez sur Entrée pour ouvrir le menu de gestion...");
+        vider_buffer(); getchar();
+
+        // On lance le menu de gestion (Action 2: Hypothèque, Action 4: Vendre bâtiment)
+        engine_manage_assets(p, tableau_prop, tableau_gare, tableau_comp);
+    }
+    printf("\n Dette réglée ! Nouveau solde : %d ECTS\n", p->credit);
+}
+
+
+
+
 
 /* TOUR COMPLET */
 void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[], 
