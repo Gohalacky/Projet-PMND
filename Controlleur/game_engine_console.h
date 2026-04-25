@@ -35,5 +35,7 @@ void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_g
 void engine_handle_purchase(Player *p, void *asset, int type);
 void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs);
 void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]);
+void engine_handle_bankruptcy(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]);
+int engine_get_player_total_value(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]);
 
 #endif

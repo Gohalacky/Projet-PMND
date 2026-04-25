@@ -326,6 +326,10 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
         }
         default: printf("\n Rien à signaler."); break;
     }
+    // Si le joueur n'a plus d'argent et qu'il n'est pas déjà marqué éliminé
+    if (p->credit == 0) {
+        engine_handle_bankruptcy(p, tableau_prop, tableau_gare, tableau_comp);
+    }
 }
 
 /* ÉCHANGES */
@@ -435,3 +439,69 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
 }
 
 
+void engine_handle_bankruptcy(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
+    printf("\n PROTOCOLE DE BANQUEROUTE : %s ", p->name);
+    printf("\n %s est officiellement en faillite. Libération du patrimoine...", p->name);
+
+    // Libération des Terrains
+    for (int i = 0; i < NB_PROPRIETE; i++) {
+        if (tableau_prop[i]->owner == p->number) {
+            tableau_prop[i]->owner = 0;
+            tableau_prop[i]->level = 0;
+            tableau_prop[i]->type = 0;    
+            tableau_prop[i]->hypo = 0;    
+            printf("\n  - %s est de nouveau disponible.", tableau_prop[i]->name);
+        }
+    }
+
+    // Libération des Gares
+    for (int i = 0; i < NB_GARE; i++) {
+        if (tableau_gare[i]->owner == p->number) {
+            tableau_gare[i]->owner = 0;
+            tableau_gare[i]->hypo = 0;
+            printf("\n  - %s est de nouveau disponible.", tableau_gare[i]->name);
+        }
+    }
+
+    // Libération des Compagnies
+    for (int i = 0; i < NB_COMPAGNIE; i++) {
+        if (tableau_comp[i]->owner == p->number) {
+            tableau_comp[i]->owner = 0;
+            tableau_comp[i]->hypo = 0;
+            printf("\n  - %s est de nouveau disponible.", tableau_comp[i]->name);
+        }
+    }
+ 
+    //  on met son crédit à -1 pour signifier qu'il est hors-jeu.
+    p->credit = -1; 
+    printf("\n\n [INFO] Tous les biens de %s ont été saisis.\n", p->name);
+}
+
+
+int engine_get_player_total_value(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
+    if (p->credit < 0) return -1; // Joueur éliminé
+
+    int total = p->credit;
+
+    // Valeur des terrains + constructions
+    for (int i = 0; i < NB_PROPRIETE; i++) {
+        if (tableau_prop[i]->owner == p->number) {
+            total += tableau_prop[i]->value;
+            // On ajoute le coût des bâtiments investis
+            total += (tableau_prop[i]->level * tableau_prop[i]->construction_cost);
+        }
+    }
+    // Valeur des gares
+    for (int i = 0; i < NB_GARE; i++) {
+        if (tableau_gare[i]->owner == p->number) {
+            total += tableau_gare[i]->value;
+        }
+    }
+    // Valeur des compagnies
+    for (int i = 0; i < NB_COMPAGNIE; i++) {
+        if (tableau_comp[i]->owner == p->number) {
+            total += tableau_comp[i]->value;
+        }
+    }
+    return total;
+}

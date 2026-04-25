@@ -85,54 +85,70 @@ int main() {
     int continuer = 1;
     int tour_actuel = 1;
     
-     while (continuer) {
+    while (continuer) {
         if (max_tours != -1 && tour_actuel > max_tours) break;
 
         printf("\n--- TOUR %d ---\n", tour_actuel);
         
         for (int i = 0; i < nb_joueurs; i++) {
-            // On vérifie si le joueur est toujours en jeu
-            if (liste_joueurs[i]->credit <= 0 && mode_jeu == 2) continue;
+            if (liste_joueurs[i]->credit < 0) continue; // Joueur éliminé
 
-            // APPEL MIS À JOUR : modification de la signature des arguments de ma fontions 
             engine_play_turn(liste_joueurs[i], liste_joueurs, tableau_prop, tableau_gar, tableau_comp, &mon_plateau, jail, admin_mode, nb_joueurs);
             
-            // Vérification de la faillite (Mode 2)
-            if (mode_jeu == 2 && liste_joueurs[i]->credit <= 0) {
-                printf("\n!!! %s est en faillite ! FIN DE LA PARTIE !!!\n", liste_joueurs[i]->name);
+            // Gestion de la faillite immédiate
+            if (liste_joueurs[i]->credit == 0) {
+                engine_handle_bankruptcy(liste_joueurs[i], tableau_prop, tableau_gar, tableau_comp);
+            }
+
+            // Vérification : reste-t-il plus d'un joueur ?
+            int survivants = 0;
+            for (int k = 0; k < nb_joueurs; k++) if (liste_joueurs[k]->credit >= 0) survivants++;
+
+            if (survivants <= 1) {
                 continuer = 0;
                 break;
             }
 
-            // Message pour passer au joueur suivant
+            // Attente entre les joueurs
             if (i < nb_joueurs - 1) {
-                printf("\nAppuyez sur Entrée pour le tour de %s...", liste_joueurs[i+1]->name);
-                getchar(); 
+                printf("\n[Entrée] Joueur suivant...");
+                getchar();
             }
         }
         tour_actuel++;
     }
-    // Fin de partie
+
+    // CALCUL DU GAGNANT
     printf("\n=================================");
     printf("\n       FIN DE LA PARTIE          ");
     printf("\n=================================\n");
 
-    Player *gagnant = liste_joueurs[0];
-    for (int i = 1; i < nb_joueurs; i++) {
-        if (liste_joueurs[i]->credit > gagnant->credit) {
-            gagnant = liste_joueurs[i];
+    Player *gagnant = NULL;
+    int max_valeur = -2;
+
+    for (int i = 0; i < nb_joueurs; i++) {
+        int valeur_totale = engine_get_player_total_value(liste_joueurs[i], tableau_prop, tableau_gar, tableau_comp);
+        
+        printf("%s : ", liste_joueurs[i]->name);
+        if (valeur_totale < 0) printf("ÉLIMINÉ\n");
+        else {
+            printf("%d ECTS de valeur totale (Cash: %d)\n", valeur_totale, liste_joueurs[i]->credit);
+            if (valeur_totale > max_valeur) {
+                max_valeur = valeur_totale;
+                gagnant = liste_joueurs[i];
+            }
         }
     }
-    printf("LE GAGNANT EST : %s avec %d ECTS !\n", gagnant->name, gagnant->credit);
 
-    // LIBÉRATION DE LA MÉMOIRE
-    printf("\nFermeture du jeu et libération de la mémoire...\n");
+    if (gagnant) {
+        printf("\n🏆 LE VAINQUEUR EST : %s avec une fortune de %d ECTS !\n", gagnant->name, max_valeur);
+    }
+
+    // --- LIBÉRATION ---
     for (int i = 0; i < nb_joueurs; i++) free(liste_joueurs[i]);
-    
     for (int i = 0; i < NB_PROPRIETE; i++) if (tableau_prop[i]) free(tableau_prop[i]);
     for (int i = 0; i < NB_GARE; i++) if (tableau_gar[i]) free(tableau_gar[i]);
     for (int i = 0; i < NB_COMPAGNIE; i++) if (tableau_comp[i]) free(tableau_comp[i]);
-
     free(jail);
 
     return 0;
