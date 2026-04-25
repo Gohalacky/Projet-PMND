@@ -1,97 +1,374 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+/**
+ * @file cartes.c
+ * @brief Implémentation du module de gestion des cartes.
+ */
+
 #include "cartes.h"
 
-static void melanger(int *t, int n, Alea *a) {
-    for(int i = n-1; i > 0; --i){
-        int j = (int)alea_borne(a, (uint32_t)(i + 1));
-        int tmp = t[i];
-        t[i] = t[j];
-        t[j] = tmp;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+/* ------------------------------------------------------------------------- */
+/* FONCTIONS INTERNES                                                        */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * @brief Échange deux entiers dans un tableau.
+ */
+static void echanger_int(int *a, int *b) {
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+/**
+ * @brief Initialise le générateur pseudo-aléatoire une seule fois.
+ */
+static void init_hasard_once(void) {
+    static int deja_init = 0;
+    if (!deja_init) {
+        srand((unsigned int)time(NULL));
+        deja_init = 1;
     }
 }
 
-/* --- Cartes integrees --- */
+/**
+ * @brief Renvoie l'indice d'une carte disponible dans une pioche Chance.
+ *
+ * On parcourt les cartes selon l'ordre mélangé à partir du sommet.
+ * Si une carte n'est pas disponible (par ex. Sortie de prison déjà en main),
+ * on la saute.
+ *
+ * @return Indice réel dans le tableau cartes, ou -1 si aucune carte disponible.
+ */
+static int trouver_carte_disponible_chance(PiocheChance *pioche) {
+    if (pioche == NULL) return -1;
 
-static const Carte CARTES_CHANCE[] = {
-    { PAQUET_CHANCE, "Bourse / prime de projet", "+30 ECTS", EFFET_GAIN_ECTS, 30 },
-    { PAQUET_CHANCE, "Stage bien paye", "+50 ECTS", EFFET_GAIN_ECTS, 50 },
-    { PAQUET_CHANCE, "Aide du BDE", "+20 ECTS", EFFET_GAIN_ECTS, 20 },
-    { PAQUET_CHANCE, "Concours remporte", "+40 ECTS", EFFET_GAIN_ECTS, 40 },
+    int tentative ;
+    for (tentative = 0; tentative < pioche->nb_cartes; tentative++) {
+        int pos = (pioche->sommet + tentative) % pioche->nb_cartes;
+        int idx = pioche->ordre[pos];
 
-    { PAQUET_CHANCE, "Amende stationnement velo", "-15 ECTS", EFFET_PERTE_ECTS, 15 },
-    { PAQUET_CHANCE, "Casse materiel en TP", "-25 ECTS", EFFET_PERTE_ECTS, 25 },
-    { PAQUET_CHANCE, "Retard rendu projet", "-20 ECTS", EFFET_PERTE_ECTS, 20 },
-    { PAQUET_CHANCE, "Izly en negatif", "-10 ECTS", EFFET_PERTE_ECTS, 10 },
+        if (pioche->cartes[idx].etat == ETAT_CARTE_DANS_PAQUET) {
+            pioche->sommet = (pos + 1) % pioche->nb_cartes;
+            return idx;
+        }
+    }
 
-    { PAQUET_CHANCE, "Semaine de partiels (perso)", "Construction interdite au prochain tour", EFFET_INTERDIT_CONSTRUIRE_1_TOUR, 1 },
-    { PAQUET_CHANCE, "Avance de 3 cases", "+3 cases", EFFET_DEPLACEMENT_REL, 3 },
-};
+    return -1;
+}
 
-static const Carte CARTES_COMMUNAUTE[] = {
-    { PAQUET_COMMUNAUTE, "Plan sobriete energetique", "Tout le monde paie 10 ECTS", EFFET_PERTE_ECTS, 10 },
-    { PAQUET_COMMUNAUTE, "Subvention campus vert", "Tout le monde reçoit 10 ECTS", EFFET_GAIN_ECTS, 10 },
+/**
+ * @brief Version équivalente pour la pioche Communauté.
+ */
+static int trouver_carte_disponible_communaute(PiocheCommunaute *pioche) {
+    if (pioche == NULL) return -1;
 
-    { PAQUET_COMMUNAUTE, "Travaux reseau chaleur", "Taxe ecologique base 20 ECTS (selon note)", EFFET_TAXE_ECO, 20 },
-    { PAQUET_COMMUNAUTE, "Reparation degâts climatiques", "Taxe ecologique base 30 ECTS (selon note)", EFFET_TAXE_ECO, 30 },
+    int tentative ;
+    for (tentative = 0; tentative < pioche->nb_cartes; tentative++) {
+        int pos = (pioche->sommet + tentative) % pioche->nb_cartes;
+        int idx = pioche->ordre[pos];
 
-    { PAQUET_COMMUNAUTE, "Hausse du coût de la vie", "Tout le monde paie 5 ECTS", EFFET_PERTE_ECTS, 5 },
-    { PAQUET_COMMUNAUTE, "Prime associative", "Tout le monde reçoit 5 ECTS", EFFET_GAIN_ECTS, 5 },
+        if (pioche->cartes[idx].etat == ETAT_CARTE_DANS_PAQUET) {
+            pioche->sommet = (pos + 1) % pioche->nb_cartes;
+            return idx;
+        }
+    }
 
-    { PAQUET_COMMUNAUTE, "Entretien des espaces verts", "Taxe ecologique base 15 ECTS (selon note)", EFFET_TAXE_ECO, 15 },
-    { PAQUET_COMMUNAUTE, "Inondations (collectif)", "Taxe ecologique base 25 ECTS (selon note)", EFFET_TAXE_ECO, 25 },
-};
+    return -1;
+}
 
-static const int NB_CHANCE = (int)(sizeof(CARTES_CHANCE) / sizeof(CARTES_CHANCE[0]));
-static const int NB_COMMUNAUTE = (int)(sizeof(CARTES_COMMUNAUTE) / sizeof(CARTES_COMMUNAUTE[0]));
+/* ------------------------------------------------------------------------- */
+/* INITIALISATION DES PIOCHES                                                */
+/* ------------------------------------------------------------------------- */
 
-void cartes_init_paquets(Paquet paquets[PAQUET_NB],
-                         int *ordre_chance, int cap_chance,
-                         int *ordre_commu, int cap_commu,
-                         Alea *a)
-{
-    paquets[PAQUET_CHANCE].cartes = CARTES_CHANCE;
-    paquets[PAQUET_CHANCE].nb_cartes = NB_CHANCE;
-    paquets[PAQUET_CHANCE].ordre = ordre_chance;
-    paquets[PAQUET_CHANCE].sommet = 0;
+void init_pioche_chance(PiocheChance *pioche) {
+    if (pioche == NULL) return;
 
-    paquets[PAQUET_COMMUNAUTE].cartes = CARTES_COMMUNAUTE;
-    paquets[PAQUET_COMMUNAUTE].nb_cartes = NB_COMMUNAUTE;
-    paquets[PAQUET_COMMUNAUTE].ordre = ordre_commu;
-    paquets[PAQUET_COMMUNAUTE].sommet = 0;
+    pioche->nb_cartes = NB_CARTES_CHANCE;
+    pioche->sommet = 0;
+
+    /* ------------------------------------------------------------------ */
+    /* Définition des cartes Chance                                       */
+    /* ------------------------------------------------------------------ */
+
+    strcpy(pioche->cartes[0].titre, "Bourse de projet");
+    strcpy(pioche->cartes[0].description, "Vous recevez 30 ECTS.");
+    pioche->cartes[0].paquet = PAQUET_CHANCE;
+    pioche->cartes[0].effet = CARTE_GAIN_ECTS;
+    pioche->cartes[0].valeur = 30;
+
+    strcpy(pioche->cartes[1].titre, "Stage bien paye");
+    strcpy(pioche->cartes[1].description, "Vous recevez 50 ECTS.");
+    pioche->cartes[1].paquet = PAQUET_CHANCE;
+    pioche->cartes[1].effet = CARTE_GAIN_ECTS;
+    pioche->cartes[1].valeur = 50;
+
+    strcpy(pioche->cartes[2].titre, "Aide du BDE");
+    strcpy(pioche->cartes[2].description, "Vous recevez 20 ECTS.");
+    pioche->cartes[2].paquet = PAQUET_CHANCE;
+    pioche->cartes[2].effet = CARTE_GAIN_ECTS;
+    pioche->cartes[2].valeur = 20;
+
+    strcpy(pioche->cartes[3].titre, "Amende stationnement");
+    strcpy(pioche->cartes[3].description, "Vous perdez 15 ECTS.");
+    pioche->cartes[3].paquet = PAQUET_CHANCE;
+    pioche->cartes[3].effet = CARTE_PERTE_ECTS;
+    pioche->cartes[3].valeur = 15;
+
+    strcpy(pioche->cartes[4].titre, "Materiel casse en TP");
+    strcpy(pioche->cartes[4].description, "Vous perdez 25 ECTS.");
+    pioche->cartes[4].paquet = PAQUET_CHANCE;
+    pioche->cartes[4].effet = CARTE_PERTE_ECTS;
+    pioche->cartes[4].valeur = 25;
+
+    strcpy(pioche->cartes[5].titre, "Retard rendu projet");
+    strcpy(pioche->cartes[5].description, "Vous perdez 20 ECTS.");
+    pioche->cartes[5].paquet = PAQUET_CHANCE;
+    pioche->cartes[5].effet = CARTE_PERTE_ECTS;
+    pioche->cartes[5].valeur = 20;
+
+    strcpy(pioche->cartes[6].titre, "Izly en negatif");
+    strcpy(pioche->cartes[6].description, "Vous perdez 10 ECTS.");
+    pioche->cartes[6].paquet = PAQUET_CHANCE;
+    pioche->cartes[6].effet = CARTE_PERTE_ECTS;
+    pioche->cartes[6].valeur = 10;
+
+    strcpy(pioche->cartes[7].titre, "Avance de 3 cases");
+    strcpy(pioche->cartes[7].description, "Avancez de 3 cases.");
+    pioche->cartes[7].paquet = PAQUET_CHANCE;
+    pioche->cartes[7].effet = CARTE_DEPLACEMENT_RELATIF;
+    pioche->cartes[7].valeur = 3;
+
+    strcpy(pioche->cartes[8].titre, "Recule de 2 cases");
+    strcpy(pioche->cartes[8].description, "Reculez de 2 cases.");
+    pioche->cartes[8].paquet = PAQUET_CHANCE;
+    pioche->cartes[8].effet = CARTE_DEPLACEMENT_RELATIF;
+    pioche->cartes[8].valeur = -2;
+
+    strcpy(pioche->cartes[9].titre, "Semaine de partiels");
+    strcpy(pioche->cartes[9].description, "Impossible de construire au prochain tour.");
+    pioche->cartes[9].paquet = PAQUET_CHANCE;
+    pioche->cartes[9].effet = CARTE_BLOQUE_CONSTRUCTION;
+    pioche->cartes[9].valeur = 1;
+
+    strcpy(pioche->cartes[10].titre, "Sortie de prison");
+    strcpy(pioche->cartes[10].description, "Conservez cette carte jusqu'a utilisation.");
+    pioche->cartes[10].paquet = PAQUET_CHANCE;
+    pioche->cartes[10].effet = CARTE_SORTIE_PRISON;
+    pioche->cartes[10].valeur = 1;
 
     int i;
-    if (cap_chance < NB_CHANCE || cap_commu < NB_COMMUNAUTE) {
-        for (i=0; i < NB_CHANCE && i < cap_chance; ++i) ordre_chance[i] = i;
-        for (i=0; i < NB_COMMUNAUTE && i < cap_commu; ++i) ordre_commu[i] = i;
-        return;
-    }
-    int j ;
-    for(j=0; j < NB_CHANCE; ++j) ordre_chance[j] = j;
-    for(j=0; j < NB_COMMUNAUTE; ++j) ordre_commu[j] = j;
-
-    melanger(ordre_chance, NB_CHANCE, a);
-    melanger(ordre_commu, NB_COMMUNAUTE, a);
-}
-
-const Carte* cartes_piocher(Paquet *p, Alea *a) {
-    if (!p || !p->cartes || !p->ordre || p->nb_cartes <= 0) return NULL;
-
-    if (p->sommet >= p->nb_cartes) {
-        int i ;
-        for (i=0; i < p->nb_cartes; ++i) p->ordre[i] = i;
-        melanger(p->ordre, p->nb_cartes, a);
-        p->sommet = 0;
+    for (i = 0; i < pioche->nb_cartes; i++) {
+        pioche->cartes[i].etat = ETAT_CARTE_DANS_PAQUET;
+        pioche->cartes[i].owner_number = 0;
+        pioche->ordre[i] = i;
     }
 
-    int idx = p->ordre[p->sommet++];
-    if (idx < 0 || idx >= p->nb_cartes) return NULL;
-    return &p->cartes[idx];
+    melanger_pioche_chance(pioche);
 }
 
-int cartes_taxe_eco(const Carte *c, NoteEco note) {
-    if (!c) return 0;
-    if (c->effet != EFFET_TAXE_ECO) return 0;
-    return eco_montant_taxe(c->valeur, note);
+void init_pioche_communaute(PiocheCommunaute *pioche) {
+    if (pioche == NULL) return;
+
+    pioche->nb_cartes = NB_CARTES_COMMUNAUTE;
+    pioche->sommet = 0;
+
+    strcpy(pioche->cartes[0].titre, "Plan sobriete energetique");
+    strcpy(pioche->cartes[0].description, "Tous les joueurs paient 10 ECTS.");
+    pioche->cartes[0].paquet = PAQUET_COMMUNAUTE;
+    pioche->cartes[0].effet = CARTE_PERTE_ECTS;
+    pioche->cartes[0].valeur = 10;
+
+    strcpy(pioche->cartes[1].titre, "Subvention campus vert");
+    strcpy(pioche->cartes[1].description, "Tous les joueurs gagnent 10 ECTS.");
+    pioche->cartes[1].paquet = PAQUET_COMMUNAUTE;
+    pioche->cartes[1].effet = CARTE_GAIN_ECTS;
+    pioche->cartes[1].valeur = 10;
+
+    strcpy(pioche->cartes[2].titre, "Travaux reseau chaleur");
+    strcpy(pioche->cartes[2].description, "Taxe ecologique de base 20 ECTS.");
+    pioche->cartes[2].paquet = PAQUET_COMMUNAUTE;
+    pioche->cartes[2].effet = CARTE_TAXE_ECO;
+    pioche->cartes[2].valeur = 20;
+
+    strcpy(pioche->cartes[3].titre, "Reparation degats climatiques");
+    strcpy(pioche->cartes[3].description, "Taxe ecologique de base 30 ECTS.");
+    pioche->cartes[3].paquet = PAQUET_COMMUNAUTE;
+    pioche->cartes[3].effet = CARTE_TAXE_ECO;
+    pioche->cartes[3].valeur = 30;
+
+    strcpy(pioche->cartes[4].titre, "Hausse du cout de la vie");
+    strcpy(pioche->cartes[4].description, "Tous les joueurs paient 5 ECTS.");
+    pioche->cartes[4].paquet = PAQUET_COMMUNAUTE;
+    pioche->cartes[4].effet = CARTE_PERTE_ECTS;
+    pioche->cartes[4].valeur = 5;
+
+    strcpy(pioche->cartes[5].titre, "Prime associative");
+    strcpy(pioche->cartes[5].description, "Tous les joueurs gagnent 5 ECTS.");
+    pioche->cartes[5].paquet = PAQUET_COMMUNAUTE;
+    pioche->cartes[5].effet = CARTE_GAIN_ECTS;
+    pioche->cartes[5].valeur = 5;
+
+    strcpy(pioche->cartes[6].titre, "Inondations");
+    strcpy(pioche->cartes[6].description, "Taxe ecologique de base 25 ECTS.");
+    pioche->cartes[6].paquet = PAQUET_COMMUNAUTE;
+    pioche->cartes[6].effet = CARTE_TAXE_ECO;
+    pioche->cartes[6].valeur = 25;
+
+    strcpy(pioche->cartes[7].titre, "Canicule");
+    strcpy(pioche->cartes[7].description, "Taxe ecologique de base 15 ECTS.");
+    pioche->cartes[7].paquet = PAQUET_COMMUNAUTE;
+    pioche->cartes[7].effet = CARTE_TAXE_ECO;
+    pioche->cartes[7].valeur = 15;
+
+    int i;
+    for (i = 0; i < pioche->nb_cartes; i++) {
+        pioche->cartes[i].etat = ETAT_CARTE_DANS_PAQUET;
+        pioche->cartes[i].owner_number = 0;
+        pioche->ordre[i] = i;
+    }
+
+    melanger_pioche_communaute(pioche);
+}
+
+/* ------------------------------------------------------------------------- */
+/* MELANGE                                                                   */
+/* ------------------------------------------------------------------------- */
+
+void melanger_pioche_chance(PiocheChance *pioche) {
+    if (pioche == NULL) return;
+
+    init_hasard_once();
+
+    int i;
+    for (i = pioche->nb_cartes - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        echanger_int(&pioche->ordre[i], &pioche->ordre[j]);
+    }
+
+    pioche->sommet = 0;
+}
+
+void melanger_pioche_communaute(PiocheCommunaute *pioche) {
+    if (pioche == NULL) return;
+
+    init_hasard_once();
+
+    int i;
+    for (i = pioche->nb_cartes - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        echanger_int(&pioche->ordre[i], &pioche->ordre[j]);
+    }
+
+    pioche->sommet = 0;
+}
+
+/* ------------------------------------------------------------------------- */
+/* PIOCHE                                                                    */
+/* ------------------------------------------------------------------------- */
+
+Carte *piocher_carte_chance(PiocheChance *pioche, int numero_joueur) {
+    if (pioche == NULL) return NULL;
+
+    int idx = trouver_carte_disponible_chance(pioche);
+    if (idx == -1) return NULL;
+
+    Carte *carte = &pioche->cartes[idx];
+
+    /* Cas spécial : sortie de prison -> la carte reste en main */
+    if (carte->effet == CARTE_SORTIE_PRISON) {
+        donner_carte_a_joueur(carte, numero_joueur);
+    }
+
+    return carte;
+}
+
+Carte *piocher_carte_communaute(PiocheCommunaute *pioche, int numero_joueur) {
+    (void)numero_joueur; /* pas utilisé pour le moment */
+    if (pioche == NULL) return NULL;
+
+    int idx = trouver_carte_disponible_communaute(pioche);
+    if (idx == -1) return NULL;
+
+    return &pioche->cartes[idx];
+}
+
+/* ------------------------------------------------------------------------- */
+/* GESTION DES CARTES POSSEDEES                                              */
+/* ------------------------------------------------------------------------- */
+
+int est_carte_sortie_prison(const Carte *carte) {
+    if (carte == NULL) return 0;
+    return carte->effet == CARTE_SORTIE_PRISON;
+}
+
+void donner_carte_a_joueur(Carte *carte, int numero_joueur) {
+    if (carte == NULL) return;
+
+    carte->etat = ETAT_CARTE_EN_MAIN;
+    carte->owner_number = numero_joueur;
+}
+
+void utiliser_carte(Carte *carte) {
+    if (carte == NULL) return;
+
+    carte->etat = ETAT_CARTE_UTILISEE;
+    carte->owner_number = 0;
+}
+
+void remettre_carte_dans_paquet(Carte *carte) {
+    if (carte == NULL) return;
+
+    carte->etat = ETAT_CARTE_DANS_PAQUET;
+    carte->owner_number = 0;
+}
+
+int joueur_possede_sortie_prison(const Carte *cartes, int nb_cartes, int numero_joueur) {
+    if (cartes == NULL || nb_cartes <= 0) return 0;
+
+    int i;
+    for (i = 0; i < nb_cartes; i++) {
+        if (cartes[i].effet == CARTE_SORTIE_PRISON &&
+            cartes[i].etat == ETAT_CARTE_EN_MAIN &&
+            cartes[i].owner_number == numero_joueur) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
+/* OUTILS                                                                    */
+/* ------------------------------------------------------------------------- */
+
+int calcul_taxe_ecologique(int base, EcoGrade indice) {
+    /*
+     * Votre enum actuelle dans player.h est :
+     * GRADE_A = 1 ... GRADE_F = 6
+     *
+     * On applique des coefficients proches de ceux qu'on avait définis :
+     * A -> 0.5
+     * B -> 0.8
+     * C -> 1.0
+     * D -> 1.2
+     * E -> 1.5
+     * F -> 2.0
+     */
+    double coeff = 1.0;
+
+    switch (indice) {
+        case GRADE_A: coeff = 0.5; break;
+        case GRADE_B: coeff = 0.8; break;
+        case GRADE_C: coeff = 1.0; break;
+        case GRADE_D: coeff = 1.2; break;
+        case GRADE_E: coeff = 1.5; break;
+        case GRADE_F: coeff = 2.0; break;
+        default: coeff = 1.0; break;
+    }
+
+    return (int)(base * coeff + 0.5);
 }
