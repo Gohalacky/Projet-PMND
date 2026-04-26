@@ -195,9 +195,12 @@ void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_ga
         global_count = 1;
 
         for(int i=0; i<NB_PROPRIETE; i++)
-            if(tableau_prop[i]->owner == p->number && !tableau_prop[i]->hypo && tableau_prop[i]->level == 0) {
-                printf("\n%d. [TERRAIN] %-15s (+%d ECTS)", global_count++, tableau_prop[i]->name, tableau_prop[i]->value/2);
-                lp[cp++] = i;
+            if(tableau_prop[i]->owner == p->number && !tableau_prop[i]->hypo) {
+            // On n'affiche le terrain que s'il est nu et que tout son groupe est nu
+                if (tableau_prop[i]->level == 0 && !engine_group_has_buildings(tableau_prop, tableau_prop[i]->color)) {
+                    printf("\n%d. [TERRAIN] %-15s (+%d ECTS)", global_count++, tableau_prop[i]->name, tableau_prop[i]->value/2);
+                    lp[cp++] = i;
+                }
             }
         for(int i=0; i<NB_GARE; i++)
             if(tableau_gare[i]->owner == p->number && !tableau_gare[i]->hypo) {
@@ -577,3 +580,17 @@ int engine_get_player_total_value(Player *p, Property *tableau_prop[], Gares *ta
     }
     return total;
 }
+
+
+// Renvoie 1 si au moins un terrain du groupe de couleur possède des bâtiments
+int engine_group_has_buildings(Property *tableau_prop[], Color couleur) {
+    for (int i = 0; i < NB_PROPRIETE; i++) {
+        if (tableau_prop[i]->color == couleur && tableau_prop[i]->level > 0) {
+            return 1; // Un bâtiment a été trouvé dans le groupe
+        }
+    }
+    return 0; // Le groupe est totalement nu
+}
+
+
+// il faut régler le problème suivant : lorsqu'un joueur va hypothéquer il faut que toutes les maison des cases de la couleurs soit vendues

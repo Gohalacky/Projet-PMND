@@ -40,5 +40,6 @@ int engine_get_player_total_value(Player *p, Property *tableau_prop[], Gares *ta
 void engine_resolve_debt(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]);
 int engine_has_assets_left(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]);
 void vider_buffer();
+int engine_group_has_buildings(Property *tableau_prop[], Color couleur);
 
 #endif
