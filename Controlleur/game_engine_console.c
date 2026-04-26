@@ -368,7 +368,7 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
 }
 
 /* ÉCHANGES */
-void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs) {
+void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs, Property *tableau_prop[]) {
     printf("\n  NÉGOCIATIONS ");
     for (int i = 0; i < nb_joueurs; i++) {
         if (all_players[i]->number != p_actif->number) printf("\n%d. %s", i + 1, all_players[i]->name);
@@ -382,9 +382,9 @@ void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs)
     printf("ECTS offerts : "); int m1; scanf("%d", &m1); trade_set_credits(off1, m1);
     printf("ECTS demandés : "); int m2; scanf("%d", &m2); trade_set_credits(off2, m2);
 
-    if (is_trade_valid(off1, off2)) {
+    if (is_trade_valid(off1, off2,tableau_prop)) {
         printf("Accepter ? (y/n) : "); char c; scanf(" %c", &c);
-        if (c == 'y') execute_trade(off1, off2);
+        if (c == 'y') execute_trade(off1, off2, tableau_prop);
     }
     free(off1); free(off2);
 }
@@ -477,7 +477,7 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
 
             if (choix == 1) menu_boucle = 0;
             else if (choix == 2) engine_manage_assets(p, tableau_prop, tableau_gare, tableau_comp);
-            else if (choix == 3) engine_handle_trade(p, all_players, nb_joueurs);
+            else if (choix == 3) engine_handle_trade(p, all_players, nb_joueurs, tableau_prop);
             else if (choix == 4) display_player_status(p, tableau_prop, tableau_gare, tableau_comp);
         }
 
@@ -592,5 +592,3 @@ int engine_group_has_buildings(Property *tableau_prop[], Color couleur) {
     return 0; // Le groupe est totalement nu
 }
 
-
-// il faut régler le problème suivant : lorsqu'un joueur va hypothéquer il faut que toutes les maison des cases de la couleurs soit vendues

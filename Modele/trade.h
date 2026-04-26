@@ -44,7 +44,7 @@ TradeOffer * init_empty_offer(Player *p);
  * @brief Vérifie si un échange est légal selon les règles.
  * @return 1 si l'échange est valide, 0 si une règle est violée (ex: triche, constructions présentes).
  */
-int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2);
+int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2, Property *tableau_prop[]);
 
 
 
@@ -52,7 +52,7 @@ int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2);
  * @brief Transfère les titres de propriété et l'argent entre les deux joueurs.
  * @pre La fonction is_trade_valid DOIT avoir retourné 1 avant d'appeler celle-ci
  */
-void execute_trade(TradeOffer *off_p1, TradeOffer *off_p2);
+void execute_trade(TradeOffer *off_p1, TradeOffer *off_p2, Property *tableau_prop[]);
 
 
 // --- GESTION DES CRÉDITS ---
