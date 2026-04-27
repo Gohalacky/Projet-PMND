@@ -81,14 +81,16 @@ void player_add_credits(Player *p, int montant) {
 int player_remove_credits(Player *p, int montant) {
     if (p == NULL ) return 1;
 
-    if (p->credit < montant) {
-        p->credit = 0;
-        return 0;
-    }
-    if (p != NULL && montant > 0) {
+    // On soustrait toujours le montant, même si ça dépasse le solde
     p->credit -= montant;
-    printf("%s à perdu %d crédits.\n",p->name,montant);
+
+    printf("%s a perdu %d ECTS. (Nouveau solde : %d)\n", p->name, montant, p->credit);
+
+    // Si le crédit est négatif, on retourne 0 pour signaler la difficulté financière
+    if (p->credit < 0) {
+        return 0; 
     }
+    
     return 1;
 }
 
