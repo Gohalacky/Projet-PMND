@@ -1,6 +1,5 @@
 #include "bridge.h"
 #include "Struct.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
