@@ -368,25 +368,140 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
 }
 
 /* ÉCHANGES */
-void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs, Property *tableau_prop[]) {
-    printf("\n  NÉGOCIATIONS ");
+void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs, 
+                         Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
+    
+    printf("\n==================================================");
+    printf("\n           SALON DE NÉGOCIATION     ");
+    printf("\n==================================================");
+
+    // 1. Choix du partenaire
+    int MAX_PLAYER=4;
+    int valid_targets[MAX_PLAYER];
+    int target_count = 0;
     for (int i = 0; i < nb_joueurs; i++) {
-        if (all_players[i]->number != p_actif->number) printf("\n%d. %s", i + 1, all_players[i]->name);
+        if (all_players[i]->number != p_actif->number && all_players[i]->credit >= 0) {
+            printf("\n%d. %-15s (Solde: %d ECTS)", target_count + 1, all_players[i]->name, all_players[i]->credit);
+            valid_targets[target_count++] = i;
+        }
     }
+
+    if (target_count == 0) {
+        printf("\nAucun partenaire disponible.");
+        return;
+    }
+
+    printf("\n\nAvec qui négocier ? (0 pour annuler) : ");
     int t_idx; scanf("%d", &t_idx);
-    if (t_idx < 1 || t_idx > nb_joueurs) return;
-    Player *p_cible = all_players[t_idx-1];
+    if (t_idx <= 0 || t_idx > target_count) return;
+    
+    Player *p_cible = all_players[valid_targets[t_idx-1]];
+    TradeOffer *off_actif = init_empty_offer(p_actif);
+    TradeOffer *off_cible = init_empty_offer(p_cible);
 
-    TradeOffer *off1 = init_empty_offer(p_actif);
-    TradeOffer *off2 = init_empty_offer(p_cible);
-    printf("ECTS offerts : "); int m1; scanf("%d", &m1); trade_set_credits(off1, m1);
-    printf("ECTS demandés : "); int m2; scanf("%d", &m2); trade_set_credits(off2, m2);
+    // 2. Sélection des biens (PROPOSITION puis DEMANDE)
+    Player *participants[2] = {p_actif, p_cible};
+    TradeOffer *offers[2] = {off_actif, off_cible};
+    char *phase_msg[2] = {"VOTRE OFFRE (Ce que vous donnez)", "VOTRE DEMANDE (Ce que vous voulez)"};
 
-    if (is_trade_valid(off1, off2,tableau_prop)) {
-        printf("Accepter ? (y/n) : "); char c; scanf(" %c", &c);
-        if (c == 'y') execute_trade(off1, off2, tableau_prop);
+    for (int k = 0; k < 2; k++) {
+        int en_cours = 1;
+        while (en_cours) {
+            printf("\n--- %s ---", phase_msg[k]);
+            printf("\n1. Ajouter un Terrain");
+            printf("\n2. Ajouter une Gare");
+            printf("\n3. Ajouter une Compagnie");
+            printf("\n0. Passer à la suite");
+            printf("\nChoix : ");
+            int type_choix; scanf("%d", &type_choix);
+
+            if (type_choix == 0) en_cours = 0;
+            
+            // TERRAINS
+            else if (type_choix == 1) {
+                int list[NB_PROPRIETE], count = 0;
+                for (int i = 0; i < NB_PROPRIETE; i++) {
+                    if (tableau_prop[i]->owner == participants[k]->number && tableau_prop[i]->level == 0) {
+                        printf("%d. %s  ", count + 1, tableau_prop[i]->name);
+                        list[count++] = i;
+                    }
+                }
+                if (count > 0) {
+                    printf("\nLequel ajouter ? (0 pour retour) : ");
+                    int p_sel; scanf("%d", &p_sel);
+                    if (p_sel > 0 && p_sel <= count) trade_add_property(offers[k], tableau_prop[list[p_sel-1]]);
+                } else printf("\nAucun terrain nu disponible.");
+            }
+
+            // GARES
+            else if (type_choix == 2) {
+                int list[NB_GARE], count = 0;
+                for (int i = 0; i < NB_GARE; i++) {
+                    if (tableau_gare[i]->owner == participants[k]->number) {
+                        printf("%d. %s  ", count + 1, tableau_gare[i]->name);
+                        list[count++] = i;
+                    }
+                }
+                if (count > 0) {
+                    printf("\nLaquelle ajouter ? (0 pour retour) : ");
+                    int g_sel; scanf("%d", &g_sel);
+                    if (g_sel > 0 && g_sel <= count) trade_add_gare(offers[k], tableau_gare[list[g_sel-1]]);
+                } else printf("\nAucune gare disponible.");
+            }
+
+            // COMPAGNIES
+            else if (type_choix == 3) {
+                int list[NB_COMPAGNIE], count = 0;
+                for (int i = 0; i < NB_COMPAGNIE; i++) {
+                    if (tableau_comp[i]->owner == participants[k]->number) {
+                        printf("%d. %s  ", count + 1, tableau_comp[i]->name);
+                        list[count++] = i;
+                    }
+                }
+                if (count > 0) {
+                    printf("\nLaquelle ajouter ? (0 pour retour) : ");
+                    int c_sel; scanf("%d", &c_sel);
+                    if (c_sel > 0 && c_sel <= count) trade_add_compagnie(offers[k], tableau_comp[list[c_sel-1]]);
+                } else printf("\nAucune compagnie disponible.");
+            }
+        }
     }
-    free(off1); free(off2);
+
+    // Ajustement financier final
+    int m1, m2;
+    printf("\n--- COMPENSATION FINANCIÈRE ---");
+    printf("\nECTS que vous versez à %s : ", p_cible->name);
+    scanf("%d", &m1); trade_set_credits(off_actif, m1);
+    printf("ECTS que %s vous verse : ", p_cible->name);
+    scanf("%d", &m2); trade_set_credits(off_cible, m2);
+
+    // Récapitulatif détaillé
+    printf("\n==================================================");
+    printf("\nRÉCAPITULATIF DE L'ACCORD :");
+    
+    printf("\n%s DONNE :", p_actif->name);
+    for(int i=0; i<off_actif->nb_props; i++) printf("\n  [Terrain] %s", off_actif->props[i]->name);
+    for(int i=0; i<off_actif->nb_gares; i++) printf("\n  [Gare]    %s", off_actif->gares[i]->name);
+    for(int i=0; i<off_actif->nb_comps; i++) printf("\n  [Comp]    %s", off_actif->comps[i]->name);
+    if(off_actif->ects > 0) printf("\n  [Argent]  %d ECTS", off_actif->ects);
+
+    printf("\n\n%s DONNE :", p_cible->name);
+    for(int i=0; i<off_cible->nb_props; i++) printf("\n  [Terrain] %s", off_cible->props[i]->name);
+    for(int i=0; i<off_cible->nb_gares; i++) printf("\n  [Gare]    %s", off_cible->gares[i]->name);
+    for(int i=0; i<off_cible->nb_comps; i++) printf("\n  [Comp]    %s", off_cible->comps[i]->name);
+    if(off_cible->ects > 0) printf("\n  [Argent]  %d ECTS", off_cible->ects);
+    printf("\n==================================================");
+
+    // Validation par la cible
+    if (is_trade_valid(off_actif, off_cible, tableau_prop)) {
+        printf("\n%s, acceptez-vous cet accord ? (y/n) : ", p_cible->name);
+        char final_c; scanf(" %c", &final_c);
+        if (final_c == 'y' || final_c == 'Y') {
+            execute_trade(off_actif, off_cible, tableau_prop);
+        } else printf("\nNégociation rompue par %s.\n", p_cible->name);
+    }
+
+    free(off_actif); free(off_cible);
 }
 
 
@@ -477,7 +592,7 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
 
             if (choix == 1) menu_boucle = 0;
             else if (choix == 2) engine_manage_assets(p, tableau_prop, tableau_gare, tableau_comp);
-            else if (choix == 3) engine_handle_trade(p, all_players, nb_joueurs, tableau_prop);
+            else if (choix == 3) engine_handle_trade(p, all_players, nb_joueurs, tableau_prop, tableau_gare, tableau_comp);
             else if (choix == 4) display_player_status(p, tableau_prop, tableau_gare, tableau_comp);
         }
 
