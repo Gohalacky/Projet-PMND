@@ -65,7 +65,8 @@ void player_move(Player *p, int steps) {
     // Si la nouvelle position est inférieure à l'ancienne, 
     // c'est qu'on a fait un tour complet (Passage par la case Départ)
     if (p->position < old_position) {
-        printf("%s passe par la case départ !\n", p->name);
+        printf("%s passe par la case départ et reçoit 200 ECTS !\n", p->name);
+        player_add_credits(p, 200);
     }
 }
 
