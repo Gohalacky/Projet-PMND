@@ -117,11 +117,7 @@ void scaleTradeButtons(TradeButtonsPack* tb, float rx, float ry) {
 
 
 /* ------ Phase 0 : choix du partenaire ------ */
-static void _render_select_target(SDL_Renderer* r,
-                                   TTF_Font* fontNormal, TTF_Font* fontSmall,
-                                   ContexteJeu* ctx, const EtatPartie* partie,
-                                   TradeButtonsPack* tb,
-                                   float rx, float ry, int winW) {
+static void _render_select_target(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* fontSmall,ContexteJeu* ctx, const EtatPartie* partie,TradeButtonsPack* tb,float rx, float ry, int winW) {
     (void)winW;
     int leftX = (int)((WIN_X + 60) * rx);
 
@@ -136,7 +132,7 @@ static void _render_select_target(SDL_Renderer* r,
     tb->nb_targets = nb;
 
     for (int i = 0; i < nb; i++) {
-        /* Repositionner dynamiquement (déjà scalé à l'init, on recalcule en ref) */
+        /* Repositionner dynamiquement */
         int by = (int)((WIN_Y + TITLE_H + 100 + i * 70) * ry);
         tb->target[i].rect.y = by;
 
@@ -152,12 +148,7 @@ static void _render_select_target(SDL_Renderer* r,
 }
 
 /* ------ Phase 1 & 2 : sélection des biens ------ */
-static void _render_build_offer(SDL_Renderer* r,
-                                 TTF_Font* fontNormal, TTF_Font* fontSmall,
-                                 ContexteJeu* ctx,
-                                 TradeButtonsPack* tb,
-                                 TradeState* ts,
-                                 float rx, float ry, int winW) {
+static void _render_build_offer(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* fontSmall,ContexteJeu* ctx,TradeButtonsPack* tb,TradeState* ts,float rx, float ry, int winW) {
     (void)winW;
     int joueur_idx = (ts->phase == TRADE_PHASE_BUILD_OFFER)
                      ? ts->joueur_actif_idx : ts->joueur_cible_idx;
@@ -211,12 +202,7 @@ static void _render_build_offer(SDL_Renderer* r,
 }
 
 /* ------ Phase 3 : compensation financière ------ */
-static void _render_set_credits(SDL_Renderer* r,
-                                 TTF_Font* fontNormal, TTF_Font* fontSmall,
-                                 ContexteJeu* ctx,
-                                 TradeButtonsPack* tb,
-                                 TradeState* ts,
-                                 float rx, float ry, int winW) {
+static void _render_set_credits(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* fontSmall,ContexteJeu* ctx,TradeButtonsPack* tb,TradeState* ts,float rx, float ry, int winW) {
     (void)winW;
     int leftX = (int)((WIN_X + 30) * rx);
     int subY  = (int)((WIN_Y + TITLE_H + 65) * ry);
@@ -227,14 +213,14 @@ static void _render_set_credits(SDL_Renderer* r,
     Player* pc = ctx->joueurs[ts->joueur_cible_idx];
 
     char buf[128];
-    int lineH  = (int)(TTF_FontHeight(fontSmall) * 2.2f); /* interligne aéré */
+    int lineH  = (int)(TTF_FontHeight(fontSmall) * 2.2f); 
     int btnH   = (int)(BTN_H * ry);
     int textH  = TTF_FontHeight(fontSmall);
     int y = subY + (int)(TTF_FontHeight(fontNormal) * 1.5f);
 
     /* Actif */
     snprintf(buf, sizeof(buf), "%s verse : %d ECTS", pa ? pa->name : "?", ts->credits_actif);
-    int btnOffsetActif = (lineH - btnH) / 2;  /* centrage vertical du bouton sur la ligne */
+    int btnOffsetActif = (lineH - btnH) / 2;  
     printText(r, fontSmall, buf, C_NOIR, leftX, y + (lineH - textH) / 2);
 
     tb->creditsActifMoins.rect.y = y + btnOffsetActif;
@@ -252,7 +238,7 @@ static void _render_set_credits(SDL_Renderer* r,
     tb->creditsCiblePlus.rect.y  = y + btnOffsetCible;
     _draw_button(r, fontSmall, &tb->creditsCibleMoins, " - ", C_ROUGE, C_BLANC);
     _draw_button(r, fontSmall, &tb->creditsCiblePlus,  " + ", C_VERT,  C_BLANC);
-    y += lineH + (int)(15 * ry); /* espace supplémentaire avant le solde */
+    y += lineH + (int)(15 * ry); 
 
     snprintf(buf, sizeof(buf), "Solde %s : %d ECTS  |  Solde %s : %d ECTS",
              pa ? pa->name : "?", pa ? pa->credit : 0,
@@ -261,12 +247,7 @@ static void _render_set_credits(SDL_Renderer* r,
 }
 
 /* ------ Phase 4 : récapitulatif ------ */
-static void _render_recap(SDL_Renderer* r,
-                           TTF_Font* fontNormal, TTF_Font* fontSmall,
-                           ContexteJeu* ctx,
-                           TradeButtonsPack* tb,
-                           TradeState* ts,
-                           float rx, float ry, int winW) {
+static void _render_recap(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* fontSmall,ContexteJeu* ctx,TradeButtonsPack* tb,TradeState* ts,float rx, float ry, int winW) {
     (void)winW;
     int leftX = (int)((WIN_X + 30) * rx);
     int y     = (int)((WIN_Y + TITLE_H + 65) * ry);
@@ -329,8 +310,8 @@ static void _render_recap(SDL_Renderer* r,
 /* ------ Phase 5 : résultat ------ */
 static void _render_done(SDL_Renderer* r, TTF_Font* fontNormal, TTF_Font* fontSmall,
                           const TradeState* ts, float rx, float ry) {
-    int cx = (int)((WIN_X + WIN_W / 2) * rx);
-    int cy = (int)((WIN_Y + WIN_H / 2 - 30) * ry);
+    int cx = (int)lround((WIN_X + WIN_W / 2) * rx);
+    int cy = (int)lround((WIN_Y + WIN_H / 2 - 30) * ry);
 
     SDL_Color col = (ts->accepted == 1) ? C_VERT : C_ROUGE;
     const char* titre = (ts->accepted == 1) ? "Echange effectue !"
@@ -347,14 +328,7 @@ static void _render_done(SDL_Renderer* r, TTF_Font* fontNormal, TTF_Font* fontSm
 }
 
 
-void renderTradeWindow(SDL_Renderer* renderer,
-                       TTF_Font* fontTitle, TTF_Font* fontNormal, TTF_Font* fontSmall,
-                       const TexturesPack* tex,
-                       ContexteJeu* ctx,
-                       const EtatPartie* partie,
-                       TradeButtonsPack* tb,
-                       TradeState* ts,
-                       int winW, int winH) {
+void renderTradeWindow(SDL_Renderer* renderer,TTF_Font* fontTitle, TTF_Font* fontNormal, TTF_Font* fontSmall,const TexturesPack* tex,ContexteJeu* ctx,const EtatPartie* partie,TradeButtonsPack* tb,TradeState* ts,int winW, int winH) {
 
     if (!ctx || !ts) return;
 
@@ -364,7 +338,7 @@ void renderTradeWindow(SDL_Renderer* renderer,
     _draw_background(renderer, tex, winW, winH, rx, ry);
 
     /* Titre */
-    int titleY = (int)((WIN_Y + TITLE_H - 60 / 2) * ry);
+    int titleY = (int)lround((WIN_Y + TITLE_H - 60 / 2) * ry);
     printTextCentered(renderer, fontTitle, "Salon de negociation", C_NOIR, titleY, winW);
 
     /* Bouton fermer */
@@ -416,12 +390,7 @@ void renderTradeWindow(SDL_Renderer* renderer,
 }
 
 
-void handleTradeClick(int x, int y,
-                      EtatJeu* state,
-                      TradeButtonsPack* tb,
-                      ContexteJeu* ctx,
-                      EtatPartie* partie,
-                      TradeState* ts) {
+void handleTradeClick(int x, int y,EtatJeu* state,TradeButtonsPack* tb,ContexteJeu* ctx,EtatPartie* partie,TradeState* ts) {
 
     /* Fermer (toutes phases) */
     if (isClicked(&tb->fermer, x, y)) {
@@ -441,7 +410,6 @@ void handleTradeClick(int x, int y,
             for (int i = 0; i < nb; i++) {
                 if (isClicked(&tb->target[i], x, y)) {
                     bridge_trade_select_target(ctx, ts, idx[i]);
-                    /* passage automatique à la phase BUILD_OFFER */
                     return;
                 }
             }
@@ -479,7 +447,7 @@ void handleTradeClick(int x, int y,
 
         /* ── Phase 3 : compensation financière ── */
         case TRADE_PHASE_SET_CREDITS: {
-            int step = 50; /* pas de 50 ECTS */
+            int step = 50; 
 
             Player* pa = ctx->joueurs[ts->joueur_actif_idx];
             Player* pc = ctx->joueurs[ts->joueur_cible_idx];
@@ -508,7 +476,7 @@ void handleTradeClick(int x, int y,
             }
 
             if (isClicked(&tb->suivant, x, y)) {
-                bridge_trade_next_phase(ctx, ts); /* → RECAP */
+                bridge_trade_next_phase(ctx, ts); 
                 return;
             }
             if (isClicked(&tb->precedent, x, y)) {
