@@ -11,12 +11,13 @@ void vider_buffer() {
 
 
 /* AFFICHAGE DE L'ÉTAT DU JOUEUR */
-void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
+void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[], GameContext *ctx) {
     printf("\n==================================================");
     printf("\n   DOSSIER JOUEUR : %s", p->name);
     printf("\n==================================================");
     printf("\n Solde : %d ECTS |  Indice Éco : %d/6", p->credit, p->eco_index);
     printf("\n Position : Case n°%d", p->position);
+    printf("\n Indice Éco GLOBAL : %d/6", ctx->indice_eco_global);
     
     printf("\n\n PATRIMOINE IMMOBILIER :");
     int has_anything = 0;
@@ -734,7 +735,7 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
             if (choix == 1) menu_boucle = 0;
             else if (choix == 2) engine_manage_assets(p, tableau_prop, tableau_gare, tableau_comp, ctx);
             else if (choix == 3) engine_handle_trade(p, all_players, nb_joueurs, tableau_prop, tableau_gare, tableau_comp);
-            else if (choix == 4) display_player_status(p, tableau_prop, tableau_gare, tableau_comp);
+            else if (choix == 4) display_player_status(p, tableau_prop, tableau_gare, tableau_comp, ctx);
         }
 
         // LANCER DES DÉS
@@ -761,7 +762,7 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
     } while (rejouer);
 
     // FIN DU TOUR
-    calcul_moyenne_eco_index_player(p, (Property*)tableau_prop, NB_PROPRIETE);
+    calcul_moyenne_eco_index_player(p,tableau_prop, NB_PROPRIETE);
 
     /* Reset du flag bloque_construction pour ce joueur */
     if (ctx) {

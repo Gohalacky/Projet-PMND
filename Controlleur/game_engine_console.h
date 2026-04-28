@@ -37,7 +37,7 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
                          GameContext *ctx);
 
 // Actions et Affichage
-void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]);
+void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[], GameContext *ctx);
 void engine_handle_purchase(Player *p, void *asset, int type);
 void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]);
 void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[], GameContext *ctx);

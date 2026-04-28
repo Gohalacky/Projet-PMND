@@ -25,17 +25,16 @@ Player* init_player(const char* name, int number) {
 }
 
 
-void calcul_moyenne_eco_index_player(Player *p, Property *board, int board_size) {
+void calcul_moyenne_eco_index_player(Player *p, Property **board, int board_size) {
     if (p == NULL || board == NULL) return;
 
     int somme = 0;
     int nb_propriete = 0;
-    int moyenne =0;
+    int moyenne = 0;
 
     for (int i = 0; i < board_size; i++) {
-        // On vérifie si la propriété appartient au joueur
-        if (board[i].owner == p->number) {
-            somme += board[i].indice;
+        if (board[i] != NULL && board[i]->owner == p->number) {
+            somme += board[i]->indice;
             nb_propriete++;
         }
     }

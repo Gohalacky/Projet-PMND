@@ -65,7 +65,7 @@ Player* init_player(const char* name, int number);
  * @param board Tableau représentant le plateau de jeu (liste des propriétés).
  * @param board_size Taille du plateau (nombre de propriétés évaluables).
  */
-void calcul_moyenne_eco_index_player(Player *p, Property *board, int board_size);
+void calcul_moyenne_eco_index_player(Player *p, Property **board, int board_size);
 
 /**
  * @brief Déplace le joueur sur le plateau d'un certain nombre de cases.

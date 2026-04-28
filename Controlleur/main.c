@@ -105,6 +105,7 @@ int main() {
  
         // Fin de round : événements mondiaux + mise à jour indice éco global
         logic_update_global_eco(&ctx);
+        printf("\n [BILAN ROUND %d] Indice éco global : %d/6\n", ctx.numero_round, ctx.indice_eco_global);
         logic_handle_global_events(&ctx);
         ctx.numero_round++;
  

@@ -303,9 +303,22 @@ int add_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p , int
         if(prop->level == 0){
             prop->type = type_choisi;
         }
-    prop->level++;
-    player_remove_credits(p,prop->construction_cost);
-    return 1 ;
+        prop->level++;
+        if (type_choisi == Maison) {
+            int notes_maison[] = {GRADE_F, GRADE_E, GRADE_C}; // niv 1,2,3
+            prop->indice = notes_maison[prop->level - 1];
+        }
+        // Social
+        else if (type_choisi == Social) {
+            int notes_social[] = {GRADE_E, GRADE_C, GRADE_B};
+            prop->indice = notes_social[prop->level - 1];
+        }
+        // Parc
+        else if (type_choisi == Parc) {
+            prop->indice = GRADE_A; // toujours A
+        }
+        player_remove_credits(p,prop->construction_cost);
+        return 1 ;
     }
     else{
         printf("Impossible de rajouté un niveau de propriété\n");
