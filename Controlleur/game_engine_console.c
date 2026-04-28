@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <string.h>
 #include "game_engine_console.h"
+#include "engine_logic.h"
 
 
 void vider_buffer() {
@@ -11,12 +11,13 @@ void vider_buffer() {
 
 
 /* AFFICHAGE DE L'ÉTAT DU JOUEUR */
-void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
+void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[], GameContext *ctx) {
     printf("\n==================================================");
     printf("\n   DOSSIER JOUEUR : %s", p->name);
     printf("\n==================================================");
     printf("\n Solde : %d ECTS |  Indice Éco : %d/6", p->credit, p->eco_index);
     printf("\n Position : Case n°%d", p->position);
+    printf("\n Indice Éco GLOBAL : %d/6", ctx->indice_eco_global);
     
     printf("\n\n PATRIMOINE IMMOBILIER :");
     int has_anything = 0;
@@ -113,9 +114,23 @@ void engine_handle_purchase(Player *p, void *asset, int type) {
 }
 
 /* CONSTRUCTION (RÈGLE D'UNIFORMITÉ) */
-void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
+void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[], GameContext *ctx) {
     printf("\n Gestion des biens ");
-    printf("\n1. Construire / Améliorer");
+
+    /* Vérification des blocages de construction (carte ou événement) */
+    int idx = p->number - 1;
+    int construction_bloquee = 0;
+    if (ctx) {
+        if (ctx->bloque_construction[idx]) {
+            printf("\n [BLOQUÉ] Vous ne pouvez pas construire ce tour (carte Semaine de partiels).");
+            construction_bloquee = 1;
+        } else if (evenements_interdit_construire(&ctx->evenement_mondial)) {
+            const DefEvenement *def = evenements_def(ctx->evenement_mondial.id);
+            printf("\n [BLOQUÉ] Construction interdite par l'événement : %s", def->nom);
+            construction_bloquee = 1;
+        }
+    }
+    printf("\n1. Construire / Améliorer%s", construction_bloquee ? " [BLOQUÉ]" : "");
     printf("\n2. Hypothéquer un bien (Gagner des ECTS)");
     printf("\n3. Racheter une hypothèque (Retrouver les loyers)");
     printf("\n4. Vendre un bâtiment (Remboursement)");
@@ -127,6 +142,10 @@ void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_ga
 
     // Construction 
     if (action == 1) {
+        if (construction_bloquee) {
+            printf("\n Construction impossible ce tour.\n");
+            return;
+        }
         int list[NB_PROPRIETE], count = 0;
         for (int i = 0; i < NB_PROPRIETE; i++) {
             Property *prop = tableau_prop[i];
@@ -177,8 +196,27 @@ void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_ga
             }
 
             if (p->credit >= sel->construction_cost) {
-                add_level(tableau_prop, sel, p, t);
-                printf(" Chantier terminé !");
+                /* Coût de construction potentiellement majoré par un événement */
+                int cout_reel = sel->construction_cost;
+                if (ctx) {
+                    double mult = evenements_mult_cout_construction(&ctx->evenement_mondial);
+                    if (mult != 1.0) {
+                        cout_reel = (int)(cout_reel * mult + 0.5);
+                        printf("\n [ÉVÉNEMENT] Coût majoré : %d ECTS (x%.2f)", cout_reel, mult);
+                    }
+                }
+                if (p->credit >= cout_reel) {
+                    /* On force le coût réel en retirant directement les crédits
+                       avant add_level (qui retire construction_cost en interne).
+                       */
+                    int cout_sauvegarde = sel->construction_cost;
+                    sel->construction_cost = cout_reel;
+                    add_level(tableau_prop, sel, p, t);
+                    sel->construction_cost = cout_sauvegarde;
+                    printf(" Chantier terminé !");
+                } else {
+                    printf(" Pas assez d'ECTS après majoration événementielle !\n");
+                }
             } else printf(" Pas assez d'ECTS !\n");
         }
     }
@@ -317,22 +355,73 @@ void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_ga
 /* RÉSOLUTION DE CASE */
 void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_prop[], 
                          Gares *tableau_gare[], Compagnies *tableau_comp[], 
-                         Plateau *plateau, Prison *jail, int total_des) {
+                         Plateau *plateau, Prison *jail, int total_des,
+                         GameContext *ctx) {
     (void)jail;
     Case *c = &plateau->cases[p->position];
     printf("\n Vous êtes sur : %s", c->nom_affichage);
+
+    /* Multiplicateur de loyer lié à l'événement actif */
+    double mult_loyer = ctx ? evenements_mult_loyers(&ctx->evenement_mondial) : 1.0;
+
+    /* Confinement : si le joueur est sur sa propre propriété, il peut s'y arrêter sans loyer */
+    if (ctx && evenements_autorise_arret_chez_soi(&ctx->evenement_mondial)) {
+        if (c->type == CASE_TERRAIN) {
+            Property *prop = (Property*)c->data;
+            if (prop && prop->owner == p->number) {
+                printf("\n [CONFINEMENT] Vous restez chez vous, aucun effet.");
+                return;
+            }
+        }
+    }
+
+    /* Case bloquée par inondations */
+    if (ctx && evenements_case_est_bloquee(&ctx->evenement_mondial, p->position)) {
+        printf("\n [INONDATIONS] Cette zone est bloquée ! Vous ne pouvez pas agir ici.");
+        return;
+    }
 
     switch (c->type) {
         case CASE_TERRAIN: {
             Property *prop = (Property*)c->data;
             if (prop->owner == 0) engine_handle_purchase(p, prop, 1);
-            else if (prop->owner != p->number) must_rent_Property(tableau_prop, prop, p, all_players[prop->owner-1]);
+            else if (prop->owner != p->number) {
+                /* Appliquer le multiplicateur avant d'appeler must_rent */
+                if (mult_loyer != 1.0) {
+                    /* Patch temporaire du loyer pour passer le multiplicateur */
+                    int loyer_base = prop->rent_empty;
+                    if (prop->level > 0) {
+                        switch (prop->type) {
+                            case Maison: loyer_base = prop->rent_maison[prop->level-1]; break;
+                            case Social: loyer_base = prop->rent_logement[prop->level-1]; break;
+                            case Parc:   loyer_base = prop->rent_parc[prop->level-1]; break;
+                            default: break;
+                        }
+                    }
+                    int loyer_event = (int)(loyer_base * mult_loyer + 0.5);
+                    printf("\n [ÉVÉNEMENT] Loyer majoré : %d ECTS (x%.2f)", loyer_event, mult_loyer);
+                    player_remove_credits(p, loyer_event);
+                    player_add_credits(all_players[prop->owner-1], loyer_event);
+                } else {
+                    must_rent_Property(tableau_prop, prop, p, all_players[prop->owner-1]);
+                }
+            }
             break;
         }
         case CASE_GARE: {
             Gares *g = (Gares*)c->data;
             if (g->owner == 0) engine_handle_purchase(p, g, 2);
-            else if (g->owner != p->number) must_rent_Gares(tableau_gare, g, p, all_players[g->owner-1]);
+            else if (g->owner != p->number) {
+                if (mult_loyer != 1.0) {
+                    int n = nb_Gare(tableau_gare, all_players[g->owner-1]);
+                    int loyer_event = (int)(g->rent[n > 0 ? n-1 : 0] * mult_loyer + 0.5);
+                    printf("\n [ÉVÉNEMENT] Loyer gare majoré : %d ECTS (x%.2f)", loyer_event, mult_loyer);
+                    player_remove_credits(p, loyer_event);
+                    player_add_credits(all_players[g->owner-1], loyer_event);
+                } else {
+                    must_rent_Gares(tableau_gare, g, p, all_players[g->owner-1]);
+                }
+            }
             break;
         }
         case CASE_COMPAGNIE: {
@@ -342,13 +431,7 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
             break;
         }
         case CASE_TAXE: {
-            // Si c'est la case 4 (Impôt), on retire 200, sinon 100 (Taxe de luxe)
-            int montant = 0;
-            if (p->position == 4) {
-                montant= 200;
-            }else{
-                montant=100;
-            } 
+            int montant = (p->position == 4) ? 200 : 100;
             printf("\n Vous devez payer l'administration : %d ECTS.", montant);
             player_remove_credits(p, montant);
             break;
@@ -359,10 +442,40 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
             go_to_jail(p, jail);
             break;
         }
+        case CASE_CHANCE: {
+            if (ctx) {
+                printf("\n [CHANCE] Vous piochez une carte Chance !");
+                Carte *carte = piocher_carte_chance(&ctx->pioche_chance, p->number);
+                if (carte) {
+                    logic_apply_card_effect(ctx, p, carte, plateau, jail, all_players,
+                                           ctx ? ctx->nb_players : 0);
+                    /* Remettre la carte dans le paquet sauf si c'est une Sortie de Prison */
+                    if (carte->effet != CARTE_SORTIE_PRISON)
+                        remettre_carte_dans_paquet(carte);
+                } else {
+                    printf("\n (Pioche Chance vide)");
+                }
+            }
+            break;
+        }
+        case CASE_COMMUNAUTE: {
+            if (ctx) {
+                printf("\n [COMMUNAUTÉ] Vous piochez une carte Caisse de Communauté !");
+                Carte *carte = piocher_carte_communaute(&ctx->pioche_communaute, p->number);
+                if (carte) {
+                    logic_apply_card_effect(ctx, p, carte, plateau, jail, all_players,
+                                           ctx ? ctx->nb_players : 0);
+                    remettre_carte_dans_paquet(carte);
+                } else {
+                    printf("\n (Pioche Communauté vide)");
+                }
+            }
+            break;
+        }
         default: printf("\n Rien à signaler."); break;
     }
-    // Si le joueur n'a plus d'argent et qu'il n'est pas déjà marqué éliminé
-    if (p->credit == 0) {
+    // Gestion dette
+    if (p->credit < 0) {
         engine_resolve_debt(p, tableau_prop, tableau_gare, tableau_comp);
     }
 }
@@ -376,7 +489,6 @@ void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs,
     printf("\n==================================================");
 
     // 1. Choix du partenaire
-    int MAX_PLAYER=4;
     int valid_targets[MAX_PLAYER];
     int target_count = 0;
     for (int i = 0; i < nb_joueurs; i++) {
@@ -535,7 +647,7 @@ void engine_resolve_debt(Player *p, Property *tableau_prop[], Gares *tableau_gar
         vider_buffer(); getchar();
 
         // On lance le menu de gestion (Action 2: Hypothèque, Action 4: Vendre bâtiment)
-        engine_manage_assets(p, tableau_prop, tableau_gare, tableau_comp);
+        engine_manage_assets(p, tableau_prop, tableau_gare, tableau_comp, NULL);
     }
     printf("\n Dette réglée ! Nouveau solde : %d ECTS\n", p->credit);
 }
@@ -547,42 +659,72 @@ void engine_resolve_debt(Player *p, Property *tableau_prop[], Gares *tableau_gar
 /* TOUR COMPLET */
 void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[], 
                       Gares *tableau_gare[], Compagnies *tableau_comp[], 
-                      Plateau *plateau, Prison *jail, int admin_mode, int nb_joueurs) {
+                      Plateau *plateau, Prison *jail, int admin_mode, int nb_joueurs,
+                      GameContext *ctx) {
     
     printf("\n\n##################################################");
     printf("\n# AU TOUR DE : %-33s #", p->name);
     printf("\n##################################################");
 
+    /* Afficher l'événement actif en début de tour */
+    if (ctx && evenements_est_actif(&ctx->evenement_mondial)) {
+        const DefEvenement *def = evenements_def(ctx->evenement_mondial.id);
+        printf("\n [ÉVÉNEMENT ACTIF] %s (%d round(s) restant(s))", def->nom, ctx->evenement_mondial.tours_restants);
+    }
+
     // GESTION DE LA SORTIE DE PRISON
     if (is_in_jail(p, jail)) {
-        printf("\n EN PRISON ! 1: Payer (50 ECTS) | 2: Tenter un double\nChoix : ");
+        /* Vérifier si le joueur possède une carte Sortie de Prison */
+        int a_carte_sortie = 0;
+        if (ctx) {
+            a_carte_sortie = joueur_possede_sortie_prison(ctx->pioche_chance.cartes,
+                                                          ctx->pioche_chance.nb_cartes,
+                                                          p->number);
+        }
+
+        printf("\n EN PRISON ! 1: Payer (50 ECTS) | 2: Tenter un double%s\nChoix : ",
+               a_carte_sortie ? " | 3: Utiliser carte Sortie de Prison" : "");
         int c; scanf("%d", &c);
         if (c == 1) {
             pay_to_get_out(p, jail);
+        } else if (c == 3 && a_carte_sortie) {
+            /* Utiliser la carte Sortie de Prison */
+            for (int i = 0; i < ctx->pioche_chance.nb_cartes; i++) {
+                Carte *carte = &ctx->pioche_chance.cartes[i];
+                if (carte->effet == CARTE_SORTIE_PRISON &&
+                    carte->etat == ETAT_CARTE_EN_MAIN &&
+                    carte->owner_number == p->number) {
+                    utiliser_carte(carte);
+                    remettre_carte_dans_paquet(carte);
+                    break;
+                }
+            }
+            get_out_of_jail(p, jail);
+            printf("\n Carte utilisée ! Vous êtes libre.");
         } else {
             int d_jail = 0;
             engine_roll_dice(admin_mode, &d_jail);
-            if (d_jail > 0) { // Si double (compteur > 0)
+            if (d_jail > 0) {
                 printf("\n DOUBLE ! Vous êtes libre.");
                 get_out_of_jail(p, jail);
             } else {
                 printf("\n Pas de double. Vous restez en cellule.");
                 add_tour_jail(p, jail);
-                return; // Fin du tour si on échoue à sortir
+                return;
             }
         }
     }
 
-    int d_count = 0;   // Compteur de doubles pour ce tour
-    int rejouer = 0;   // Flag pour la boucle de double
+    int d_count = 0;
+    int rejouer = 0;
 
     do {
         rejouer = 0;
         int menu_boucle = 1;
 
-        // MENU D'AVANT LANCER (On peut construire/échanger/Etat avant chaque lancer)
+        // MENU D'AVANT LANCER
         while (menu_boucle) {
-            printf("\n\n--- MENU (%s - %d ECTS) ---", p->name, p->credit);
+            printf("\n\n--- MENU (%s - %d ECTS | Éco: %d) ---", p->name, p->credit, p->eco_index);
             printf("\n1.  Lancer les dés%s", (d_count > 0 ? " (REJOUER)" : ""));
             printf("\n2.  Gestion des biens");
             printf("\n3.  Échanger");
@@ -591,40 +733,44 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
             int choix; scanf("%d", &choix);
 
             if (choix == 1) menu_boucle = 0;
-            else if (choix == 2) engine_manage_assets(p, tableau_prop, tableau_gare, tableau_comp);
+            else if (choix == 2) engine_manage_assets(p, tableau_prop, tableau_gare, tableau_comp, ctx);
             else if (choix == 3) engine_handle_trade(p, all_players, nb_joueurs, tableau_prop, tableau_gare, tableau_comp);
-            else if (choix == 4) display_player_status(p, tableau_prop, tableau_gare, tableau_comp);
+            else if (choix == 4) display_player_status(p, tableau_prop, tableau_gare, tableau_comp, ctx);
         }
 
         // LANCER DES DÉS
         int des = engine_roll_dice(admin_mode, &d_count);
 
-        // VÉRIFICATION DE LA RÈGLE DES 3 DOUBLES
+        // RÈGLE DES 3 DOUBLES
         if (d_count == 3) {
             printf("\n 3 DOUBLES D'AFFILÉE ! C'est suspect... Direction la PRISON !");
-            // On déplace le joueur sur la case prison (position 10)
-            p->position = 10; 
-            go_to_jail(p, jail); 
-            rejouer = 0; // Le tour s'arrête
+            p->position = 10;
+            go_to_jail(p, jail);
+            rejouer = 0;
         } else {
-            // MOUVEMENT ET RÉSOLUTION
             player_move(p, des);
-            engine_resolve_case(p, all_players, tableau_prop, tableau_gare, tableau_comp, plateau, jail, des);
-            // Si après la résolution de la case, le joueur est en prison on annule le double
+            engine_resolve_case(p, all_players, tableau_prop, tableau_gare, tableau_comp,
+                                plateau, jail, des, ctx);
             if (is_in_jail(p, jail)) {
-                rejouer = 0; 
-            }
-            // Si c'était un double, on prépare le tour suivant
-            else if (d_count > 0) {
+                rejouer = 0;
+            } else if (d_count > 0) {
                 printf("\n DOUBLE ! Vous avez le droit de rejouer.");
                 rejouer = 1;
             }
         }
 
-    } while (rejouer); // On recommence tant qu'il y a un double (et < 3)
+    } while (rejouer);
 
     // FIN DU TOUR
-    calcul_moyenne_eco_index_player(p, (Property*)tableau_prop, NB_PROPRIETE);
+    calcul_moyenne_eco_index_player(p,tableau_prop, NB_PROPRIETE);
+
+    /* Reset du flag bloque_construction pour ce joueur */
+    if (ctx) {
+        int idx = p->number - 1;
+        if (idx >= 0 && idx < MAX_PLAYER)
+            ctx->bloque_construction[idx] = 0;
+    }
+
     printf("\n--- Fin du tour de %s ---\n", p->name);
 }
 
@@ -706,4 +852,3 @@ int engine_group_has_buildings(Property *tableau_prop[], Color couleur) {
     }
     return 0; // Le groupe est totalement nu
 }
-

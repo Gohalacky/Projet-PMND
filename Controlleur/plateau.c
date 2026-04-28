@@ -35,6 +35,21 @@ void init_plateau(Plateau *plt, Property *t_prop[], Gares *t_gar[], Compagnies *
     plt->cases[38].type = CASE_TAXE; // Taxe de luxe
     strcpy(plt->cases[38].nom_affichage, "TAXE DE LUXE ( -100 ECTS )");
 
+    // Cases Chance (positions officielles Monopoly : 7, 22, 36)
+    int chance_pos[] = {7, 22, 36};
+    for (int i = 0; i < 3; i++) {
+        plt->cases[chance_pos[i]].type = CASE_CHANCE;
+        strcpy(plt->cases[chance_pos[i]].nom_affichage, "? CHANCE ?");
+    }
+
+    // Cases Caisse de Communauté (positions officielles : 2, 17, 33)
+    int communaute_pos[] = {2, 17, 33};
+    for (int i = 0; i < 3; i++) {
+        plt->cases[communaute_pos[i]].type = CASE_COMMUNAUTE;
+        strcpy(plt->cases[communaute_pos[i]].nom_affichage, "CAISSE COMMUNAUTÉ");
+    }
+
+
     // Placement des terrains (22 propriétés)
     // Liste des indices officiels du plateau pour les terrains
     int terrains_pos[] = {1, 3, 6, 8, 9, 11, 13, 14, 16, 18, 19, 21, 23, 24, 26, 27, 29, 31, 32, 34, 37, 39};

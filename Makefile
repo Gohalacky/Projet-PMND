@@ -8,9 +8,7 @@ UI_DIR      = Interface/ui
 MOD_DIR     = Modele
 CTRL_DIR    = Controlleur
 
-SRC_MOD = $(MOD_DIR)/alea.c        \
-          $(MOD_DIR)/cartes.c       \
-          $(MOD_DIR)/eco.c          \
+SRC_MOD = $(MOD_DIR)/cartes.c       \
           $(MOD_DIR)/evenements.c   \
           $(MOD_DIR)/hypo.c         \
           $(MOD_DIR)/player.c       \
@@ -23,6 +21,7 @@ SRC_CTRL = $(CTRL_DIR)/game_engine.c \
            $(CTRL_DIR)/plateau.c
 
 SRC_CTRL_CONSOLE = $(CTRL_DIR)/game_engine_console.c \
+                   $(CTRL_DIR)/engine_logic.c         \
                    $(CTRL_DIR)/plateau.c
 
 SRC_IFACE = $(IFACE_DIR)/main_interface.c \
@@ -94,7 +93,7 @@ doc:
 	xdg-open docs/html/index.html
 
 clean:
-	rm -f $(ALL_OBJ) $(MOD_DIR)/test.o $(MOD_DIR)/main_test_cartes.o $(CTRL_DIR)/main.o $(CTRL_DIR)/game_engine_console.o
+	rm -f $(ALL_OBJ) $(MOD_DIR)/test.o $(MOD_DIR)/main_test_cartes.o $(CTRL_DIR)/main.o $(CTRL_DIR)/game_engine_console.o $(CTRL_DIR)/engine_logic.o
 	rm -f $(TARGET) $(TEST_EXEC) $(TEST_CARTES) $(CONTROLLEUR)
 	@echo "✔  Nettoyage terminé"
 

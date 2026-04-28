@@ -9,11 +9,14 @@ typedef enum {
     CASE_TERRAIN,
     CASE_GARE,
     CASE_COMPAGNIE,
-    CASE_SPECIAL, // Chance/Communauté
+    CASE_SPECIAL,       // Cases neutres (Parc Gratuit, Visite prison…)
+    CASE_CHANCE,        // Pioche Chance
+    CASE_COMMUNAUTE,    // Pioche Caisse de communauté
     CASE_PRISON,
     CASE_TAXE,
     CASE_ALLEZ_PRISON
 } TypeCase;
+
 
 // Structure d'une case du plateau
 typedef struct {
