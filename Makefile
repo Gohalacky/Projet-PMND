@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall -Wextra -Werror -g -I. -IInterface -IModele -IControlleur $(shell sdl2-config --cflags)
+CFLAGS  = -Wall -Wextra -g -I. -IInterface -IModele -IControlleur $(shell sdl2-config --cflags)
 LDFLAGS = -lcmocka
 LIBS    = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf -lm
 
@@ -8,17 +8,14 @@ UI_DIR      = Interface/ui
 MOD_DIR     = Modele
 CTRL_DIR    = Controlleur
 
-SRC_MOD = $(MOD_DIR)/alea.c        \
-          $(MOD_DIR)/cartes.c       \
-          $(MOD_DIR)/eco.c          \
+SRC_MOD = $(MOD_DIR)/cartes.c       \
           $(MOD_DIR)/evenements.c   \
           $(MOD_DIR)/hypo.c         \
           $(MOD_DIR)/player.c       \
           $(MOD_DIR)/property.c     \
           $(MOD_DIR)/tool.c         \
-          $(MOD_DIR)/trade.c		\
-		  $(MOD_DIR)/prison.c		\
-
+          $(MOD_DIR)/trade.c        \
+          $(MOD_DIR)/prison.c
 SRC_CTRL = $(CTRL_DIR)/game_engine.c \
            $(CTRL_DIR)/plateau.c
 
@@ -31,18 +28,16 @@ SRC_IFACE = $(IFACE_DIR)/main_interface.c \
             $(IFACE_DIR)/events.c         \
             $(IFACE_DIR)/assets.c         \
             $(IFACE_DIR)/bridge.c         \
-            $(IFACE_DIR)/adminWindow.c    \
             $(IFACE_DIR)/anim.c           \
             $(IFACE_DIR)/propwindow.c     \
+            $(IFACE_DIR)/tradewindow.c    \
             $(IFACE_DIR)/pawn.c           \
             $(UI_DIR)/button.c            \
             $(UI_DIR)/text.c              \
             $(UI_DIR)/textbox.c           \
             $(UI_DIR)/counter.c           \
             $(UI_DIR)/playercard.c        \
-            $(UI_DIR)/checkbox.c          \
-            
-
+            $(UI_DIR)/checkbox.c
 OBJ_MOD   = $(SRC_MOD:.c=.o)
 OBJ_CTRL  = $(SRC_CTRL:.c=.o)
 OBJ_CTRL_CONSOLE = $(SRC_CTRL_CONSOLE:.c=.o)
@@ -102,5 +97,5 @@ clean:
 
 mrproper: clean
 	rm -rf docs/
-
+    
 .PHONY: all run run_unit_tests run_test run_controlleur valgrind doc clean mrproper

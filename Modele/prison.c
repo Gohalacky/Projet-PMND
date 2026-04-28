@@ -67,7 +67,7 @@ void add_tour_jail(Player * p, Prison * jail){
 
 int istreetour_in_jail(Player * p, Prison * jail){
     int i;
-    for(i=0 ;i<=jail->nb_j;i++){
+    for(i=0 ;i<jail->nb_j;i++){
         if((jail->liste[i] == p) && (jail->comptage[i] >= 3 )){
             printf("Cela fait 3 tour que %s est en prison ! \n",p->name);
             return 1; 

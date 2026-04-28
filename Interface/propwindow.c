@@ -1,4 +1,5 @@
 #include "propwindow.h"
+#include "tradewindow.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -23,6 +24,7 @@ void initPropButtons(PropButtonsPack* pb) {
     pb->construire       = (Button){ .ref = {WIN_X + 30,          WIN_Y + WIN_H - 280, BTN_W, BTN_H} };
     pb->construireSocial = (Button){ .ref = {WIN_X + 230,         WIN_Y + WIN_H - 280, BTN_W, BTN_H} };
     pb->construireParc   = (Button){ .ref = {WIN_X + 430,         WIN_Y + WIN_H - 280, BTN_W, BTN_H} };
+    pb->echanger         = (Button){ .ref = {WIN_X + WIN_W - BTN_W - 30, WIN_Y + WIN_H - 150, BTN_W, BTN_H} };
     scalePropButtons(pb, 1.0f, 1.0f);
 }
 
@@ -32,6 +34,7 @@ void scalePropButtons(PropButtonsPack* pb, float ratioX, float ratioY) {
     ScaleButton(&pb->construire,       ratioX, ratioY);
     ScaleButton(&pb->construireSocial, ratioX, ratioY);
     ScaleButton(&pb->construireParc,   ratioX, ratioY);
+    ScaleButton(&pb->echanger,         ratioX, ratioY);
 }
 
 static void drawButton(SDL_Renderer* renderer, TTF_Font* font,const Button* btn, const char* label,SDL_Color bg, SDL_Color textColor) {
@@ -150,9 +153,20 @@ void renderPropWindow(SDL_Renderer* renderer,TTF_Font* fontTitle, TTF_Font* font
     drawButton(renderer, fontSmall, &pb->construire,       "Maison", bgBuild, blanc);
     drawButton(renderer, fontSmall, &pb->construireSocial, "Social", bgBuild, blanc);
     drawButton(renderer, fontSmall, &pb->construireParc,   "Parc",   bgBuild, blanc);
+
+    /* Bouton echanger */
+    SDL_Color bleu = {60, 100, 180, 220};
+    drawButton(renderer, fontSmall, &pb->echanger, "Echanger", bleu, blanc);
 }
 
-void handlePropClick(int x, int y, EtatJeu* state,PropButtonsPack* pb,ContexteJeu* ctx,EtatPartie* partie) {
+void handlePropClick(int x, int y, EtatJeu* state,PropButtonsPack* pb,ContexteJeu* ctx,EtatPartie* partie, TradeState* ts) {
+
+    /* Echanger */
+    if (isClicked(&pb->echanger, x, y)) {
+        bridge_trade_init(ctx, partie, ts);
+        *state = TRADE;
+        return;
+    }
 
     /* Fermer */
     if (isClicked(&pb->fermer, x, y)) {
