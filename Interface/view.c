@@ -5,6 +5,8 @@
 #include "building.h"
 #include "pawn.h"
 #include "propwindow.h"
+#include "pausemenu.h"
+#include "loadmenu.h"
 #include "ui/playercard.h"
 #include "ui/text.h"
 #include "ui/button.h"
@@ -97,6 +99,9 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
         snprintf(bufferCase, sizeof(bufferCase), "Case : %s",bridge_get_case_joueur_actif(ctx, partie));
         printTextCentered(renderer, fontNormal, bufferCase, blanc,fenetreLancer.y + (int)(fenetreLancer.h * 0.65f),winW);
     }
+
+    /* Bouton ☰ toujours visible sur le plateau */
+    renderPauseButton(renderer, fontButton, btn);
 }
 
 void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie* partie, ContexteJeu* ctx){
@@ -118,7 +123,7 @@ void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie*
 
 }
 
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS]){
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm){
     
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
@@ -158,7 +163,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             break;
 
         case CHARGERPARTIE:
-            SDL_RenderCopy(renderer, tex->launchGame, NULL, NULL);
+            renderLoadMenu(renderer, fontTitle, fontNormal, fontButton, lm, tex);
             break;
 
         case PROPRIETE: {
@@ -194,6 +199,17 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
         case LANCER:
             renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
             break;
+
+        case PAUSE: {
+            /* Rendu du plateau derrière (fond figé) */
+            EtatJeu plateauPause = PLATEAU2J;
+            if (partie->nbJoueurs == 3) plateauPause = PLATEAU3J;
+            else if (partie->nbJoueurs == 4) plateauPause = PLATEAU4J;
+            renderPlateau(renderer, plateauPause, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            /* Overlay + menu pause */
+            renderPauseMenu(renderer, fontNormal, btn);
+            break;
+        }
     }
     SDL_RenderPresent(renderer);
 }

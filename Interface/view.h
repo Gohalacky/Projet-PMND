@@ -15,6 +15,8 @@
 #include "tradewindow.h"
 #include "pawn.h" 
 
+typedef struct LoadMenuState LoadMenuState;
+
 #define REF_W 1280.0f
 #define REF_H 720.0f
 
@@ -23,6 +25,10 @@ typedef struct{
     Button newGame, loadGame, save;
     /*Game Board*/
     Button backToMenu, throwDice, properties, trade, endTurn;
+    /*Pause*/
+    Button pauseMenu;        
+    Button pauseSaveQuit;    
+    Button pauseResume;     
     /*New Game*/
     Button launchGame, cancel;
 } ButtonsPack;
@@ -52,7 +58,7 @@ typedef struct {
 } TextsPack;
 
 typedef struct {
-    Checkbox tourInfini;   /* case à cocher "Tours infinis" sur l'écran nouvelle partie */
+    Checkbox tourInfini;  
 } CheckboxPack;
 
 void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font,const EtatPartie* partie, ContexteJeu* ctx);
@@ -63,7 +69,8 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex,
             Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes,
             EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn,
             PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts,
-            Pawn pawns[MAX_PLAYERS]);
+            Pawn pawns[MAX_PLAYERS],
+            LoadMenuState* lm);
 
 void cleanup(SDL_Window* win, SDL_Renderer* rdr, TexturesPack* tex);
 

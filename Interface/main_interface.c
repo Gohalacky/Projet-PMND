@@ -17,6 +17,9 @@
 #include "propwindow.h"
 #include "tradewindow.h"
 #include "pawn.h"
+#include "pausemenu.h"
+#include "savegame.h"
+#include "loadmenu.h"
 
 #define FONT "FONT/fontPixel.ttf"
 
@@ -66,11 +69,14 @@ int main(){
         
     };
 
+    /* Initialisation des boutons du menu pause */
+    initPauseButtons(&btn);
+
     TextsPack texts = {
         /*Menu*/
         .menuNewGame    = { "NOUVELLE PARTIE",      0, 275, 38, 0,290,38, ALIGN_CENTER_X, {235,221,192,255} },
         .menuLoadGame   = { "CHARGER LA PARTIE",    0, 356, 38, 0,371,38, ALIGN_CENTER_X, {235,221,192,255} },
-        .menuSave       = { "SAUVEGARDES",          0, 436, 38, 0,451,38, ALIGN_CENTER_X, {235,221,192,255} },
+        .menuSave       = { "REGLEMENT",          0, 436, 38, 0,451,38, ALIGN_CENTER_X, {235,221,192,255} },
  
         /*Nouvelle partie*/
         .titleNewGame   = { "Nouvelle Partie",      0,  53, 38, 0, 53,38, ALIGN_CENTER_X, {235,221,192,255} },
@@ -120,10 +126,14 @@ int main(){
     Pawn pawns[MAX_PLAYERS];
     initPawns(pawns, 2);
 
+    LoadMenuState lm;
+    initLoadMenu(&lm);
+
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,
         &btn.backToMenu, &btn.throwDice, &btn.properties,
-        &btn.trade, &btn.launchGame, &btn.cancel, &btn.endTurn
+        &btn.trade, &btn.launchGame, &btn.cancel, &btn.endTurn,
+        &btn.pauseMenu, &btn.pauseResume, &btn.pauseSaveQuit,
     };
 
     int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
@@ -155,9 +165,9 @@ int main(){
         Uint32 delta = now-lastTime;
         lastTime=now;
 
-        handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb, &tb, &ts, pawns);
+        handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb, &tb, &ts, pawns, &lm);
         updatePawns(pawns, partie.nbJoueurs, delta);
-        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns);
+        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm);
     }
 
     TTF_CloseFont(fontNormal);

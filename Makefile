@@ -1,7 +1,7 @@
 CC      = gcc
 CFLAGS  = -Wall -Wextra -g -I. -IInterface -IModele -IControlleur $(shell sdl2-config --cflags)
 LDFLAGS = -lcmocka
-LIBS    = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf -lm
+LIBS    = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf -lm -lcjson
 
 IFACE_DIR   = Interface
 UI_DIR      = Interface/ui
@@ -32,6 +32,9 @@ SRC_IFACE = $(IFACE_DIR)/main_interface.c \
             $(IFACE_DIR)/propwindow.c     \
             $(IFACE_DIR)/tradewindow.c    \
             $(IFACE_DIR)/pawn.c           \
+            $(IFACE_DIR)/savegame.c       \
+            $(IFACE_DIR)/pausemenu.c      \
+            $(IFACE_DIR)/loadmenu.c       \
             $(UI_DIR)/button.c            \
             $(UI_DIR)/text.c              \
             $(UI_DIR)/textbox.c           \

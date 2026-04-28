@@ -7,7 +7,7 @@
 #define TEXTBOX_MAX_LEN 16
 
 typedef enum { ALIGN_LEFT, ALIGN_CENTER_X, ALIGN_RIGHT} TextAlign;
-typedef enum {MENU,NOUVPARTIE,CHARGERPARTIE,PLATEAU2J,PLATEAU3J,PLATEAU4J,LANCER,PROPRIETE,TRADE, TEST} EtatJeu;
+typedef enum {MENU,NOUVPARTIE,CHARGERPARTIE,PLATEAU2J,PLATEAU3J,PLATEAU4J,LANCER,PROPRIETE,TRADE, TEST, PAUSE} EtatJeu;
 
 typedef struct {
     SDL_Rect rect;      
@@ -42,7 +42,6 @@ typedef struct {
     Button btnMoins;
 } Counter;
 
-/*A MODIFIER LORS DU LIEN INTERFACE <-> CONTROLEUR*/
 typedef struct{
     char nom[32];
     int  credits;
