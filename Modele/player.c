@@ -25,17 +25,16 @@ Player* init_player(const char* name, int number) {
 }
 
 
-void calcul_moyenne_eco_index_player(Player *p, Property *board, int board_size) {
+void calcul_moyenne_eco_index_player(Player *p, Property **board, int board_size) {
     if (p == NULL || board == NULL) return;
 
     int somme = 0;
     int nb_propriete = 0;
-    int moyenne =0;
+    int moyenne = 0;
 
     for (int i = 0; i < board_size; i++) {
-        // On vérifie si la propriété appartient au joueur
-        if (board[i].owner == p->number) {
-            somme += board[i].indice;
+        if (board[i] != NULL && board[i]->owner == p->number) {
+            somme += board[i]->indice;
             nb_propriete++;
         }
     }
@@ -65,7 +64,8 @@ void player_move(Player *p, int steps) {
     // Si la nouvelle position est inférieure à l'ancienne, 
     // c'est qu'on a fait un tour complet (Passage par la case Départ)
     if (p->position < old_position) {
-        printf("%s passe par la case départ !\n", p->name);
+        printf("%s passe par la case départ et reçoit 200 ECTS !\n", p->name);
+        player_add_credits(p, 200);
     }
 }
 
@@ -80,14 +80,16 @@ void player_add_credits(Player *p, int montant) {
 int player_remove_credits(Player *p, int montant) {
     if (p == NULL ) return 1;
 
-    if (p->credit < montant) {
-        p->credit = 0;
-        return 0;
-    }
-    if (p != NULL && montant > 0) {
+    // On soustrait toujours le montant, même si ça dépasse le solde
     p->credit -= montant;
-    printf("%s à perdu %d crédits.\n",p->name,montant);
+
+    printf("%s a perdu %d ECTS. (Nouveau solde : %d)\n", p->name, montant, p->credit);
+
+    // Si le crédit est négatif, on retourne 0 pour signaler la difficulté financière
+    if (p->credit < 0) {
+        return 0; 
     }
+    
     return 1;
 }
 

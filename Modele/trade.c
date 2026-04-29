@@ -14,7 +14,7 @@ TradeOffer * init_empty_offer(Player *p) {
     return tr;
 }
 
-int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2){
+int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2, Property *tableau_prop[]){
     if ((off_p1 == NULL) || (off_p2 == NULL)) {
         printf("Les 2 joueurs doivent avoir proposé un échange.\n");
         return 0;
@@ -27,25 +27,39 @@ int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2){
         printf("%s n'a pas assez de crédit pour proposer cette offre.\n",off_p2->proposant->name);
         return 0;
     }
-    int i;
-    for(i=0;i<off_p1->nb_props;i++){
+    int i,j;
+
+    // VÉRIFICATION PROPRIÉTÉS JOUEUR 1
+    for(i=0; i<off_p1->nb_props; i++){
+        // Vérification propriétaire
         if(off_p1->props[i]->owner != off_p1->proposant->number){
             printf("Echange impossible, %s ne possède pas %s.\n",off_p1->proposant->name,off_p1->props[i]->name);
             return 0;
         }
-        if(off_p1->props[i]->level !=0){
-            printf("Echange impossible, il reste des construction sur %s\n",off_p1->props[i]->name);
-            return 0;
+        
+        // Vérification du GROUPE de couleur (Règle : pas de bâtiments dans tout le quartier)
+        for (j = 0; j < NB_PROPRIETE; j++) {
+            if (tableau_prop[j]->color == off_p1->props[i]->color && tableau_prop[j]->level > 0) {
+                printf("Echange impossible, il reste des constructions dans le quartier de %s.\n", off_p1->props[i]->name);
+                return 0;
+            }
         }
     }
-    for(i=0;i<off_p2->nb_props;i++){
-        if(off_p2->props[i]->level !=0){
-            printf("Echange impossible, il reste des construction sur %s\n",off_p2->props[i]->name);
-            return 0;
-        }
+
+    // VÉRIFICATION PROPRIÉTÉS JOUEUR 2
+    for(i=0; i<off_p2->nb_props; i++){
+        // Vérification propriétaire
         if(off_p2->props[i]->owner != off_p2->proposant->number){
             printf("Echange impossible, %s ne possède pas %s.\n",off_p2->proposant->name,off_p2->props[i]->name);
             return 0;
+        }
+
+        // Vérification du GROUPE de couleur
+        for (j = 0; j < NB_PROPRIETE; j++) {
+            if (tableau_prop[j]->color == off_p2->props[i]->color && tableau_prop[j]->level > 0) {
+                printf("Echange impossible, il reste des constructions dans le quartier de %s.\n", off_p2->props[i]->name);
+                return 0;
+            }
         }
     }
     for(i=0;i<off_p1->nb_comps;i++){
@@ -184,8 +198,8 @@ int trade_remove_compagnie(TradeOffer *offer, Compagnies *comp) {
     return 0; 
 }
 
-void execute_trade(TradeOffer *off_p1, TradeOffer *off_p2){
-    if(is_trade_valid(off_p1,off_p2)==0){
+void execute_trade(TradeOffer *off_p1, TradeOffer *off_p2,Property *tableau_prop[]){
+    if(is_trade_valid(off_p1,off_p2,tableau_prop)==0){
         printf("Echange impossible car non valide.\n");
     }
     else{

@@ -16,13 +16,47 @@ void init_plateau(Plateau *plt, Property *t_prop[], Gares *t_gar[], Compagnies *
         sprintf(plt->cases[i].nom_affichage, "Case Spéciale %d", i);
     }
 
-    // Configuration de la case départ
+    // Configuration case fixes
     plt->cases[0].type = CASE_DEPART;
+<<<<<<< HEAD
     strcpy(plt->cases[0].nom_affichage, "DÉPART");
     
     // Configuration de la case allez en prison
     plt->cases[30].type = CASE_GOTOJAIL;
     strcpy(plt->cases[0].nom_affichage, "ALLEZ EN PRISON");
+=======
+    strcpy(plt->cases[0].nom_affichage, "DÉPART ( +200 ECTS )");
+
+    plt->cases[4].type = CASE_TAXE; // Impôt sur le revenu
+    strcpy(plt->cases[4].nom_affichage, "IMPÔT SUR LE REVENU ( -200 ECTS )");
+
+    plt->cases[10].type = CASE_PRISON;
+    strcpy(plt->cases[10].nom_affichage, "PRISON ( Visite Simple )");
+
+    plt->cases[20].type = CASE_SPECIAL; // Parc Gratuit
+    strcpy(plt->cases[20].nom_affichage, "PARC GRATUIT");
+
+    plt->cases[30].type = CASE_ALLEZ_PRISON;
+    strcpy(plt->cases[30].nom_affichage, "ALLEZ EN PRISON !");
+
+    plt->cases[38].type = CASE_TAXE; // Taxe de luxe
+    strcpy(plt->cases[38].nom_affichage, "TAXE DE LUXE ( -100 ECTS )");
+
+    // Cases Chance (positions officielles Monopoly : 7, 22, 36)
+    int chance_pos[] = {7, 22, 36};
+    for (int i = 0; i < 3; i++) {
+        plt->cases[chance_pos[i]].type = CASE_CHANCE;
+        strcpy(plt->cases[chance_pos[i]].nom_affichage, "? CHANCE ?");
+    }
+
+    // Cases Caisse de Communauté (positions officielles : 2, 17, 33)
+    int communaute_pos[] = {2, 17, 33};
+    for (int i = 0; i < 3; i++) {
+        plt->cases[communaute_pos[i]].type = CASE_COMMUNAUTE;
+        strcpy(plt->cases[communaute_pos[i]].nom_affichage, "CAISSE COMMUNAUTÉ");
+    }
+
+>>>>>>> e0007b296b3ad15132fff2e033e08befa2695498
 
     // Placement des terrains (22 propriétés)
     // Liste des indices officiels du plateau pour les terrains

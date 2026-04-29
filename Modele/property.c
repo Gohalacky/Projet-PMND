@@ -198,7 +198,7 @@ int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){
             }
         }
     }
-    printf("%s possède toute la couleur %s \n",p->name,color_names[couleur]);
+    printf("\n%s possède toute la couleur %s \n",p->name,color_names[couleur]);
     return 1 ; /*possède l'entiereté de la couleur*/
 }
 
@@ -251,16 +251,16 @@ void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Playe
         }
         else{
             dut = prop->rent_empty;
-            printf("Le loyer est de %d Crédits. \n",dut);
+            printf("\nLe loyer est de %d Crédits. \n",dut);
         }
         player_add_credits(ownr,dut);
         banqueroute = player_remove_credits(p,dut);
         if(banqueroute == 0){
-            printf("BANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+            printf("\nBANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
         }
     }
     else{
-        printf("Pas de loyer à payer, la Propriété est placée sous hypothèque.\n");
+        printf("\nPas de loyer à payer, la Propriété est placée sous hypothèque.\n");
     }
 }
 
@@ -269,15 +269,15 @@ void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp,
     int banqueroute;
     if(comp->hypo == 0){
         dut= (comp->rent[full_Comp(tableau,ownr)])*d; //d est le résultat du lancé de dé précédent
-        printf("Le loyer est de %d Crédits. \n",dut);
+        printf("\nLe loyer est de %d Crédits. \n",dut);
         player_add_credits(ownr,dut);
         banqueroute = player_remove_credits(p,dut);
         if(banqueroute == 0){
-            printf("BANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+            printf("\nBANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
         }
     }
     else{
-        printf("Pas de loyer à payer, la Compagnie est placée sous hypothèque.\n");
+        printf("\nPas de loyer à payer, la Compagnie est placée sous hypothèque.\n");
     }
 }
 
@@ -286,15 +286,15 @@ void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *loueur, Player
     int banqueroute;
     if(g->hypo == 0){
         dut= (g->rent[nb_Gare(tableau,owner)-1]); //-1 car le owner possède déja une gare, ce n'est pas cette fonction qui le vérifie
-        printf("Le loyer est de %d Crédits. \n",dut);
+        printf("\nLe loyer est de %d Crédits. \n",dut);
         player_add_credits(owner,dut);
         banqueroute = player_remove_credits(loueur,dut);
         if(banqueroute == 0){
-            printf("BANQUEROUTE de %s \n", loueur->name); /*il faudra réalisé le protocole de banqueroute*/
+            printf("\nBANQUEROUTE de %s \n", loueur->name); /*il faudra réalisé le protocole de banqueroute*/
         }
     }
     else{
-        printf("Pas de loyer à payer, la Compagnie est placée sous hypothèque.\n");
+        printf("\nPas de loyer à payer, la Gare est placée sous hypothèque.\n");
     }
 }
 
@@ -303,9 +303,22 @@ int add_level(Property * tableau[NB_PROPRIETE], Property * prop,Player * p , int
         if(prop->level == 0){
             prop->type = type_choisi;
         }
-    prop->level++;
-    player_remove_credits(p,prop->construction_cost);
-    return 1 ;
+        prop->level++;
+        if (type_choisi == Maison) {
+            int notes_maison[] = {GRADE_F, GRADE_E, GRADE_C}; // niv 1,2,3
+            prop->indice = notes_maison[prop->level - 1];
+        }
+        // Social
+        else if (type_choisi == Social) {
+            int notes_social[] = {GRADE_E, GRADE_C, GRADE_B};
+            prop->indice = notes_social[prop->level - 1];
+        }
+        // Parc
+        else if (type_choisi == Parc) {
+            prop->indice = GRADE_A; // toujours A
+        }
+        player_remove_credits(p,prop->construction_cost);
+        return 1 ;
     }
     else{
         printf("Impossible de rajouté un niveau de propriété\n");
@@ -365,6 +378,7 @@ int remove_level(Property * tableau[NB_PROPRIETE], Property * prop, Player * p) 
         // Remboursement ( 100% du prix de construction)
         int remboursement = prop->construction_cost ;
         player_add_credits(p, remboursement);
+        printf("\n Vente réussie ! +%d ECTS (Niveau actuel : %d)\n", remboursement, prop->level);
         
         return 1;
     }
