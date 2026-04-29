@@ -9,17 +9,12 @@ typedef enum {
     CASE_TERRAIN,
     CASE_GARE,
     CASE_COMPAGNIE,
-<<<<<<< HEAD
-    CASE_SPECIAL, // Taxes, Chance
-    CASE_GOTOJAIL // case allez en prison
-=======
     CASE_SPECIAL,       // Cases neutres (Parc Gratuit, Visite prison…)
     CASE_CHANCE,        // Pioche Chance
     CASE_COMMUNAUTE,    // Pioche Caisse de communauté
     CASE_PRISON,
     CASE_TAXE,
     CASE_ALLEZ_PRISON
->>>>>>> e0007b296b3ad15132fff2e033e08befa2695498
 } TypeCase;
 
 

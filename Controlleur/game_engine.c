@@ -90,7 +90,7 @@ void engine_resolve_case(Player *p, Player *all_players[],Property *tableau_prop
             player_add_credits(p, 200);
             break;
         
-        case CASE_GOTOJAIL:
+        case CASE_ALLEZ_PRISON:
             go_to_jail(p,jail);
             break ;
 
@@ -132,11 +132,11 @@ void engine_resolve_case(Player *p, Player *all_players[],Property *tableau_prop
     }
  
     // Mise à jour écologique
-    Property board_static[NB_PROPRIETE];
+    Property * board_static[NB_PROPRIETE];
     int valid_count = 0;
     for (int i = 0; i < NB_PROPRIETE; i++) {
         if (tableau_prop[i] != NULL)
-            board_static[valid_count++] = *(tableau_prop[i]);
+            board_static[valid_count++] = (tableau_prop[i]);
     }
     if (valid_count > 0)
         calcul_moyenne_eco_index_player(p, board_static, valid_count);

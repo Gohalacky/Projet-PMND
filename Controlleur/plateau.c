@@ -18,13 +18,6 @@ void init_plateau(Plateau *plt, Property *t_prop[], Gares *t_gar[], Compagnies *
 
     // Configuration case fixes
     plt->cases[0].type = CASE_DEPART;
-<<<<<<< HEAD
-    strcpy(plt->cases[0].nom_affichage, "DÉPART");
-    
-    // Configuration de la case allez en prison
-    plt->cases[30].type = CASE_GOTOJAIL;
-    strcpy(plt->cases[0].nom_affichage, "ALLEZ EN PRISON");
-=======
     strcpy(plt->cases[0].nom_affichage, "DÉPART ( +200 ECTS )");
 
     plt->cases[4].type = CASE_TAXE; // Impôt sur le revenu
@@ -56,7 +49,6 @@ void init_plateau(Plateau *plt, Property *t_prop[], Gares *t_gar[], Compagnies *
         strcpy(plt->cases[communaute_pos[i]].nom_affichage, "CAISSE COMMUNAUTÉ");
     }
 
->>>>>>> e0007b296b3ad15132fff2e033e08befa2695498
 
     // Placement des terrains (22 propriétés)
     // Liste des indices officiels du plateau pour les terrains

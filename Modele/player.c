@@ -78,21 +78,18 @@ void player_add_credits(Player *p, int montant) {
 
 //Retire des crédits. Retourne 0 si le joueur n'a plus assez d'argent. 1 sinon
 int player_remove_credits(Player *p, int montant) {
-    if (p == NULL ) return 1;
+    if (p == NULL) return 1;
 
-    // On soustrait toujours le montant, même si ça dépasse le solde
     p->credit -= montant;
-
     printf("%s a perdu %d ECTS. (Nouveau solde : %d)\n", p->name, montant, p->credit);
 
-    // Si le crédit est négatif, on retourne 0 pour signaler la difficulté financière
     if (p->credit < 0) {
+        p->credit = 0; // 🛠️ CORRECTION : on bloque le solde à 0
         return 0; 
     }
     
     return 1;
 }
-
 
 void player_add_property(Player *p, Property *prop) {
     if (p == NULL || prop == NULL) return;

@@ -511,15 +511,16 @@ static void test_calcul_moyenne_eco_index_player(void **state) {
     Player *p = init_player("Ecolo", 1);
     
     // Création plateau de 2 propriétés
-    Property board[2];
+    Property * board[2];
     // Propriété 1 : Note B
     // Propriété 2 : Note D
     // Moyenne attendue : (2+4)/2 = 3 -> Grade C
-    
-    board[0].owner = 1; 
-    board[0].indice = GRADE_B;
-    board[1].owner = 1; 
-    board[1].indice = GRADE_D;
+    board[0] = calloc(1, sizeof(Property));
+    board[1] = calloc(1, sizeof(Property));
+    board[0]->owner = 1; 
+    board[0]->indice = GRADE_B;
+    board[1]->owner = 1; 
+    board[1]->indice = GRADE_D;
     
     calcul_moyenne_eco_index_player(p, board, 2);
     
@@ -849,14 +850,14 @@ static void test_is_trade_valid(void **state) {
     // 2. Initialisation des offres vides
     TradeOffer *off1 = init_empty_offer(p1);
     TradeOffer *off2 = init_empty_offer(p2);
-
+    Property * tableau_prop[NB_PROPRIETE] = {NULL};
     // --- TEST A : Offres NULL ---
-    assert_int_equal(is_trade_valid(NULL, off2), 0);
-    assert_int_equal(is_trade_valid(off1, NULL), 0);
+    assert_int_equal(is_trade_valid(NULL, off2, tableau_prop), 0);
+    assert_int_equal(is_trade_valid(off1, NULL ,tableau_prop), 0);
 
     // --- TEST B : Manque de crédits ---
     off1->ects = 1500; // Alice propose plus que ce qu'elle a (1000)
-    assert_int_equal(is_trade_valid(off1, off2), 0);
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 0);
     off1->ects = 0; // On remet à zéro pour la suite
 
     // --- TEST C : Propriété non possédée ---
@@ -864,23 +865,23 @@ static void test_is_trade_valid(void **state) {
     strcpy(prop1->name, "Rue de la Soif");
     prop1->owner = 2; // Appartient à Bob (Joueur 2)
     prop1->level = 0;
-
+    tableau_prop[0]=prop1;
     // Alice essaie de mettre la propriété de Bob dans son offre (Triche)
     off1->props[0] = prop1;
     off1->nb_props = 1;
-    assert_int_equal(is_trade_valid(off1, off2), 0);
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 0);
 
     // --- TEST D : Propriété avec construction ---
     prop1->owner = 1; // La propriété appartient bien à Alice maintenant
     prop1->level = 1; // Mais elle contient un bâtiment !
-    assert_int_equal(is_trade_valid(off1, off2), 0);
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 0);
 
     // --- TEST E : Échange valide ---
     prop1->level = 0; // On retire le bâtiment, le terrain est nu
     off1->ects = 100; // Alice donne la propriété + 100 ECTS
     off2->ects = 50;  // Bob donne juste 50 ECTS
 
-    assert_int_equal(is_trade_valid(off1, off2), 1); // Cette fois, ça doit passer !
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 1); // Cette fois, ça doit passer !
 
     // 3. Nettoyage de la mémoire
     free(prop1);
@@ -966,7 +967,7 @@ static void test_execute_trade_full(void **state) {
     Player *p2 = init_player("Bob", 2);
     p1->credit = 1000;
     p2->credit = 1000;
-
+    Property * tableau_prop[NB_PROPRIETE] = {NULL};
     // 2. --- PRÉPARATION DES BIENS ---
     // Une propriété pour Alice
     Property *prop_alice = calloc(1, sizeof(Property));
@@ -994,10 +995,10 @@ static void test_execute_trade_full(void **state) {
 
     // 4. --- EXÉCUTION ---
     // On vérifie d'abord que c'est valide (pour être sûr)
-    assert_int_equal(is_trade_valid(off1, off2), 1);
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 1);
     
     // On exécute l'échange
-    execute_trade(off1, off2);
+    execute_trade(off1, off2,tableau_prop);
 
     // 5. --- VÉRIFICATIONS (ASSERTIONS) ---
     

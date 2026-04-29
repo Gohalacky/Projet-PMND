@@ -64,7 +64,7 @@ $(TARGET): $(ALL_OBJ)
 	@echo "✔  Compilation réussie → ./$(TARGET)"
 
 test: $(MOD_DIR)/test.o $(OBJ_COMMON)
-	$(CC) $(CFLAGS) -Wl,--wrap=rand $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS)
+	$(CC) $(CFLAGS) $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS)
 
 test_cartes: $(MOD_DIR)/main_test_cartes.o $(OBJ_COMMON)
 	$(CC) $(CFLAGS) $^ -o $(TEST_CARTES) $(LDFLAGS) $(LIBS)
