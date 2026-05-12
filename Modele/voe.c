@@ -4,7 +4,7 @@
 #include "voe.h"
 
 
-AuctionState* init_auction_prop(Property *prop, Player *p_refus, Player *all_players[], int nb_joueurs_total) {
+AuctionState* init_auction_prop(Property *prop, Player *all_players[], int nb_joueurs_total) {
     AuctionState *auction = (AuctionState *)calloc(1, sizeof(AuctionState));
     if (!auction) return NULL;
 
@@ -24,7 +24,7 @@ AuctionState* init_auction_prop(Property *prop, Player *p_refus, Player *all_pla
     return auction;
 }
 
-AuctionState* init_auction_comp(Compagnies *c, Player *p_refus, Player *all_players[], int nb_joueurs_total) {
+AuctionState* init_auction_comp(Compagnies *c, Player *all_players[], int nb_joueurs_total) {
     AuctionState *auction = (AuctionState *)calloc(1, sizeof(AuctionState));
     if (!auction) return NULL;
 
@@ -44,7 +44,7 @@ AuctionState* init_auction_comp(Compagnies *c, Player *p_refus, Player *all_play
     return auction;
 }
 
-AuctionState* init_auction_gar(Gares *g, Player *p_refus, Player *all_players[], int nb_joueurs_total) {
+AuctionState* init_auction_gar(Gares *g, Player *all_players[], int nb_joueurs_total) {
     AuctionState *auction = (AuctionState *)calloc(1, sizeof(AuctionState));
     if (!auction) return NULL;
 
