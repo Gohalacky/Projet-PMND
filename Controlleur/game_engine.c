@@ -66,7 +66,7 @@ void engine_play_turn(Player *p, Player *all_players[],Property *tableau_prop[],
             player_move(p, total_des);
         }
  
-        engine_resolve_case(p, all_players, tableau_prop, tableau_gare, tableau_comp, plateau, total_des);
+        engine_resolve_case(p, all_players, tableau_prop, tableau_gare, tableau_comp, plateau, total_des,jail);
     }while((compteur_doubles == 1) || (compteur_doubles == 2));
     add_tour_jail(p,jail);
 }
@@ -78,7 +78,7 @@ int engine_roll_and_move(Player* p, const Plateau* plateau, int * compteur_doubl
     return total_des;
 }
 
-void engine_resolve_case(Player *p, Player *all_players[],Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[],Plateau *plateau, int total_des) {
+void engine_resolve_case(Player *p, Player *all_players[],Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[],Plateau *plateau, int total_des, Prison * jail) {
  
     if (!p || !plateau) return;
  
@@ -89,7 +89,11 @@ void engine_resolve_case(Player *p, Player *all_players[],Property *tableau_prop
         case CASE_DEPART:
             player_add_credits(p, 200);
             break;
- 
+        
+        case CASE_ALLEZ_PRISON:
+            go_to_jail(p,jail);
+            break ;
+
         case CASE_TERRAIN: {
             Property *prop = (Property *)current_case->data;
             if (!prop) break;
@@ -128,11 +132,11 @@ void engine_resolve_case(Player *p, Player *all_players[],Property *tableau_prop
     }
  
     // Mise à jour écologique
-    Property board_static[NB_PROPRIETE];
+    Property * board_static[NB_PROPRIETE];
     int valid_count = 0;
     for (int i = 0; i < NB_PROPRIETE; i++) {
         if (tableau_prop[i] != NULL)
-            board_static[valid_count++] = *(tableau_prop[i]);
+            board_static[valid_count++] = (tableau_prop[i]);
     }
     if (valid_count > 0)
         calcul_moyenne_eco_index_player(p, board_static, valid_count);

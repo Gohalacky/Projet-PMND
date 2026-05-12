@@ -14,6 +14,7 @@ void go_to_jail(Player * p, Prison * jail){
         jail->liste[jail->nb_j] = p;
         jail->comptage[jail->nb_j] = 0;
         jail->nb_j++;
+        p->position=10;
         printf("%s va en prison !\n",p->name);
     }
 }

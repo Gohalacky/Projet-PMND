@@ -39,6 +39,7 @@ int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2, Property *tableau_pro
         
         // Vérification du GROUPE de couleur (Règle : pas de bâtiments dans tout le quartier)
         for (j = 0; j < NB_PROPRIETE; j++) {
+            if (tableau_prop[j] == NULL) continue;
             if (tableau_prop[j]->color == off_p1->props[i]->color && tableau_prop[j]->level > 0) {
                 printf("Echange impossible, il reste des constructions dans le quartier de %s.\n", off_p1->props[i]->name);
                 return 0;
@@ -56,6 +57,7 @@ int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2, Property *tableau_pro
 
         // Vérification du GROUPE de couleur
         for (j = 0; j < NB_PROPRIETE; j++) {
+            if (tableau_prop[j] == NULL) continue;
             if (tableau_prop[j]->color == off_p2->props[i]->color && tableau_prop[j]->level > 0) {
                 printf("Echange impossible, il reste des constructions dans le quartier de %s.\n", off_p2->props[i]->name);
                 return 0;

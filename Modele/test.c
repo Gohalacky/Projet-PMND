@@ -12,6 +12,8 @@
 #include "hypo.h"
 #include "trade.h"
 #include "prison.h"
+#include "voe.h"
+
 /*
 printf("==========================================================\n");
 printf("              TESTS DE property                \n");
@@ -509,15 +511,16 @@ static void test_calcul_moyenne_eco_index_player(void **state) {
     Player *p = init_player("Ecolo", 1);
     
     // Création plateau de 2 propriétés
-    Property board[2];
+    Property * board[2];
     // Propriété 1 : Note B
     // Propriété 2 : Note D
     // Moyenne attendue : (2+4)/2 = 3 -> Grade C
-    
-    board[0].owner = 1; 
-    board[0].indice = GRADE_B;
-    board[1].owner = 1; 
-    board[1].indice = GRADE_D;
+    board[0] = calloc(1, sizeof(Property));
+    board[1] = calloc(1, sizeof(Property));
+    board[0]->owner = 1; 
+    board[0]->indice = GRADE_B;
+    board[1]->owner = 1; 
+    board[1]->indice = GRADE_D;
     
     calcul_moyenne_eco_index_player(p, board, 2);
     
@@ -847,14 +850,14 @@ static void test_is_trade_valid(void **state) {
     // 2. Initialisation des offres vides
     TradeOffer *off1 = init_empty_offer(p1);
     TradeOffer *off2 = init_empty_offer(p2);
-
+    Property * tableau_prop[NB_PROPRIETE] = {NULL};
     // --- TEST A : Offres NULL ---
-    assert_int_equal(is_trade_valid(NULL, off2), 0);
-    assert_int_equal(is_trade_valid(off1, NULL), 0);
+    assert_int_equal(is_trade_valid(NULL, off2, tableau_prop), 0);
+    assert_int_equal(is_trade_valid(off1, NULL ,tableau_prop), 0);
 
     // --- TEST B : Manque de crédits ---
     off1->ects = 1500; // Alice propose plus que ce qu'elle a (1000)
-    assert_int_equal(is_trade_valid(off1, off2), 0);
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 0);
     off1->ects = 0; // On remet à zéro pour la suite
 
     // --- TEST C : Propriété non possédée ---
@@ -862,23 +865,23 @@ static void test_is_trade_valid(void **state) {
     strcpy(prop1->name, "Rue de la Soif");
     prop1->owner = 2; // Appartient à Bob (Joueur 2)
     prop1->level = 0;
-
+    tableau_prop[0]=prop1;
     // Alice essaie de mettre la propriété de Bob dans son offre (Triche)
     off1->props[0] = prop1;
     off1->nb_props = 1;
-    assert_int_equal(is_trade_valid(off1, off2), 0);
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 0);
 
     // --- TEST D : Propriété avec construction ---
     prop1->owner = 1; // La propriété appartient bien à Alice maintenant
     prop1->level = 1; // Mais elle contient un bâtiment !
-    assert_int_equal(is_trade_valid(off1, off2), 0);
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 0);
 
     // --- TEST E : Échange valide ---
     prop1->level = 0; // On retire le bâtiment, le terrain est nu
     off1->ects = 100; // Alice donne la propriété + 100 ECTS
     off2->ects = 50;  // Bob donne juste 50 ECTS
 
-    assert_int_equal(is_trade_valid(off1, off2), 1); // Cette fois, ça doit passer !
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 1); // Cette fois, ça doit passer !
 
     // 3. Nettoyage de la mémoire
     free(prop1);
@@ -964,7 +967,7 @@ static void test_execute_trade_full(void **state) {
     Player *p2 = init_player("Bob", 2);
     p1->credit = 1000;
     p2->credit = 1000;
-
+    Property * tableau_prop[NB_PROPRIETE] = {NULL};
     // 2. --- PRÉPARATION DES BIENS ---
     // Une propriété pour Alice
     Property *prop_alice = calloc(1, sizeof(Property));
@@ -992,10 +995,10 @@ static void test_execute_trade_full(void **state) {
 
     // 4. --- EXÉCUTION ---
     // On vérifie d'abord que c'est valide (pour être sûr)
-    assert_int_equal(is_trade_valid(off1, off2), 1);
+    assert_int_equal(is_trade_valid(off1, off2,tableau_prop), 1);
     
     // On exécute l'échange
-    execute_trade(off1, off2);
+    execute_trade(off1, off2,tableau_prop);
 
     // 5. --- VÉRIFICATIONS (ASSERTIONS) ---
     
@@ -1131,6 +1134,72 @@ static void test_pay_to_get_out(void **state) {
     free(jail);
     free(p1);
 }
+/*
+printf("==========================================================\n");
+printf("              TESTS DE voe               \n");
+printf("==========================================================\n");
+*/
+static void test_auction_system(void **state) {
+    (void) state;
+    printf("==========================================================\n");
+    printf("              TESTS DE voe               \n");
+    printf("==========================================================\n");
+    // 1. --- PRÉPARATION DU JEU ---
+    Player *p1 = init_player("Alice (Refuse)", 1);
+    Player *p2 = init_player("Bob", 2);
+    Player *p3 = init_player("Charlie", 3);
+    Player *p4 = init_player("David", 4);
+    
+    p2->credit = 1000;
+    p3->credit = 100; // Charlie est pauvre pour tester la sécurité
+    
+    Player *tous_les_joueurs[4] = {p1, p2, p3, p4};
+
+    Property *prop = calloc(1, sizeof(Property));
+    strcpy(prop->name, "Rue de la Soif");
+    prop->owner = 0; // Appartient à la banque
+
+    // 2. --- INITIALISATION ---
+    // Alice (p1) tombe dessus et refuse de l'acheter.
+    AuctionState *auction = init_auction_prop(prop, p1, tous_les_joueurs, 4);
+
+    assert_non_null(auction);
+    assert_int_equal(auction->players_left, 3); // 4 joueurs - Alice = 3
+    assert_int_equal(auction->current_bid, 10);
+    assert_ptr_equal(auction->prop_item, prop);
+    assert_null(auction->gar_item);
+
+    // Alice essaie de parier (doit échouer car exclue)
+    assert_int_equal(process_bid(auction, p1, 20), 0);
+
+    // 3. --- BATAILLE D'ENCHÈRES ---
+    // Bob propose 50 (Succès)
+    assert_int_equal(process_bid(auction, p2, 50), 1);
+    assert_ptr_equal(auction->highest_bidder, p2);
+
+    // Charlie propose 20 (Échec : trop bas)
+    assert_int_equal(process_bid(auction, p3, 20), 0);
+    
+    // Charlie propose 200 (Échec : il n'a que 100 crédits)
+    assert_int_equal(process_bid(auction, p3, 200), 0);
+
+    // 4. --- ABANDONS ---
+    fold_player(auction, p3); // Charlie se couche
+    fold_player(auction, p4); // David se couche
+    assert_int_equal(auction->players_left, 1); // Il ne reste que Bob !
+
+    // 5. --- FINALISATION ---
+    finalize_auction(auction);
+
+    // Vérifications : Bob doit avoir payé 50 ECTS et reçu la carte
+    assert_int_equal(p2->credit, 950); // 1000 - 50
+    assert_int_equal(prop->owner, 2);  // Appartient maintenant à Bob
+
+    // 6. --- NETTOYAGE ---
+    free(auction);
+    free(prop);
+    free(p1); free(p2); free(p3); free(p4);
+}
 
 int main(void) {
     const struct CMUnitTest tests[] = {
@@ -1175,7 +1244,9 @@ int main(void) {
         cmocka_unit_test(test_go_to_jail_and_limit),
         cmocka_unit_test(test_get_out_of_jail),
         cmocka_unit_test(test_tours_in_jail),
-        cmocka_unit_test(test_pay_to_get_out)
+        cmocka_unit_test(test_pay_to_get_out),
+        //voe
+        cmocka_unit_test(test_auction_system)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
