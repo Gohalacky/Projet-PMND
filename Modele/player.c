@@ -84,8 +84,7 @@ int player_remove_credits(Player *p, int montant) {
     printf("%s a perdu %d ECTS. (Nouveau solde : %d)\n", p->name, montant, p->credit);
 
     if (p->credit < 0) {
-        p->credit = 0; // 🛠️ CORRECTION : on bloque le solde à 0
-        return 0; 
+        return 0; // Signale l'insolvabilité, engine_resolve_debt prend le relais
     }
     
     return 1;

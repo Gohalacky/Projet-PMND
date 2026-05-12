@@ -152,16 +152,13 @@ void engine_handle_purchase(Player *p, void *asset, int type,
 
         if (!auction) return;
 
-        /* Boucle d'enchères : on fait des tours complets jusqu'à ce qu'il ne reste qu'un joueur.
-           On termine TOUJOURS le tour en cours avant de vérifier players_left. */
-        int continuer_enchere = 1;
-        while (continuer_enchere) {
-            continuer_enchere = 0; /* on suppose qu'on va s'arrêter */
-
+        /* Boucle d'enchères : on tourne jusqu'à ce qu'il ne reste qu'un joueur */
+        while (auction->players_left > 1) {
             for (int i = 0; i < nb_joueurs; i++) {
                 Player *enchérisseur = all_players[i];
-                if (enchérisseur == p) continue;           /* le refusant ne participe pas */
-                if (enchérisseur->credit < 0) continue;   /* joueur éliminé */
+                /* Ignorer : le refusant, les éliminés, ceux déjà couchés */
+                if (enchérisseur == p) continue;
+                if (enchérisseur->credit < 0) continue;
 
                 /* Vérifier si ce joueur est encore dans l'enchère */
                 int dans_enchere = 0;
@@ -180,11 +177,9 @@ void engine_handle_purchase(Player *p, void *asset, int type,
                     process_bid(auction, enchérisseur, offre);
                 } else {
                     fold_player(auction, enchérisseur);
+                    if (auction->players_left <= 1) break;
                 }
             }
-
-            /* Continuer seulement s'il reste plus d'un joueur après le tour complet */
-            if (auction->players_left > 1) continuer_enchere = 1;
         }
 
         finalize_auction(auction);
@@ -553,8 +548,8 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
         }
         default: printf("\n Rien à signaler."); break;
     }
-    // Gestion dette
-    if (p->credit < 0) {
+    // Gestion dette (crédit négatif ou nul sans biens)
+    if (p->credit <= 0) {
         engine_resolve_debt(p, tableau_prop, tableau_gare, tableau_comp);
     }
 }
@@ -712,7 +707,7 @@ int engine_has_assets_left(Player *p, Property *tableau_prop[], Gares *tableau_g
 
 // Boucle de sauvetage : force le joueur à vendre jusqu'à ce qu'il soit positif
 void engine_resolve_debt(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
-    while (p->credit < 0) {
+    while (p->credit <= 0) {
         printf("\n  DETTE  : %d ECTS !", -p->credit);
         
         if (!engine_has_assets_left(p, tableau_prop, tableau_gare, tableau_comp)) {
