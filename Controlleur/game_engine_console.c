@@ -152,13 +152,16 @@ void engine_handle_purchase(Player *p, void *asset, int type,
 
         if (!auction) return;
 
-        /* Boucle d'enchères : on tourne jusqu'à ce qu'il ne reste qu'un joueur */
-        while (auction->players_left > 1) {
+        /* Boucle d'enchères : on fait des tours complets jusqu'à ce qu'il ne reste qu'un joueur.
+           On termine TOUJOURS le tour en cours avant de vérifier players_left. */
+        int continuer_enchere = 1;
+        while (continuer_enchere) {
+            continuer_enchere = 0; /* on suppose qu'on va s'arrêter */
+
             for (int i = 0; i < nb_joueurs; i++) {
                 Player *enchérisseur = all_players[i];
-                /* Ignorer : le refusant, les éliminés, ceux déjà couchés */
-                if (enchérisseur == p) continue;
-                if (enchérisseur->credit < 0) continue;
+                if (enchérisseur == p) continue;           /* le refusant ne participe pas */
+                if (enchérisseur->credit < 0) continue;   /* joueur éliminé */
 
                 /* Vérifier si ce joueur est encore dans l'enchère */
                 int dans_enchere = 0;
@@ -177,9 +180,11 @@ void engine_handle_purchase(Player *p, void *asset, int type,
                     process_bid(auction, enchérisseur, offre);
                 } else {
                     fold_player(auction, enchérisseur);
-                    if (auction->players_left <= 1) break;
                 }
             }
+
+            /* Continuer seulement s'il reste plus d'un joueur après le tour complet */
+            if (auction->players_left > 1) continuer_enchere = 1;
         }
 
         finalize_auction(auction);
@@ -352,18 +357,18 @@ void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_ga
 
         for(int i=0; i<NB_PROPRIETE; i++)
             if(tableau_prop[i]->owner == p->number && tableau_prop[i]->hypo) {
-                printf("\n%d. [TERRAIN] %-15s (%d ECTS)", global_count++, tableau_prop[i]->name, (int)((tableau_prop[i]->value/2)*1.1));
+                printf("\n%d. [TERRAIN] %-15s (%d ECTS)", global_count++, tableau_prop[i]->name, (int)((tableau_prop[i]->value / 2.0) * 1.1));
                 lp[cp++] = i;
             }
         for(int i=0; i<NB_GARE; i++)
             if(tableau_gare[i]->owner == p->number && tableau_gare[i]->hypo) {
-                printf("\n%d. [GARE]    %-15s (%d ECTS)", global_count++, tableau_gare[i]->name, (int)((tableau_gare[i]->value/2)*1.1));
+                printf("\n%d. [GARE]    %-15s (%d ECTS)", global_count++, tableau_gare[i]->name, (int)((tableau_gare[i]->value / 2.0) * 1.1));
                 lg[cg++] = i;
             }
 
         for(int i=0; i<NB_COMPAGNIE; i++)
             if(tableau_comp[i]->owner == p->number && tableau_comp[i]->hypo) {
-                printf("\n%d. [COMP]    %-15s (%d ECTS)", global_count++, tableau_comp[i]->name, (int)((tableau_comp[i]->value/2)*1.1));
+                printf("\n%d. [COMP]    %-15s (%d ECTS)", global_count++, tableau_comp[i]->name, (int)((tableau_comp[i]->value / 2.0) * 1.1));
                 lc[cc++] = i;
             }
 
