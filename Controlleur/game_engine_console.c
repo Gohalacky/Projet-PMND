@@ -2,22 +2,35 @@
 #include <stdlib.h>
 #include "game_engine_console.h"
 #include "engine_logic.h"
+#include "../Modele/voe.h"
 
 
 void vider_buffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
-}   
+}
 
+/* Convertit un EcoGrade (1-6) en lettre A-F */
+static char eco_grade_letter(int grade) {
+    switch (grade) {
+        case 1: return 'A';
+        case 2: return 'B';
+        case 3: return 'C';
+        case 4: return 'D';
+        case 5: return 'E';
+        case 6: return 'F';
+        default: return '?';
+    }
+}
 
 /* AFFICHAGE DE L'ÉTAT DU JOUEUR */
 void display_player_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[], GameContext *ctx) {
     printf("\n==================================================");
     printf("\n   DOSSIER JOUEUR : %s", p->name);
     printf("\n==================================================");
-    printf("\n Solde : %d ECTS |  Indice Éco : %d/6", p->credit, p->eco_index);
+    printf("\n Solde : %d ECTS |  Indice Éco : %c (note %d/6)", p->credit, eco_grade_letter(p->eco_index), p->eco_index);
     printf("\n Position : Case n°%d", p->position);
-    printf("\n Indice Éco GLOBAL : %d/6", ctx->indice_eco_global);
+    if (ctx) printf("\n Indice Éco GLOBAL : %c (note %d/6)", eco_grade_letter(ctx->indice_eco_global), ctx->indice_eco_global);
     
     printf("\n\n PATRIMOINE IMMOBILIER :");
     int has_anything = 0;
@@ -92,14 +105,17 @@ int engine_roll_dice(int admin_mode, int *compteur_doubles) {
     return d1 + d2;
 }
 
-/* ACHATS */
-void engine_handle_purchase(Player *p, void *asset, int type) {
+/* ACHATS + ENCHÈRES si refus */
+void engine_handle_purchase(Player *p, void *asset, int type,
+                             Player *all_players[], int nb_joueurs) {
     int price = 0; char *name = "";
     if (type == 1) { price = ((Property*)asset)->value; name = ((Property*)asset)->name; }
     else if (type == 2) { price = ((Gares*)asset)->value; name = ((Gares*)asset)->name; }
     else if (type == 3) { price = ((Compagnies*)asset)->value; name = ((Compagnies*)asset)->name; }
 
     printf("\n [OPPORTUNITÉ] %s est libre pour %d ECTS.", name, price);
+
+    int achete = 0;
     if (p->credit >= price) {
         printf("\nVoulez-vous investir ? (y/n) : ");
         char c; scanf(" %c", &c);
@@ -109,8 +125,67 @@ void engine_handle_purchase(Player *p, void *asset, int type) {
             else if (type == 2) player_add_gar(p, (Gares*)asset);
             else if (type == 3) player_add_comp(p, (Compagnies*)asset);
             printf(" Acquisition réussie !\n");
+            achete = 1;
         }
-    } else printf("\n Fonds insuffisants.\n");
+    } else {
+        printf("\n Fonds insuffisants (%d ECTS requis).\n", price);
+    }
+
+    /* Si le joueur n'a pas acheté, lancer une vente aux enchères */
+    if (!achete) {
+        /* Vérifier qu'il reste au moins un autre joueur solvable */
+        int candidats = 0;
+        for (int i = 0; i < nb_joueurs; i++)
+            if (all_players[i] != p && all_players[i]->credit > 0) candidats++;
+
+        if (candidats == 0) {
+            printf("\n Aucun autre joueur ne peut enchérir. Le bien reste à la banque.\n");
+            return;
+        }
+
+        printf("\n ═══ VENTE AUX ENCHÈRES : %s (mise de départ : 10 ECTS) ═══\n", name);
+
+        AuctionState *auction = NULL;
+        if (type == 1) auction = init_auction_prop((Property*)asset, all_players, nb_joueurs);
+        else if (type == 2) auction = init_auction_gar((Gares*)asset, all_players, nb_joueurs);
+        else if (type == 3) auction = init_auction_comp((Compagnies*)asset, all_players, nb_joueurs);
+
+        if (!auction) return;
+
+        /* Boucle d'enchères : tours complets jusqu'à ce qu'il ne reste qu'un joueur */
+        int continuer_enchere = 1;
+        while (continuer_enchere) {
+            continuer_enchere = 0;
+
+            for (int i = 0; i < nb_joueurs; i++) {
+                Player *enchérisseur = all_players[i];
+                if (enchérisseur->credit < 0) continue;  /* joueur éliminé uniquement */
+
+                int dans_enchere = 0;
+                for (int j = 0; j < MAX_PLAYERS; j++)
+                    if (auction->in_auction[j] == enchérisseur) { dans_enchere = 1; break; }
+                if (!dans_enchere) continue;
+
+                printf("\n[%s - %d ECTS] Enchère actuelle : %d ECTS",
+                       enchérisseur->name, enchérisseur->credit, auction->current_bid);
+                printf("\n  1. Surenchérir  2. Se coucher\nChoix : ");
+                int choix_enc; scanf("%d", &choix_enc);
+
+                if (choix_enc == 1) {
+                    printf("  Votre offre : ");
+                    int offre; scanf("%d", &offre);
+                    process_bid(auction, enchérisseur, offre);
+                } else {
+                    fold_player(auction, enchérisseur);
+                }
+            }
+
+            if (auction->players_left > 1) continuer_enchere = 1;
+        }
+
+        finalize_auction(auction);
+        free(auction);
+    }
 }
 
 /* CONSTRUCTION (RÈGLE D'UNIFORMITÉ) */
@@ -278,18 +353,18 @@ void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_ga
 
         for(int i=0; i<NB_PROPRIETE; i++)
             if(tableau_prop[i]->owner == p->number && tableau_prop[i]->hypo) {
-                printf("\n%d. [TERRAIN] %-15s (%d ECTS)", global_count++, tableau_prop[i]->name, (int)((tableau_prop[i]->value/2)*1.1));
+                printf("\n%d. [TERRAIN] %-15s (%d ECTS)", global_count++, tableau_prop[i]->name, (int)((tableau_prop[i]->value / 2.0) * 1.1));
                 lp[cp++] = i;
             }
         for(int i=0; i<NB_GARE; i++)
             if(tableau_gare[i]->owner == p->number && tableau_gare[i]->hypo) {
-                printf("\n%d. [GARE]    %-15s (%d ECTS)", global_count++, tableau_gare[i]->name, (int)((tableau_gare[i]->value/2)*1.1));
+                printf("\n%d. [GARE]    %-15s (%d ECTS)", global_count++, tableau_gare[i]->name, (int)((tableau_gare[i]->value / 2.0) * 1.1));
                 lg[cg++] = i;
             }
 
         for(int i=0; i<NB_COMPAGNIE; i++)
             if(tableau_comp[i]->owner == p->number && tableau_comp[i]->hypo) {
-                printf("\n%d. [COMP]    %-15s (%d ECTS)", global_count++, tableau_comp[i]->name, (int)((tableau_comp[i]->value/2)*1.1));
+                printf("\n%d. [COMP]    %-15s (%d ECTS)", global_count++, tableau_comp[i]->name, (int)((tableau_comp[i]->value / 2.0) * 1.1));
                 lc[cc++] = i;
             }
 
@@ -384,7 +459,7 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
     switch (c->type) {
         case CASE_TERRAIN: {
             Property *prop = (Property*)c->data;
-            if (prop->owner == 0) engine_handle_purchase(p, prop, 1);
+            if (prop->owner == 0) engine_handle_purchase(p, prop, 1, all_players, ctx ? ctx->nb_players : 1);
             else if (prop->owner != p->number) {
                 /* Appliquer le multiplicateur avant d'appeler must_rent */
                 if (mult_loyer != 1.0) {
@@ -410,7 +485,7 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
         }
         case CASE_GARE: {
             Gares *g = (Gares*)c->data;
-            if (g->owner == 0) engine_handle_purchase(p, g, 2);
+            if (g->owner == 0) engine_handle_purchase(p, g, 2, all_players, ctx ? ctx->nb_players : 1);
             else if (g->owner != p->number) {
                 if (mult_loyer != 1.0) {
                     int n = nb_Gare(tableau_gare, all_players[g->owner-1]);
@@ -426,13 +501,13 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
         }
         case CASE_COMPAGNIE: {
             Compagnies *cp = (Compagnies*)c->data;
-            if (cp->owner == 0) engine_handle_purchase(p, cp, 3);
+            if (cp->owner == 0) engine_handle_purchase(p, cp, 3, all_players, ctx ? ctx->nb_players : 1);
             else if (cp->owner != p->number) must_rent_Compagnies(tableau_comp, cp, p, all_players[cp->owner-1], total_des);
             break;
         }
         case CASE_TAXE: {
             int montant = (p->position == 4) ? 200 : 100;
-            printf("\n Vous devez payer l'administration : %d ECTS.", montant);
+            printf("\n Vous devez payer l'administration : %d ECTS.\n", montant);
             player_remove_credits(p, montant);
             break;
         }
@@ -474,8 +549,8 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
         }
         default: printf("\n Rien à signaler."); break;
     }
-    // Gestion dette
-    if (p->credit < 0) {
+    // Gestion dette (crédit négatif ou nul sans biens)
+    if (p->credit <= 0) {
         engine_resolve_debt(p, tableau_prop, tableau_gare, tableau_comp);
     }
 }
@@ -633,7 +708,7 @@ int engine_has_assets_left(Player *p, Property *tableau_prop[], Gares *tableau_g
 
 // Boucle de sauvetage : force le joueur à vendre jusqu'à ce qu'il soit positif
 void engine_resolve_debt(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
-    while (p->credit < 0) {
+    while (p->credit <= 0) {
         printf("\n  DETTE  : %d ECTS !", -p->credit);
         
         if (!engine_has_assets_left(p, tableau_prop, tableau_gare, tableau_comp)) {
@@ -674,43 +749,48 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
 
     // GESTION DE LA SORTIE DE PRISON
     if (is_in_jail(p, jail)) {
-        /* Vérifier si le joueur possède une carte Sortie de Prison */
-        int a_carte_sortie = 0;
-        if (ctx) {
-            a_carte_sortie = joueur_possede_sortie_prison(ctx->pioche_chance.cartes,
-                                                          ctx->pioche_chance.nb_cartes,
-                                                          p->number);
-        }
-
-        printf("\n EN PRISON ! 1: Payer (50 ECTS) | 2: Tenter un double%s\nChoix : ",
-               a_carte_sortie ? " | 3: Utiliser carte Sortie de Prison" : "");
-        int c; scanf("%d", &c);
-        if (c == 1) {
+        /* Sortie forcée au 3ème tour */
+        if (istreetour_in_jail(p, jail)) {
+            printf("\n Cela fait 3 tours en prison ! Sortie forcée : 50 ECTS prélevés.");
             pay_to_get_out(p, jail);
-        } else if (c == 3 && a_carte_sortie) {
-            /* Utiliser la carte Sortie de Prison */
-            for (int i = 0; i < ctx->pioche_chance.nb_cartes; i++) {
-                Carte *carte = &ctx->pioche_chance.cartes[i];
-                if (carte->effet == CARTE_SORTIE_PRISON &&
-                    carte->etat == ETAT_CARTE_EN_MAIN &&
-                    carte->owner_number == p->number) {
-                    utiliser_carte(carte);
-                    remettre_carte_dans_paquet(carte);
-                    break;
-                }
-            }
-            get_out_of_jail(p, jail);
-            printf("\n Carte utilisée ! Vous êtes libre.");
+            /* Le joueur est sorti, on continue normalement vers le lancer */
         } else {
-            int d_jail = 0;
-            engine_roll_dice(admin_mode, &d_jail);
-            if (d_jail > 0) {
-                printf("\n DOUBLE ! Vous êtes libre.");
+            /* Vérifier si le joueur possède une carte Sortie de Prison */
+            int a_carte_sortie = 0;
+            if (ctx) {
+                a_carte_sortie = joueur_possede_sortie_prison(ctx->pioche_chance.cartes,
+                                                              ctx->pioche_chance.nb_cartes,
+                                                              p->number);
+            }
+            printf("\n EN PRISON ! 1: Payer (50 ECTS) | 2: Tenter un double%s\nChoix : ",
+                   a_carte_sortie ? " | 3: Utiliser carte Sortie de Prison" : "");
+            int c; scanf("%d", &c);
+            if (c == 1) {
+                pay_to_get_out(p, jail);
+            } else if (c == 3 && a_carte_sortie) {
+                for (int i = 0; i < ctx->pioche_chance.nb_cartes; i++) {
+                    Carte *carte = &ctx->pioche_chance.cartes[i];
+                    if (carte->effet == CARTE_SORTIE_PRISON &&
+                        carte->etat == ETAT_CARTE_EN_MAIN &&
+                        carte->owner_number == p->number) {
+                        utiliser_carte(carte);
+                        remettre_carte_dans_paquet(carte);
+                        break;
+                    }
+                }
                 get_out_of_jail(p, jail);
+                printf("\n Carte utilisée ! Vous êtes libre.");
             } else {
-                printf("\n Pas de double. Vous restez en cellule.");
-                add_tour_jail(p, jail);
-                return;
+                int d_jail = 0;
+                engine_roll_dice(admin_mode, &d_jail);
+                if (d_jail > 0) {
+                    printf("\n DOUBLE ! Vous êtes libre.");
+                    get_out_of_jail(p, jail);
+                } else {
+                    printf("\n Pas de double. Vous restez en cellule.");
+                    add_tour_jail(p, jail);
+                    return;
+                }
             }
         }
     }
@@ -724,7 +804,7 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
 
         // MENU D'AVANT LANCER
         while (menu_boucle) {
-            printf("\n\n--- MENU (%s - %d ECTS | Éco: %d) ---", p->name, p->credit, p->eco_index);
+            printf("\n\n--- MENU (%s - %d ECTS | Éco: %c) ---", p->name, p->credit, eco_grade_letter(p->eco_index));
             printf("\n1.  Lancer les dés%s", (d_count > 0 ? " (REJOUER)" : ""));
             printf("\n2.  Gestion des biens");
             printf("\n3.  Échanger");
