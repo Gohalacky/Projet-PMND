@@ -152,15 +152,15 @@ void engine_handle_purchase(Player *p, void *asset, int type,
 
         if (!auction) return;
 
-        /* Boucle d'enchères : on tourne jusqu'à ce qu'il ne reste qu'un joueur */
-        while (auction->players_left > 1) {
+        /* Boucle d'enchères : tours complets jusqu'à ce qu'il ne reste qu'un joueur */
+        int continuer_enchere = 1;
+        while (continuer_enchere) {
+            continuer_enchere = 0;
+
             for (int i = 0; i < nb_joueurs; i++) {
                 Player *enchérisseur = all_players[i];
-                /* Ignorer : le refusant, les éliminés, ceux déjà couchés */
-                if (enchérisseur == p) continue;
-                if (enchérisseur->credit < 0) continue;
+                if (enchérisseur->credit < 0) continue;  /* joueur éliminé uniquement */
 
-                /* Vérifier si ce joueur est encore dans l'enchère */
                 int dans_enchere = 0;
                 for (int j = 0; j < MAX_PLAYERS; j++)
                     if (auction->in_auction[j] == enchérisseur) { dans_enchere = 1; break; }
@@ -177,9 +177,10 @@ void engine_handle_purchase(Player *p, void *asset, int type,
                     process_bid(auction, enchérisseur, offre);
                 } else {
                     fold_player(auction, enchérisseur);
-                    if (auction->players_left <= 1) break;
                 }
             }
+
+            if (auction->players_left > 1) continuer_enchere = 1;
         }
 
         finalize_auction(auction);
