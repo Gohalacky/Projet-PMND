@@ -11,14 +11,6 @@
 #include <cjson/cJSON.h>
 
 
-static void ensure_save_dir(void) {
-#ifdef _WIN32
-    _mkdir(SAVE_DIR);
-#else
-    mkdir(SAVE_DIR, 0755);
-#endif
-}
-
 static void build_save_path(char out[SAVE_MAX_PATH]) {
     time_t now = time(NULL);
     struct tm* t = localtime(&now);
@@ -42,7 +34,6 @@ static void date_from_filename(const char* fname, char out[32]) {
 
 int savegame_save(const EtatPartie* partie, const ContexteJeu* ctx) {
     if (!partie || !ctx) return -1;
-    ensure_save_dir();
 
     cJSON* root = cJSON_CreateObject();
     if (!root) return -1;
@@ -151,6 +142,7 @@ int savegame_save(const EtatPartie* partie, const ContexteJeu* ctx) {
     cJSON_Delete(root);
     if (!json_str) return -1;
 
+    mkdir(SAVE_DIR, 0755); 
     FILE* f = fopen(filepath, "w");
     if (!f) {
         printf("[savegame] Impossible d'ouvrir %s : %s\n", filepath, strerror(errno));
