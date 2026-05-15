@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "game_engine_console.h"
 #include "engine_logic.h"
-#include "../Modele/voe.h"
+#include "../Model/voe.h"
 
 
 void vider_buffer() {

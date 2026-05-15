@@ -1,9 +1,9 @@
 #ifndef PLATEAU_H
 #define PLATEAU_H
 
-#include "../Modele/property.h"
+#include "../Model/property.h"
 
-// Types de cases possibles sur le plateau
+// Types de cases possibles sur le plateau 
 typedef enum {
     CASE_DEPART,
     CASE_TERRAIN,

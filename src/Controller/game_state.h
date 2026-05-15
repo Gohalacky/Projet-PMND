@@ -1,12 +1,12 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
  
-#include "../Modele/player.h"
-#include "../Modele/property.h"
-#include "../Modele/cartes.h"
-#include "../Modele/evenements.h"
+#include "../Model/player.h"
+#include "../Model/property.h"
+#include "../Model/cartes.h"
+#include "../Model/evenements.h"
  
-#define MAX_PLAYER 4
+#define MAX_PLAYER 4 
  
 typedef struct {
     Player *players[MAX_PLAYER];

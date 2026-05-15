@@ -5,7 +5,7 @@
 #include "bridge.h"
 
 
-#define SAVE_DIR      "../saves"
+#define SAVE_DIR      "saves"
 #define SAVE_MAX_PATH 256
 #define MAX_SAVES     10
 

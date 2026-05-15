@@ -25,7 +25,7 @@ void renderPlayerCard(SDL_Renderer *renderer, TTF_Font *font, const Joueur *j, i
         fontSize=8;
     } 
 
-    TTF_Font* scaledFont = TTF_OpenFont("FONT/fontPixel.ttf", fontSize);
+    TTF_Font* scaledFont = TTF_OpenFont("assets/FONT/fontPixel.ttf", fontSize);
     if (!scaledFont){
         scaledFont = font;
     } 

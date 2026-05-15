@@ -1,6 +1,6 @@
 #include "bridge.h"
 #include "Struct.h"
-#include "../Modele/prison.h"
+#include "../Model/prison.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,9 +8,9 @@
 int bridge_init(ContexteJeu* ctx, const EtatPartie* partie) {
     memset(ctx, 0, sizeof(ContexteJeu));
 
-    int nbp = chargement_propriete_loyer(ctx->tableau_prop, "loyer_insapoly.txt");
-    int nbg = chargement_GARE_loyer(ctx->tableau_gar,"gares.txt");
-    int nbc = chargement_COMPAGNIE_loyer(ctx->tableau_comp, "compagnie.txt");
+    int nbp = chargement_propriete_loyer(ctx->tableau_prop, "data/loyer_insapoly.txt");
+    int nbg = chargement_GARE_loyer(ctx->tableau_gar,"data/gares.txt");
+    int nbc = chargement_COMPAGNIE_loyer(ctx->tableau_comp, "data/compagnie.txt");
 
     if (nbp <= 0 || nbg <= 0 || nbc <= 0) {
         printf("Erreur bridge_init : chargement des fichiers échoué ""(prop=%d, gares=%d, comp=%d)\n", nbp, nbg, nbc);
@@ -188,9 +188,7 @@ int bridge_get_owned_props(ContexteJeu* ctx, const EtatPartie* partie,
         result[count].name[49]   = '\0';
         result[count].level      = p->level;
         result[count].prop_index = i;
-        result[count].canBuild   = (full_color(ctx->tableau_prop, joueur, p->color)
-                                    && p->level < 3
-                                    && check_uniformity(ctx->tableau_prop, p, 1));
+        result[count].canBuild   = (full_color(ctx->tableau_prop, joueur, p->color)&& p->level < 3&& check_uniformity(ctx->tableau_prop, p, 1));
         count++;
     }
 
@@ -225,9 +223,7 @@ int bridge_has_buildable(ContexteJeu* ctx, const EtatPartie* partie) {
     for (int i = 0; i < NB_PROPRIETE; i++) {
         Property* p = ctx->tableau_prop[i];
         if (!p || p->owner != joueur->number) continue;
-        if (full_color(ctx->tableau_prop, joueur, p->color)
-            && p->level < 3
-            && check_uniformity(ctx->tableau_prop, p, 1))
+        if (full_color(ctx->tableau_prop, joueur, p->color)&& p->level < 3&& check_uniformity(ctx->tableau_prop, p, 1))
             return 1;
     }
     return 0;

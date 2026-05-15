@@ -2,11 +2,11 @@
 #define BRIDGE_H
 
 #include "Struct.h"
-#include "../Modele/player.h"
-#include "../Modele/property.h"
-#include "../Modele/prison.h"
-#include "../Controlleur/plateau.h"
-#include "../Controlleur/game_engine.h"
+#include "../Model/player.h"
+#include "../Model/property.h"
+#include "../Model/prison.h"
+#include "../Controller/plateau.h"
+#include "../Controller/game_engine.h"
 
 typedef struct{
     Player* joueurs[4];

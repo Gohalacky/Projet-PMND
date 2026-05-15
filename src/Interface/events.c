@@ -11,13 +11,12 @@
 #include "view.h"
 #include "pawn.h"
 #include "savegame.h"
-#include "pausemenu.h"
 #include "loadmenu.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#define FONT "FONT/fontPixel.ttf"
+#define FONT "assets/FONT/fontPixel.ttf"
 #define DELAI_LANCER 2500 //en ms
 
 static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack* texts,TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, PropButtonsPack* pb, TradeButtonsPack* tb, LoadMenuState* lm){

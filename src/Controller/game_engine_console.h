@@ -1,13 +1,13 @@
 #ifndef GAME_ENGINE_CONSOLE_H
 #define GAME_ENGINE_CONSOLE_H
 
-#include "../Modele/player.h"
-#include "../Modele/property.h"
+#include "../Model/player.h"
+#include "../Model/property.h"
 #include "plateau.h"
 #include "game_state.h"
-#include "../Modele/prison.h"
-#include "../Modele/trade.h"
-#include "../Modele/hypo.h"
+#include "../Model/prison.h" 
+#include "../Model/trade.h"
+#include "../Model/hypo.h"
 
 /**
  * @brief Simule un lancer de dés avec gestion du mode Admin.

@@ -18,7 +18,6 @@
 #include "tradewindow.h"
 #include "pawn.h"
 #include "pausemenu.h"
-#include "savegame.h"
 #include "loadmenu.h"
 
 #define FONT "FONT/fontPixel.ttf"
@@ -40,10 +39,10 @@ int main(){
     SDL_Window*   window   = SDL_CreateWindow("INSAPOLY",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,1280, 720,SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    TTF_Font* fontPetit  = TTF_OpenFont("FONT/fontPixel.ttf",18);
-    TTF_Font* fontButton = TTF_OpenFont("FONT/fontPixel.ttf", 22);
-    TTF_Font* fontNormal = TTF_OpenFont("FONT/fontPixel.ttf", 32);
-    TTF_Font* fontTitle  = TTF_OpenFont("FONT/fontPixel.ttf", 38);
+    TTF_Font* fontPetit  = TTF_OpenFont("assets/FONT/fontPixel.ttf",18);
+    TTF_Font* fontButton = TTF_OpenFont("assets/FONT/fontPixel.ttf", 22);
+    TTF_Font* fontNormal = TTF_OpenFont("assets/FONT/fontPixel.ttf", 32);
+    TTF_Font* fontTitle  = TTF_OpenFont("assets/FONT/fontPixel.ttf", 38);
 
     TexturesPack tex;
     memset(&tex,0,sizeof(tex));

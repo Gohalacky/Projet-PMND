@@ -1,12 +1,12 @@
 #ifndef GAME_ENGINE_H
 #define GAME_ENGINE_H
 
-#include "../Modele/player.h"
-#include "../Modele/property.h"
+#include "../Model/player.h"
+#include "../Model/property.h"
 #include "plateau.h"
-#include "../Modele/prison.h"
-#include "../Modele/trade.h" 
-#include "../Modele/hypo.h" 
+#include "../Model/prison.h"
+#include "../Model/trade.h"  
+#include "../Model/hypo.h" 
 
 /* --- Dés --- */
 int engine_roll_dice(int *compteur_doubles);

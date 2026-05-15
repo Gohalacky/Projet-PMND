@@ -1,5 +1,5 @@
 #include "building.h"
-#include "../Modele/property.h"
+#include "../Model/property.h"
 
 #include <stddef.h>
 

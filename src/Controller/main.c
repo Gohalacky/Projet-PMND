@@ -5,7 +5,7 @@
 #include "plateau.h"
 #include "game_state.h"
 #include "engine_logic.h"
-#include "../Modele/player.h"
+#include "../Model/player.h"
 #include "game_engine_console.h"
  
 int main() {
@@ -18,9 +18,9 @@ int main() {
     Prison *jail = init_prison();
  
     printf("Chargement des fichiers...\n");
-    int nbp = chargement_propriete_loyer(tableau_prop, "loyer_insapoly.txt");
-    int nbg = chargement_GARE_loyer(tableau_gar, "gares.txt");
-    int nbc = chargement_COMPAGNIE_loyer(tableau_comp, "compagnie.txt");
+    int nbp = chargement_propriete_loyer(tableau_prop, "data/loyer_insapoly.txt");
+    int nbg = chargement_GARE_loyer(tableau_gar, "data/gares.txt");
+    int nbc = chargement_COMPAGNIE_loyer(tableau_comp, "data/compagnie.txt");
  
     // Création du plateau
     Plateau mon_plateau;

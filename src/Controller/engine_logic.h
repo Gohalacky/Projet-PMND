@@ -2,8 +2,8 @@
 #define ENGINE_LOGIC_H
  
 #include "game_state.h"
-#include "plateau.h"
-#include "../Modele/prison.h"
+#include "plateau.h" 
+#include "../Model/prison.h"
  
 // Applique l'effet d'une carte sur un joueur.
 // plateau est nécessaire pour les cartes de déplacement (résolution de case après mouvement).
