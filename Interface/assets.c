@@ -1,5 +1,7 @@
 #include "assets.h"
 
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_render.h>
 #include <stdio.h>
 
 int loadTextures(SDL_Renderer* renderer, TexturesPack* tex){
@@ -24,13 +26,18 @@ int loadTextures(SDL_Renderer* renderer, TexturesPack* tex){
     tex->parc[2]     = IMG_LoadTexture(renderer, "IMAGE/Parc x3.png");
     tex->fondProp    = IMG_LoadTexture(renderer, "IMAGE/Fond_prop.png");
 
+    tex->pion[0]=IMG_LoadTexture(renderer, "IMAGE/pion1.png");
+    tex->pion[1]=IMG_LoadTexture(renderer, "IMAGE/pion2.png");
+    tex->pion[2]=IMG_LoadTexture(renderer, "IMAGE/pion3.png");
+    tex->pion[3]=IMG_LoadTexture(renderer, "IMAGE/pion4.png");
+
     SDL_Texture* all[] = {
         tex->menu, tex->newGame, tex->launchGame,
         tex->gameBoard2Player, tex->gameBoard3Player, tex->gameBoard4Player,
         tex->throws, tex->menuProperties, tex->test,tex->maison[0],   tex->maison[1],   tex->maison[2],
         tex->immeuble[0], tex->immeuble[1], tex->immeuble[2],
         tex->parc[0],     tex->parc[1],     tex->parc[2],
-        tex->fondProp,
+        tex->fondProp, tex->pion[0],tex->pion[1],tex->pion[2],tex->pion[3],
     };
     int n = sizeof(all)/sizeof(all[0]);
     for (int i = 0; i < n; i++) {
@@ -42,21 +49,31 @@ int loadTextures(SDL_Renderer* renderer, TexturesPack* tex){
     return 0;
 }
 
-void freeTextures(TexturesPack* tex){
-    SDL_DestroyTexture(tex->menu);
-    SDL_DestroyTexture(tex->newGame);
-    SDL_DestroyTexture(tex->launchGame);
-    SDL_DestroyTexture(tex->gameBoard2Player);
-    SDL_DestroyTexture(tex->gameBoard3Player);
-    SDL_DestroyTexture(tex->gameBoard4Player);
-    SDL_DestroyTexture(tex->throws);
-    SDL_DestroyTexture(tex->menuProperties);
-    SDL_DestroyTexture(tex->test);
-    for (int i = 0; i < 3; i++) {
-        SDL_DestroyTexture(tex->maison[i]);
-        SDL_DestroyTexture(tex->immeuble[i]);
-        SDL_DestroyTexture(tex->parc[i]);
+static void safeDestroy(SDL_Texture** t){
+    if(*t){
+        SDL_DestroyTexture(*t);
+        *t=NULL;
     }
-    SDL_DestroyTexture(tex->fondProp);
+}
+
+void freeTextures(TexturesPack* tex){
+    safeDestroy(&tex->menu);
+    safeDestroy(&tex->newGame);
+    safeDestroy(&tex->launchGame);
+    safeDestroy(&tex->gameBoard2Player);
+    safeDestroy(&tex->gameBoard3Player);
+    safeDestroy(&tex->gameBoard4Player);
+    safeDestroy(&tex->throws);
+    safeDestroy(&tex->menuProperties);
+    safeDestroy(&tex->test);
+    for (int i = 0; i < 3; i++) {
+        safeDestroy(&tex->maison[i]);
+        safeDestroy(&tex->immeuble[i]);
+        safeDestroy(&tex->parc[i]);
+    }
+    for(int i=0;i<4;i++){
+        safeDestroy(&tex->pion[i]);
+    }
+    safeDestroy(&tex->fondProp);
     IMG_Quit();
 }

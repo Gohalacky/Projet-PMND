@@ -19,7 +19,8 @@ typedef struct{
     SDL_Texture* maison[3];
     SDL_Texture* immeuble[3];
     SDL_Texture* parc[3];
-    SDL_Texture* fondProp;   
+    SDL_Texture* fondProp;
+    SDL_Texture* pion[4];   
 } TexturesPack;
 
 int loadTextures(SDL_Renderer* renderer, TexturesPack* tex);

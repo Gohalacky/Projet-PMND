@@ -20,6 +20,7 @@ typedef struct PropButtonsPack {
     Button construire;
     Button construireSocial;
     Button construireParc;
+    Button echanger;
 } PropButtonsPack;
 
 void initPropButtons(PropButtonsPack* pb);
@@ -27,6 +28,7 @@ void scalePropButtons(PropButtonsPack* pb, float ratioX, float ratioY);
 
 void renderPropWindow(SDL_Renderer* renderer,TTF_Font* fontTitle, TTF_Font* fontNormal, TTF_Font* fontSmall,const TexturesPack* tex,ContexteJeu* ctx,const EtatPartie* partie,PropButtonsPack* pb,int winW, int winH);
 
-void handlePropClick(int x, int y, EtatJeu* state,PropButtonsPack* pb,ContexteJeu* ctx,EtatPartie* partie);
+#include "tradewindow.h"
+void handlePropClick(int x, int y, EtatJeu* state,PropButtonsPack* pb,ContexteJeu* ctx,EtatPartie* partie, TradeState* ts);
 
 #endif

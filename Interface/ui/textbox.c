@@ -67,18 +67,14 @@ void handleTextBoxEvent(SDL_Event* event, TextBox* tb) {
 
             case SDLK_BACKSPACE:
                 if (tb->cursor_pos > 0) {
-                    memmove(&tb->text[tb->cursor_pos - 1],
-                            &tb->text[tb->cursor_pos],
-                            len - tb->cursor_pos + 1);
+                    memmove(&tb->text[tb->cursor_pos - 1],&tb->text[tb->cursor_pos],len - tb->cursor_pos + 1);
                     tb->cursor_pos--;
                 }
                 break;
 
             case SDLK_DELETE:
                 if (tb->cursor_pos < len)
-                    memmove(&tb->text[tb->cursor_pos],
-                            &tb->text[tb->cursor_pos + 1],
-                            len - tb->cursor_pos);
+                    memmove(&tb->text[tb->cursor_pos],&tb->text[tb->cursor_pos + 1],len - tb->cursor_pos);
                 break;
 
             case SDLK_LEFT:

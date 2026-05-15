@@ -15,6 +15,11 @@
 #include "ui/button.h"
 #include "ui/checkbox.h"
 #include "propwindow.h"
+#include "tradewindow.h"
+#include "pawn.h"
+#include "pausemenu.h"
+#include "savegame.h"
+#include "loadmenu.h"
 
 #define FONT "FONT/fontPixel.ttf"
 
@@ -41,6 +46,7 @@ int main(){
     TTF_Font* fontTitle  = TTF_OpenFont("FONT/fontPixel.ttf", 38);
 
     TexturesPack tex;
+    memset(&tex,0,sizeof(tex));
     if(loadTextures(renderer, &tex)<0){
         cleanup(window, renderer, &tex);
         return-1;
@@ -54,25 +60,29 @@ int main(){
 
         .throwDice  = { .ref = {1107, 559, 160, 50}},
         .properties = { .ref = {1107, 615, 160, 44}},
-        .endTurn    = { .ref = {1107, 666, 160, 44}},
+
+        .trade      = { .ref = {1107, 663, 160, 44}},
+        .endTurn    = { .ref = {1107, 666, 160, 44}, .disabled = 1},
 
         .launchGame = { .ref = { 747, 636, 193, 45}},
         .cancel     = { .ref = { 359, 636, 134, 45}},
         
     };
 
+    /* Initialisation des boutons du menu pause */
+    initPauseButtons(&btn);
+
     TextsPack texts = {
         /*Menu*/
         .menuNewGame    = { "NOUVELLE PARTIE",      0, 275, 38, 0,290,38, ALIGN_CENTER_X, {235,221,192,255} },
         .menuLoadGame   = { "CHARGER LA PARTIE",    0, 356, 38, 0,371,38, ALIGN_CENTER_X, {235,221,192,255} },
-        .menuSave       = { "SAUVEGARDES",          0, 436, 38, 0,451,38, ALIGN_CENTER_X, {235,221,192,255} },
+        .menuSave       = { "REGLEMENT",          0, 436, 38, 0,451,38, ALIGN_CENTER_X, {235,221,192,255} },
  
         /*Nouvelle partie*/
         .titleNewGame   = { "Nouvelle Partie",      0,  53, 38, 0, 53,38, ALIGN_CENTER_X, {235,221,192,255} },
         .chooseParam    = { "Choix des parametres", 0, 256, 38, 0,256,38, ALIGN_CENTER_X, {235,221,192,255} },
         .numberPlayer   = { "Choix du nombre de joueurs", 0, 108, 38, 0,108,38, ALIGN_CENTER_X, {235,221,192,255} },
- 
-        /*Nouvelle partie*/
+
         .btnLaunchGame  = { "Lancer la partie",  790, 650, 22, 790,650,22, ALIGN_LEFT, {235,221,192,255} },
         .btnCancel      = { "Annuler",           395, 650, 22, 395,650,22, ALIGN_LEFT, {235,221,192,255} },
         .numbTurns      = { "Nombre de tours",   380, 310, 22, 380,310,22, ALIGN_LEFT, {235,221,192,255} },
@@ -81,7 +91,7 @@ int main(){
         .event          = { "Frequence d'evenement", 380, 536, 22, 380,536,22, ALIGN_LEFT, {235,221,192,255} },
  
         /*Plateau*/
-        .btnThrowDice   = { "Lancer les dés",    1125, 575, 22, 1125,575,22, ALIGN_LEFT, {235,221,192,255} },
+        .btnThrowDice   = { "Lancer les des",    1125, 575, 22, 1125,575,22, ALIGN_LEFT, {235,221,192,255} },
         .btnProperties  = { "Proprietes",        1145, 626, 22, 1145,626,22, ALIGN_LEFT, {235,221,192,255} },
         .btnEndTurn     = { "Fin de tour",       1145, 678, 22, 1145,678,22, ALIGN_LEFT, {235,221,192,255} },
         .indNbTurn      = { "Tour",              105, 584, 22, 105,584,22, ALIGN_LEFT, {235,221,192,255} },
@@ -98,6 +108,12 @@ int main(){
 
     PropButtonsPack pb;
     initPropButtons(&pb);
+
+    TradeButtonsPack tb;
+    initTradeButtons(&tb);
+
+    TradeState ts;
+    memset(&ts, 0, sizeof(ts));
     
     Counter counterJoueurs;
     initCounter(&counterJoueurs, 2, 4, 2, 716, 172, 526, 172, 37, 37, 634, 176);
@@ -107,10 +123,17 @@ int main(){
     ContexteJeu ctx;
     memset(&ctx,0,sizeof(ctx));
 
+    Pawn pawns[MAX_PLAYERS];
+    initPawns(pawns, 2);
+
+    LoadMenuState lm;
+    initLoadMenu(&lm);
+
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,
         &btn.backToMenu, &btn.throwDice, &btn.properties,
-        &btn.launchGame, &btn.cancel, &btn.endTurn
+        &btn.trade, &btn.launchGame, &btn.cancel, &btn.endTurn,
+        &btn.pauseMenu, &btn.pauseResume, &btn.pauseSaveQuit,
     };
 
     int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
@@ -124,7 +147,8 @@ int main(){
         &texts.menuNewGame,&texts.menuLoadGame, &texts.menuSave,
         &texts.titleNewGame, &texts.btnLaunchGame, &texts.btnCancel, &texts.numberPlayer,
         &texts.chooseParam, &texts.initialMoney, &texts.tillBankruptcy,
-        &texts.numbTurns, &texts.event
+        &texts.numbTurns, &texts.event,
+        &texts.btnThrowDice, &texts.btnProperties, &texts.btnEndTurn, &texts.indNbTurn
     };
     int textCount = sizeof(allTexts) / sizeof(allTexts[0]);
     ScaleAllTexts(allTexts, textCount,1.0f, 1.0f);
@@ -133,14 +157,16 @@ int main(){
     EtatJeu   state = MENU;
     bool      quit  = false;
     SDL_Event event;
+    Uint32 lastTime=SDL_GetTicks();
 
     while (!quit) {
-        handleEvents(&event, &state, &btn, &texts,
-                     &fontNormal, &fontTitle, &fontButton,
-                     &quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb);
-        render(renderer, state, &tex, &texts,
-               fontButton, fontNormal, fontTitle,
-               &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb);
+        Uint32 now = SDL_GetTicks();
+        Uint32 delta = now-lastTime;
+        lastTime=now;
+
+        handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb, &tb, &ts, pawns, &lm);
+        updatePawns(pawns, partie.nbJoueurs, delta);
+        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm);
     }
 
     TTF_CloseFont(fontNormal);
