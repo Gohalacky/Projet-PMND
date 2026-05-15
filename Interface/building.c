@@ -25,7 +25,6 @@ static const PropPos PROP_POS[NB_PROPRIETE]={
     {  452, 613 }, 
     {  398, 613 }, 
 
-    //A CHANGER APRES CHANGEMENT PLATEAU
     {  380, 570 }, 
     {  380, 465 }, 
     {  380, 413 }, 
@@ -40,7 +39,6 @@ static const PropPos PROP_POS[NB_PROPRIETE]={
     {  760,  115 }, 
     { 851,  115 }, 
 
-    //A CHANGER APRES CHANGEMENT PLATEAU
     { 905, 159 }, 
     { 905, 223 }, 
     { 905, 299 }, 
@@ -58,8 +56,8 @@ void renderBuildings(SDL_Renderer *renderer, const ContexteJeu *ctx, const Textu
         return;
     }
     
-    float rx = (float)winW / BOARD_W;   /* ratio horizontal : fenêtre / largeur ref plateau */
-    float ry = (float)winH / BOARD_H;   /* ratio vertical   : fenêtre / hauteur ref plateau */
+    float rx = (float)winW / BOARD_W;   /* ratio horizontal */
+    float ry = (float)winH / BOARD_H;   /* ratio vertical */
 
     for(int i=0; i<NB_PROPRIETE;i++){
         const Property* prop= ctx->tableau_prop[i];

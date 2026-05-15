@@ -72,15 +72,12 @@ void initTradeButtons(TradeButtonsPack* tb) {
 
     tb->fermer = (Button){ .ref = {WIN_X + WIN_W - 60, WIN_Y + 40, 36, 36} };
 
-    /* Boutons de navigation (bas de fenêtre) – remontés de 30px */
     tb->suivant   = (Button){ .ref = {WIN_X + WIN_W - BTN_W - 30, WIN_Y + WIN_H - 120, BTN_W, BTN_H} };
     tb->precedent = (Button){ .ref = {WIN_X + 30,                  WIN_Y + WIN_H - 120, BTN_W, BTN_H} };
 
-    /* Boutons de la phase RECAP – remontés de 30px */
     tb->accepter = (Button){ .ref = {WIN_X + 30,                  WIN_Y + WIN_H - 120, BTN_W + 20, BTN_H} };
     tb->refuser  = (Button){ .ref = {WIN_X + WIN_W - BTN_W - 50,  WIN_Y + WIN_H - 120, BTN_W + 20, BTN_H} };
 
-    /* Boutons de compensation financière */
     int cx = WIN_X + 30;
     int cy = WIN_Y + WIN_H - 200;
     tb->creditsActifPlus  = (Button){ .ref = {cx + 390, cy,      40, BTN_H} };
@@ -88,11 +85,9 @@ void initTradeButtons(TradeButtonsPack* tb) {
     tb->creditsCiblePlus  = (Button){ .ref = {cx + 390, cy + 60, 40, BTN_H} };
     tb->creditsCibleMoins = (Button){ .ref = {cx + 240, cy + 60, 40, BTN_H} };
 
-    /* Boutons cibles (jusqu'à 3) – positionnés dynamiquement au rendu */
     for (int i = 0; i < 4; i++)
         tb->target[i] = (Button){ .ref = {WIN_X + 60, WIN_Y + TITLE_H + 100 + i * 70, BTN_W + 40, BTN_H + 4} };
 
-    /* Boutons de biens – positionnés dynamiquement au rendu */
     for (int i = 0; i < TRADE_MAX_ASSET_BTNS; i++)
         tb->asset_btn[i] = (Button){ .ref = {WIN_X + 30, WIN_Y + TITLE_H + 100 + i * 48, BTN_W + 200, 40} };
 
@@ -132,7 +127,6 @@ static void _render_select_target(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font
     tb->nb_targets = nb;
 
     for (int i = 0; i < nb; i++) {
-        /* Repositionner dynamiquement */
         int by = (int)((WIN_Y + TITLE_H + 100 + i * 70) * ry);
         tb->target[i].rect.y = by;
 
@@ -168,7 +162,6 @@ static void _render_build_offer(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* 
         printText(r, fontSmall, buf, C_GRIS, leftX, subY + (int)(TTF_FontHeight(fontNormal) * 1.3f));
     }
 
-    /* Récupère les biens du joueur concerné */
     TradeAssetInfo assets[TRADE_MAX_ASSETS];
     int nb = bridge_trade_get_assets(ctx, joueur_idx, assets, TRADE_MAX_ASSETS);
     tb->nb_asset_btns = nb;
@@ -257,7 +250,7 @@ static void _render_recap(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* fontSm
     Player* pc = ctx->joueurs[ts->joueur_cible_idx];
     char buf[128];
 
-    /* --- Ce que l'actif donne --- */
+    /* Ce que l'actif donne */
     snprintf(buf, sizeof(buf), "%s donne :", pa ? pa->name : "?");
     printText(r, fontNormal, buf, C_NOIR, leftX, y); y += lh + 4;
 
@@ -279,7 +272,7 @@ static void _render_recap(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* fontSm
 
     y += 8;
 
-    /* --- Ce que la cible donne --- */
+    /* Ce que la cible donne */
     snprintf(buf, sizeof(buf), "%s donne :", pc ? pc->name : "?");
     printText(r, fontNormal, buf, C_NOIR, leftX, y); y += lh + 4;
 
@@ -379,7 +372,7 @@ void renderTradeWindow(SDL_Renderer* renderer,TTF_Font* fontTitle, TTF_Font* fon
             break;
     }
 
-    /* Boutons de navigation (phases 1 à 3 uniquement) */
+    /* Boutons de navigation */
     if (ts->phase >= TRADE_PHASE_BUILD_OFFER && ts->phase <= TRADE_PHASE_SET_CREDITS) {
         _draw_button(renderer, fontSmall, &tb->suivant,   "Suivant ->", C_VERT,  C_BLANC);
         _draw_button(renderer, fontSmall, &tb->precedent, "<- Retour",  C_GRIS,  C_BLANC);

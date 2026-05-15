@@ -284,9 +284,6 @@ int bridge_is_in_jail(const ContexteJeu* ctx, const EtatPartie* partie) {
     return is_in_jail(p, ctx->jail);
 }
 
-/* =========================================================================
-   TRADE — fonctions bridge
-   ========================================================================= */
 
 void bridge_trade_init(ContexteJeu* ctx, const EtatPartie* partie, TradeState* ts) {
     if (!ctx || !partie || !ts) return;
@@ -358,7 +355,7 @@ int bridge_trade_get_targets(ContexteJeu* ctx, const EtatPartie* partie,
     for (int i = 0; i < partie->nbJoueurs && count < max; i++) {
         if (i == partie->joueursActif) continue;
         Player* p = ctx->joueurs[i];
-        if (!p || p->credit < 0) continue; /* éliminé */
+        if (!p || p->credit < 0) continue; 
         strncpy(out_names[count], p->name, 31);
         out_names[count][31] = '\0';
         out_idx[count] = i;
@@ -447,7 +444,6 @@ int bridge_trade_is_selected(const TradeState* ts, const TradeAssetInfo* asset) 
     if (!ts || !asset) return 0;
     const TradeOffer* off = (ts->phase == TRADE_PHASE_BUILD_OFFER) ? ts->off_actif : ts->off_cible;
     if (!off) return 0;
-    /* On relit l'état depuis l'offre via les index — simplifié : on retourne asset->selected */
     return asset->selected;
 }
 

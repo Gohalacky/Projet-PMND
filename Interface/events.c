@@ -78,7 +78,6 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 int argentInitial = atoi(tboxes->initialMoney.text);
                 if(argentInitial <=0) argentInitial =1500;
  
-                /* tourMax = 0 si tours infinis, sinon valeur saisie */
                 int tourMax = 0;
                 if (!checkboxes->tourInfini.checked) {
                     tourMax = atoi(tboxes->numbTurns.text);
@@ -116,7 +115,6 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
             }
             if (isClicked(&btn->cancel, x, y)) *state = MENU;
             handleCounter(counterJoueurs, x, y);
-            /* clic sur la checkbox tours infinis */
             if (isChecked(&checkboxes->tourInfini, x, y))
                 toggleCheckbox(&checkboxes->tourInfini);
             break;
@@ -129,7 +127,6 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 *state = MENU;
             }
 
-            /* Bouton menu pause ☰ */
             if (isClicked(&btn->pauseMenu, x, y)) {
                 *state = PAUSE;
                 break;
@@ -177,7 +174,7 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 bridge_free(ctx);
                 *state = MENU;
             }
-            /* Bouton menu pause ☰ */
+
             if (isClicked(&btn->pauseMenu, x, y)) {
                 *state = PAUSE;
                 break;
@@ -188,7 +185,7 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 partie->dejaLance = 0;
                 btn->throwDice.disabled = 0;
                 btn->endTurn.disabled = 1;
-                bridge_reset_doubles(ctx);           /* reset avant next_turn */
+                bridge_reset_doubles(ctx);           
                 int fini = bridge_next_turn(partie);
                 if (fini) { 
                     bridge_free(ctx); *state = MENU; 
@@ -215,7 +212,6 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
             break;
 
         case PAUSE:
-            /* Reprendre la partie */
             if (isClicked(&btn->pauseResume, x, y)) {
                 switch (partie->nbJoueurs) {
                     case 2: *state = PLATEAU2J; break;
@@ -224,7 +220,6 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                     default: *state = PLATEAU2J; break;
                 }
             }
-            /* Sauvegarder & Quitter */
             if (isClicked(&btn->pauseSaveQuit, x, y)) {
                 savegame_save(partie, ctx);
                 bridge_free(ctx);
@@ -263,7 +258,6 @@ void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* 
         }
  
         if (event->type == SDL_KEYDOWN && event->key.keysym.sym == SDLK_ESCAPE) {
-            /* ESC : toggle menu pause si on est sur le plateau, sinon retour menu */
             if (*state == PLATEAU2J || *state == PLATEAU3J || *state == PLATEAU4J || *state == LANCER) {
                 *state = PAUSE;
             } else if (*state == PAUSE) {

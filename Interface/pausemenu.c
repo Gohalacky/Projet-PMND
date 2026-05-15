@@ -48,8 +48,7 @@ void scalePauseButtons(ButtonsPack* btn, float ratioX, float ratioY) {
 }
 
 
-static void drawRoundedRect(SDL_Renderer* r, const SDL_Rect* rect,
-                            SDL_Color fill, SDL_Color border) {
+static void drawRoundedRect(SDL_Renderer* r, const SDL_Rect* rect,SDL_Color fill, SDL_Color border) {
     SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(r, fill.r, fill.g, fill.b, fill.a);
     SDL_RenderFillRect(r, rect);
@@ -58,9 +57,7 @@ static void drawRoundedRect(SDL_Renderer* r, const SDL_Rect* rect,
     SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_NONE);
 }
 
-static void drawMenuButton(SDL_Renderer* renderer, TTF_Font* font,
-                           const Button* btn, const char* label,
-                           SDL_Color bg, SDL_Color fg) {
+static void drawMenuButton(SDL_Renderer* renderer, TTF_Font* font,const Button* btn, const char* label,SDL_Color bg, SDL_Color fg) {
     SDL_Color border = {60, 45, 35, 255};
     drawRoundedRect(renderer, &btn->rect, bg, border);
 

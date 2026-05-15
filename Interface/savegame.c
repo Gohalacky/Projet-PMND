@@ -122,7 +122,6 @@ int savegame_save(const EtatPartie* partie, const ContexteJeu* ctx) {
     }
     cJSON_AddItemToObject(root, "compagnies", comps);
 
-    /* Prison : pour chaque joueur, on sauvegarde s'il est emprisonné et depuis combien de tours */
     cJSON* prison_arr = cJSON_CreateArray();
     if (ctx->jail) {
         for (int i = 0; i < partie->nbJoueurs; i++) {
@@ -296,7 +295,6 @@ int savegame_load_file(const char* filepath, EtatPartie* partie, ContexteJeu* ct
 
 #undef GETINT
 
-    /* Restauration de la prison */
     cJSON* prison_arr = cJSON_GetObjectItem(root, "prison");
     if (prison_arr && ctx->jail) {
         int n = cJSON_GetArraySize(prison_arr);
@@ -312,7 +310,6 @@ int savegame_load_file(const char* filepath, EtatPartie* partie, ContexteJeu* ct
             int tours     = tr_item ? (int)tr_item->valuedouble : 0;
             if (en_prison && idx >= 0 && idx < partie->nbJoueurs && ctx->joueurs[idx]) {
                 go_to_jail(ctx->joueurs[idx], ctx->jail);
-                /* restaurer le compteur de tours de prison */
                 for (int k = 0; k < ctx->jail->nb_j; k++) {
                     if (ctx->jail->liste[k] == ctx->joueurs[idx]) {
                         ctx->jail->comptage[k] = tours;

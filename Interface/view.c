@@ -100,17 +100,16 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
         printTextCentered(renderer, fontNormal, bufferCase, blanc,fenetreLancer.y + (int)(fenetreLancer.h * 0.65f),winW);
     }
 
-    /* Bouton ☰ toujours visible sur le plateau */
     renderPauseButton(renderer, fontButton, btn);
 }
 
 void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie* partie, ContexteJeu* ctx){
     if(!partie || partie->joueursActif < 0 || partie->joueursActif >= partie->nbJoueurs) return;
-    if(!ctx || !ctx->joueurs[partie->joueursActif]) return;  /* partie pas encore initialisée */
+    if(!ctx || !ctx->joueurs[partie->joueursActif]) return;  
 
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
-    SDL_Color blanc = {0,0,0,255}; //A CHANGER
+    SDL_Color blanc = {0,0,0,255}; 
 
     char bufferJoueur[64];
     snprintf(bufferJoueur, sizeof(bufferJoueur), "Au tour de : %s", partie->joueurs[partie->joueursActif].nom);

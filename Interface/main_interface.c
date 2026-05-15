@@ -60,7 +60,7 @@ int main(){
 
         .throwDice  = { .ref = {1107, 559, 160, 50}},
         .properties = { .ref = {1107, 615, 160, 44}},
-        /* Bouton Échanger — juste en dessous de Propriétés */
+
         .trade      = { .ref = {1107, 663, 160, 44}},
         .endTurn    = { .ref = {1107, 666, 160, 44}, .disabled = 1},
 
@@ -148,7 +148,6 @@ int main(){
         &texts.titleNewGame, &texts.btnLaunchGame, &texts.btnCancel, &texts.numberPlayer,
         &texts.chooseParam, &texts.initialMoney, &texts.tillBankruptcy,
         &texts.numbTurns, &texts.event,
-        /* Textes du plateau — doivent être initialisés dès le départ */
         &texts.btnThrowDice, &texts.btnProperties, &texts.btnEndTurn, &texts.indNbTurn
     };
     int textCount = sizeof(allTexts) / sizeof(allTexts[0]);
