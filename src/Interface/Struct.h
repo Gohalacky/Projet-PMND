@@ -7,7 +7,7 @@
 #define TEXTBOX_MAX_LEN 16
 
 typedef enum { ALIGN_LEFT, ALIGN_CENTER_X, ALIGN_RIGHT} TextAlign;
-typedef enum {MENU,NOUVPARTIE,CHARGERPARTIE,PLATEAU2J,PLATEAU3J,PLATEAU4J,LANCER,PROPRIETE,TRADE, TEST, PAUSE, CARTE, REGLEMENT} EtatJeu;
+typedef enum {MENU,NOUVPARTIE,CHARGERPARTIE,PLATEAU2J,PLATEAU3J,PLATEAU4J,LANCER,PROPRIETE,TRADE, TEST, PAUSE, CARTE, REGLEMENT, GAMEOVER} EtatJeu;
 
 typedef struct {
     SDL_Rect rect;      
@@ -66,6 +66,8 @@ typedef struct{
     Uint32 temps_lancer;
     int carteEnCours;       /* 1 si une carte vient d'etre piochee */
     int doubleEnAttente;    /* 1 si double fait avant carte, relance apres OK */
+    int posAvantCarte;      /* position apres le de, avant l'effet carte de deplacement */
+    int prisonPending;      /* 1 si le pion doit etre teleporte en prison apres l'animation */
     CartePiochee derniereCarte;
 }EtatPartie;
 

@@ -78,6 +78,10 @@ int bridge_roll_and_move(ContexteJeu* ctx, EtatPartie* partie) {
     Player* p = ctx->joueurs[ja];
     if (!p) return 0;
     ctx->dernier_de = engine_roll_and_move(p, &ctx->plateau, &ctx->compteur_doubles);
+    if (ctx->compteur_doubles >= 3) {
+        go_to_jail(p, ctx->jail);
+        ctx->compteur_doubles = 0;
+    }
     bridge_sync(ctx, partie);
     return ctx->dernier_de;
 }
@@ -152,6 +156,13 @@ int bridge_next_turn(EtatPartie* partie) {
     if (partie->tourMax > 0 && partie->tourActuel > partie->tourMax) return 1;
     return 0;
 }
+int bridge_check_bankruptcy_gameover(const EtatPartie* partie) {
+    int actifs = 0;
+    for (int i = 0; i < partie->nbJoueurs; i++) {
+        if (partie->joueurs[i].credits >= 0) actifs++;
+    }
+    return (actifs <= 1) ? 1 : 0;
+}
 
 void bridge_sync(const ContexteJeu* ctx, EtatPartie* partie) {
     for (int i = 0; i < partie->nbJoueurs; i++) {
@@ -160,6 +171,40 @@ void bridge_sync(const ContexteJeu* ctx, EtatPartie* partie) {
         partie->joueurs[i].credits = p->credit;
         partie->joueurs[i].noteEco = (float)p->eco_index;
     }
+}
+
+int bridge_get_winner(const ContexteJeu* ctx, const EtatPartie* partie,
+                      char winner_name[50], int* winner_value, int* winner_mode) {
+    if (!ctx || !partie) return -1;
+
+    /* winner_mode : 0 = fin de tours, 1 = faillite */
+    int mode_tours = (partie->tourMax > 0);
+    if (winner_mode) *winner_mode = mode_tours ? 0 : 1;
+
+    int best_idx   = -1;
+    int best_val   = -1;
+
+    for (int i = 0; i < partie->nbJoueurs; i++) {
+        Player* p = ctx->joueurs[i];
+        if (!p) continue;
+        if (p->credit < 0) continue; /* joueur éliminé */
+
+        int val = engine_get_player_total_value(p,
+                      (Property**)ctx->tableau_prop,
+                      (Gares**)ctx->tableau_gar,
+                      (Compagnies**)ctx->tableau_comp);
+        if (val > best_val) {
+            best_val = val;
+            best_idx = i;
+        }
+    }
+
+    if (best_idx < 0) return -1;
+
+    Player* winner = ctx->joueurs[best_idx];
+    if (winner_name)  strncpy(winner_name, winner->name, 49);
+    if (winner_value) *winner_value = best_val;
+    return best_idx;
 }
 
 /* EVENEMENTS */

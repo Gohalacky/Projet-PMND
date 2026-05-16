@@ -4,6 +4,7 @@
 #include "bridge.h"
 #include "building.h"
 #include "pawn.h"
+#include "anim.h"
 #include "propwindow.h"
 #include "pausemenu.h"
 #include "loadmenu.h"
@@ -15,6 +16,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_render.h>
+#include <stdio.h>
 
 static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, Pawn pawns[MAX_PLAYERS]){
     int winW, winH;
@@ -131,7 +133,7 @@ void renderEvenementActif(SDL_Renderer* renderer, TTF_Font* fontNormal,const Con
     /* Bandeau semi-transparent en haut du plateau */
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 180, 60, 30, 200);
-    SDL_Rect bandeau = { 0, (int)(65.0f * winH / REF_H),(int)(1060.0f * winW / REF_W),(int)(28.0f  * winH / REF_H) };
+    SDL_Rect bandeau = { 0, (int)(65.0f * winH / REF_H),(int)(winW ),(int)(28.0f  * winH / REF_H) };
     SDL_RenderFillRect(renderer, &bandeau);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
@@ -229,7 +231,7 @@ void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
     printTextCentered(renderer, fontNormal, "OK", blanc,btn->okCarte.rect.y + (btn->okCarte.rect.h - lineHN) / 2, winW);
 }
 
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm){
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm, Animation* diceAnim){
     
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
@@ -308,9 +310,18 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
         case PLATEAU2J:
         case PLATEAU3J:
         case PLATEAU4J:
+            renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
+            break;
+
         case LANCER:
             renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
             renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
+            if (diceAnim && diceAnim->sheet) {
+                int animSize = (int)(200.0f * winW / REF_W);
+                SDL_Rect dst = {(winW - animSize) / 2, (winH - animSize) / 2, animSize, animSize};
+                renderAnim(renderer, diceAnim, 0, 0, &dst);
+            }
             break;
 
         case CARTE: {
@@ -331,8 +342,139 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             renderPauseMenu(renderer, fontNormal, btn);
             break;
         }
+
+        case GAMEOVER:
+            renderGameOver(renderer, fontTitle, fontNormal, fontButton, partie, ctx, btn);
+            break;
     }
     SDL_RenderPresent(renderer);
+}
+
+void renderGameOver(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fontNormal, TTF_Font* fontButton,const EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn) {
+    int winW, winH;
+    SDL_GetRendererOutputSize(renderer, &winW, &winH);
+
+    /* Fond sombre semi-transparent */
+    SDL_SetRenderDrawColor(renderer, 18, 20, 30, 255);
+    SDL_RenderClear(renderer);
+
+    /* Panneau central */
+    int panW = (int)(winW * 0.6f);
+    int panH = (int)(winH * 0.7f);
+    int panX = (winW - panW) / 2;
+    int panY = (winH - panH) / 2;
+
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 30, 28, 22, 230);
+    SDL_Rect panel = {panX, panY, panW, panH};
+    SDL_RenderFillRect(renderer, &panel);
+    SDL_SetRenderDrawColor(renderer, 200, 175, 100, 255);
+    SDL_RenderDrawRect(renderer, &panel);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+    /* Déterminer le gagnant via le bridge */
+    char winner_name[50] = "???";
+    int  winner_value = 0;
+    int  winner_mode  = 0; /* 0=tours, 1=faillite */
+    bridge_get_winner(ctx, partie, winner_name, &winner_value, &winner_mode);
+
+    SDL_Color gold   = {220, 180, 60,  255};
+    SDL_Color blanc  = {235, 221, 192, 255};
+    SDL_Color gris   = {160, 150, 130, 255};
+    SDL_Color vert   = {100, 220, 100, 255};
+
+    int lineTitle  = TTF_FontHeight(fontTitle);
+    int lineNormal = TTF_FontHeight(fontNormal);
+
+    int y = panY + (int)(panH * 0.08f);
+
+    /* Titre : FIN DE PARTIE */
+    printTextCentered(renderer, fontTitle, "FIN DE PARTIE", gold, y, winW);
+    y += lineTitle + 8;
+
+    /* Ligne décorative */
+    SDL_SetRenderDrawColor(renderer, 200, 175, 100, 255);
+    SDL_RenderDrawLine(renderer, panX + 20, y, panX + panW - 20, y);
+    y += 20;
+
+    /* Sous-titre selon le mode */
+    if (winner_mode == 0) {
+        char buf[80];
+        snprintf(buf, sizeof(buf), "Fin des %d tours", partie->tourMax);
+        printTextCentered(renderer, fontNormal, buf, gris, y, winW);
+    } else {
+        printTextCentered(renderer, fontNormal, "Dernier joueur en vie", gris, y, winW);
+    }
+    y += lineNormal + 24;
+
+    /* Trophée textuel */
+    printTextCentered(renderer, fontTitle, "VAINQUEUR", gold, y, winW);
+    y += lineTitle + 16;
+
+    /* Nom du gagnant en grand */
+    printTextCentered(renderer, fontTitle, winner_name, blanc, y, winW);
+    y += lineTitle + 16;
+
+    /* Valeur totale */
+    char valBuf[64];
+    snprintf(valBuf, sizeof(valBuf), "Patrimoine total : %d ECTS", winner_value);
+    printTextCentered(renderer, fontNormal, valBuf, vert, y, winW);
+    y += lineNormal + 28;
+
+    /* Classement des autres joueurs */
+    printTextCentered(renderer, fontNormal, "Classement :", blanc, y, winW);
+    y += lineNormal + 8;
+
+    /* Trier les joueurs par valeur totale décroissante (simple) */
+    int order[4];
+    int vals[4];
+    int n = partie->nbJoueurs;
+    for (int i = 0; i < n; i++) {
+        order[i] = i;
+        if (ctx && ctx->joueurs[i]) {
+            vals[i] = engine_get_player_total_value(ctx->joueurs[i],
+                          (Property**)ctx->tableau_prop,
+                          (Gares**)ctx->tableau_gar,
+                          (Compagnies**)ctx->tableau_comp);
+        } else {
+            vals[i] = partie->joueurs[i].credits;
+        }
+    }
+    /* Tri à bulles décroissant */
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (vals[order[j]] > vals[order[i]]) {
+                int tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+            }
+        }
+    }
+
+    static const char* medals[] = {"1er", "2eme", "3eme", "4eme"};
+    for (int rank = 0; rank < n && y < panY + panH - 60; rank++) {
+        int idx = order[rank];
+        char rowBuf[80];
+        const char* pname = ctx && ctx->joueurs[idx] ? ctx->joueurs[idx]->name
+                                                      : partie->joueurs[idx].nom;
+        int alive = ctx && ctx->joueurs[idx] && ctx->joueurs[idx]->credit >= 0;
+        snprintf(rowBuf, sizeof(rowBuf), "%s  %s  —  %d ECTS%s",
+                 medals[rank], pname, vals[idx], alive ? "" : " (elimine)");
+        SDL_Color rowColor = (rank == 0) ? gold : (alive ? blanc : gris);
+        printTextCentered(renderer, fontNormal, rowBuf, rowColor, y, winW);
+        y += lineNormal + 4;
+    }
+
+    /* Bouton Retour au menu */
+    int bW = (int)(panW * 0.4f);
+    int bH = 44;
+    int bX = panX + (panW - bW) / 2;
+    int bY = panY + panH - bH - 20;
+    btn->backToMenu.rect = (SDL_Rect){bX, bY, bW, bH};
+    SDL_SetRenderDrawColor(renderer, 60, 50, 35, 255);
+    SDL_RenderFillRect(renderer, &btn->backToMenu.rect);
+    SDL_SetRenderDrawColor(renderer, 200, 175, 100, 255);
+    SDL_RenderDrawRect(renderer, &btn->backToMenu.rect);
+    int lineBtn = TTF_FontHeight(fontButton);
+    printTextCentered(renderer, fontButton, "Retour au menu",blanc, bY + (bH - lineBtn) / 2, winW);
 }
 
 void cleanup(SDL_Window* win, SDL_Renderer* rdr, TexturesPack* tex){

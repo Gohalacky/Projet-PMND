@@ -17,6 +17,7 @@
 #include "propwindow.h"
 #include "tradewindow.h"
 #include "pawn.h"
+#include "anim.h"
 #include "pausemenu.h"
 #include "loadmenu.h"
 #include "rules.h"
@@ -103,7 +104,7 @@ int main(){
     initTextBox(&tboxes.eventFreq,    680, 528,  140, 36);
 
     CheckboxPack checkboxes;
-    checkboxes.tourInfini = (Checkbox){ .ref = {680, 355, 20, 20}, .checked = 0 };
+    checkboxes.tourInfini = (Checkbox){ .ref = {680, 361, 20, 20}, .checked = 0 };
     ScaleCheckbox(&checkboxes.tourInfini, 1.0f, 1.0f);
 
     PropButtonsPack pb;
@@ -132,6 +133,9 @@ int main(){
     RulesMenuState rm;
     initRulesMenu(&rm);
 
+    Animation diceAnim;
+    initAnim(&diceAnim, tex.diceSheet, 100, 100, 15, 5, 8, true);
+
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,
         &btn.backToMenu, &btn.throwDice, &btn.properties,
@@ -158,6 +162,7 @@ int main(){
 
 
     EtatJeu   state = MENU;
+    EtatJeu   prevState = MENU;
     bool      quit  = false;
     SDL_Event event;
     Uint32 lastTime=SDL_GetTicks();
@@ -167,9 +172,12 @@ int main(){
         Uint32 delta = now-lastTime;
         lastTime=now;
 
+        prevState = state;
         handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb, &tb, &ts, pawns, &lm, &rm);
         updatePawns(pawns, partie.nbJoueurs, delta);
-        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm, &rm);
+        if (state == LANCER && prevState != LANCER) resetAnim(&diceAnim);
+        if (state == LANCER) updateAnim(&diceAnim, delta);
+        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm, &rm, &diceAnim);
     }
 
     TTF_CloseFont(fontNormal);

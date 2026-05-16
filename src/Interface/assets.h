@@ -12,7 +12,8 @@ typedef struct{
     SDL_Texture* gameBoard2Player;
     SDL_Texture* gameBoard3Player;
     SDL_Texture* gameBoard4Player;
-    SDL_Texture* throws; 
+    SDL_Texture* throws;
+    SDL_Texture* diceSheet;
     SDL_Texture* menuProperties;
     SDL_Texture* test;
 

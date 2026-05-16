@@ -28,6 +28,9 @@ void scaleRulesMenu(RulesMenuState* rm, float rx, float ry);
 /* Gestion des clics */
 void handleRulesMenuClick(RulesMenuState* rm, int x, int y, EtatJeu* state);
 
+/* Gestion de la molette de défilement (delta > 0 = vers le haut) */
+void handleRulesMenuScroll(RulesMenuState* rm, int delta);
+
 /* Rendu du panneau règlement */
 void renderRulesMenu(SDL_Renderer* renderer,
                      TTF_Font* fontTitle,

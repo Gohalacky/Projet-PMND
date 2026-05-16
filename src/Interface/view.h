@@ -13,7 +13,8 @@
 #include "ui/checkbox.h"
 #include "propwindow.h"
 #include "tradewindow.h"
-#include "pawn.h" 
+#include "pawn.h"
+#include "anim.h"
 
 typedef struct LoadMenuState LoadMenuState;
 typedef struct RulesMenuState RulesMenuState;
@@ -68,6 +69,8 @@ void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font,const EtatPartie* 
 void refreshTextures(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex);
 void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal, TTF_Font* fontTitle, const EtatPartie* partie, ButtonsPack* btn);
 void renderEvenementActif(SDL_Renderer* renderer, TTF_Font* fontNormal, const ContexteJeu* ctx, int winW, int winH);
+void renderGameOver(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fontNormal, TTF_Font* fontButton,
+                    const EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn);
 
 void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex,
             TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,
@@ -76,7 +79,8 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex,
             PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts,
             Pawn pawns[MAX_PLAYERS],
             LoadMenuState* lm,
-            RulesMenuState* rm);
+            RulesMenuState* rm,
+            Animation* diceAnim);
 
 void cleanup(SDL_Window* win, SDL_Renderer* rdr, TexturesPack* tex);
 

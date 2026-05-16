@@ -8,13 +8,14 @@ typedef struct{
     SDL_Texture* sheet;
     int frameW,frameH;
     int frameCount;
+    int framesPerRow;
     int fps;
     bool loop;
     int currentFrame;
     Uint32 accumulator;
 }Animation;
 
-void initAnim(Animation* anim, SDL_Texture* sheet, int frameW, int frameH, int frameCount, int fps, bool loop);
+void initAnim(Animation* anim, SDL_Texture* sheet, int frameW, int frameH, int frameCount, int framesPerRow, int fps, bool loop);
 
 bool updateAnim(Animation* anim, Uint32 deltaMs);
 

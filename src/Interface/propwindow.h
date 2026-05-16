@@ -3,16 +3,16 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include "assets.h"
+#include "tradewindow.h"
+#include "assets.h" 
 #include "bridge.h"
 #include "Struct.h"
 #include "ui/button.h"
 #include "ui/text.h"
 
-#ifndef REF_W
 #define REF_W 1280.0f
 #define REF_H  720.0f
-#endif
+#define PROP_LIST_VISIBLE 5
 
 typedef struct PropButtonsPack {
     Button fermer;
@@ -21,14 +21,18 @@ typedef struct PropButtonsPack {
     Button construireSocial;
     Button construireParc;
     Button echanger;
+    Button propScrollUp;
+    Button propScrollDown;
+    int    propScroll;
 } PropButtonsPack;
 
 void initPropButtons(PropButtonsPack* pb);
 void scalePropButtons(PropButtonsPack* pb, float ratioX, float ratioY);
+void handlePropScroll(PropButtonsPack* pb, int delta, int nbOwned);
 
 void renderPropWindow(SDL_Renderer* renderer,TTF_Font* fontTitle, TTF_Font* fontNormal, TTF_Font* fontSmall,const TexturesPack* tex,ContexteJeu* ctx,const EtatPartie* partie,PropButtonsPack* pb,int winW, int winH);
 
-#include "tradewindow.h"
+
 void handlePropClick(int x, int y, EtatJeu* state,PropButtonsPack* pb,ContexteJeu* ctx,EtatPartie* partie, TradeState* ts);
 
 #endif

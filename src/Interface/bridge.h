@@ -98,7 +98,18 @@ void bridge_reset_doubles(ContexteJeu* ctx);
  */
 int  bridge_play_turn(ContexteJeu* ctx, EtatPartie* partie, CarteInfo* carte_out);
 int  bridge_next_turn(EtatPartie* partie);
+int  bridge_check_bankruptcy_gameover(const EtatPartie* partie);
 void bridge_sync(const ContexteJeu* ctx, EtatPartie* partie);
+
+/**
+ * Détermine le gagnant de la partie.
+ * - Si tourMax > 0 : gagnant = joueur avec la plus grande valeur totale (credit + biens)
+ * - Si faillite : dernier joueur encore actif (credit >= 0)
+ * Remplit winner_name avec le nom du gagnant et winner_value avec sa valeur.
+ * Retourne l'index du gagnant, ou -1 si indéterminé.
+ */
+int bridge_get_winner(const ContexteJeu* ctx, const EtatPartie* partie,
+                      char winner_name[50], int* winner_value, int* winner_mode);
 
 /* --- Evenements --- */
 /** Remplit EvenementInfo depuis le GameContext. */

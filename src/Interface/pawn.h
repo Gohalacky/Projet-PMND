@@ -21,6 +21,7 @@ typedef struct{
     float curX, curY;
     int stepsRemaining;
     int nextCase;
+    int direction; /* +1 = avance, -1 = recule */
 } PawnAnim;
 
 typedef struct {
@@ -37,6 +38,8 @@ void renderPawns(SDL_Renderer* renderer, const TexturesPack* tex, Pawn pawns[MAX
 void updatePawns(Pawn pawns[MAX_PLAYERS], int nbJoueurs,Uint32 deltaMs);
 
 void startPawnMove(Pawn* pawn, int fromCase, int steps);
+
+void startPawnMoveCard(Pawn* pawn, int fromCase, int steps);
 
 bool isPawnMoving(const Pawn* pawn);
 

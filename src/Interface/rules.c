@@ -98,6 +98,14 @@ void scaleRulesMenu(RulesMenuState* rm, float rx, float ry) {
     ScaleButton(&rm->btnBack,       rx, ry);
 }
 
+void handleRulesMenuScroll(RulesMenuState* rm, int delta) {
+    if (delta > 0) {
+        if (rm->scroll > 0) rm->scroll--;
+    } else if (delta < 0) {
+        if (rm->scroll + RULES_VISIBLE < rm->count) rm->scroll++;
+    }
+}
+
 void handleRulesMenuClick(RulesMenuState* rm, int x, int y, EtatJeu* state) {
     if (isClicked(&rm->btnBack, x, y)) {
         *state = MENU;
@@ -141,9 +149,7 @@ void renderRulesMenu(SDL_Renderer* renderer,TTF_Font* fontTitle,TTF_Font* fontNo
         TTF_SizeUTF8(fontTitle, titre, &tw, &th);
         int winW;
         SDL_GetRendererOutputSize(renderer, &winW, NULL);
-        printText(renderer, fontTitle, titre, blanc,
-                  panel.x + (panel.w - tw) / 2,
-                  panel.y + (int)(16 * g_ry));
+        printText(renderer, fontTitle, titre, blanc,panel.x + (panel.w - tw) / 2,panel.y + (int)(16 * g_ry));
     }
 
     /* Séparateur */
@@ -169,12 +175,8 @@ void renderRulesMenu(SDL_Renderer* renderer,TTF_Font* fontTitle,TTF_Font* fontNo
     int canUp   = (rm->scroll > 0);
     int canDown = (rm->scroll + RULES_VISIBLE < rm->count);
 
-    drawBtn(renderer, fontBtn, &rm->btnScrollUp.rect, "^",
-            canUp   ? row_bg : gris,
-            canUp   ? arrow_on : arrow_off, or_clair);
-    drawBtn(renderer, fontBtn, &rm->btnScrollDown.rect, "v",
-            canDown ? row_bg : gris,
-            canDown ? arrow_on : arrow_off, or_clair);
+    drawBtn(renderer, fontBtn, &rm->btnScrollUp.rect, "^",canUp   ? row_bg : gris,canUp   ? arrow_on : arrow_off, or_clair);
+    drawBtn(renderer, fontBtn, &rm->btnScrollDown.rect, "v",canDown ? row_bg : gris,canDown ? arrow_on : arrow_off, or_clair);
 
     /* Indicateur de progression */
     if (fontBtn && rm->count > 0) {
@@ -186,12 +188,9 @@ void renderRulesMenu(SDL_Renderer* renderer,TTF_Font* fontTitle,TTF_Font* fontNo
         SDL_Color gris3 = {155, 145, 125, 200};
         int tw, th;
         TTF_SizeUTF8(fontBtn, buf, &tw, &th);
-        printText(renderer, fontBtn, buf, gris3,
-                  rm->btnScrollUp.rect.x - tw - (int)(12 * g_rx),
-                  rm->btnScrollUp.rect.y + (rm->btnScrollUp.rect.h - th) / 2);
+        printText(renderer, fontBtn, buf, gris3,rm->btnScrollUp.rect.x - tw - (int)(12 * g_rx),rm->btnScrollUp.rect.y + (rm->btnScrollUp.rect.h - th) / 2);
     }
 
     /* Bouton Retour */
-    drawBtn(renderer, fontNormal, &rm->btnBack.rect, "< Retour",
-            row_bg, blanc, or_clair);
+    drawBtn(renderer, fontNormal, &rm->btnBack.rect, "< Retour",row_bg, blanc, or_clair);
 }
