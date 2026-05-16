@@ -7,7 +7,7 @@
 #define TEXTBOX_MAX_LEN 16
 
 typedef enum { ALIGN_LEFT, ALIGN_CENTER_X, ALIGN_RIGHT} TextAlign;
-typedef enum {MENU,NOUVPARTIE,CHARGERPARTIE,PLATEAU2J,PLATEAU3J,PLATEAU4J,LANCER,PROPRIETE,TRADE, TEST, PAUSE} EtatJeu;
+typedef enum {MENU,NOUVPARTIE,CHARGERPARTIE,PLATEAU2J,PLATEAU3J,PLATEAU4J,LANCER,PROPRIETE,TRADE, TEST, PAUSE, CARTE, REGLEMENT} EtatJeu;
 
 typedef struct {
     SDL_Rect rect;      
@@ -48,6 +48,14 @@ typedef struct{
     float noteEco;
 }Joueur;
 
+typedef struct {
+    char titre[64];
+    char description[128];
+    int  paquet;   /* 0 = Chance, 1 = Communaute */
+    int  valeur;
+    int  effet;    /* TypeEffetCarte : 0=GAIN, 1=PERTE, 2=TAXE_ECO, ... */
+} CartePiochee;
+
 typedef struct{
     Joueur joueurs[4];
     int nbJoueurs;
@@ -56,6 +64,9 @@ typedef struct{
     int tourMax;
     int dejaLance;
     Uint32 temps_lancer;
+    int carteEnCours;       /* 1 si une carte vient d'etre piochee */
+    int doubleEnAttente;    /* 1 si double fait avant carte, relance apres OK */
+    CartePiochee derniereCarte;
 }EtatPartie;
 
 #endif

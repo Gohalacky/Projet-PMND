@@ -25,7 +25,7 @@ static const SDL_Color C_ROUGE    = {180,  60,  60, 220};
 static const SDL_Color C_GRIS     = {120, 110, 100, 180};
 static const SDL_Color C_OR       = {200, 165,  40, 220};
 static const SDL_Color C_BLEU     = { 60, 100, 180, 220};
-static const SDL_Color C_DISABLED = {100,  95,  90, 130};
+/* C_DISABLED supprimé (non utilisé) */
 
 static void _draw_button(SDL_Renderer* r, TTF_Font* font,const Button* btn, const char* label,SDL_Color bg, SDL_Color fg) {
     SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
@@ -44,8 +44,7 @@ static void _draw_button(SDL_Renderer* r, TTF_Font* font,const Button* btn, cons
     }
 }
 
-static void _draw_background(SDL_Renderer* r, const TexturesPack* tex,
-                              int winW, int winH, float rx, float ry) {
+static void _draw_background(SDL_Renderer* r, const TexturesPack* tex,int winW, int winH, float rx, float ry) {
     SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(r, 0, 0, 0, 160);
     SDL_Rect overlay = {0, 0, winW, winH};

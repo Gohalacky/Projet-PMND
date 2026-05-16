@@ -12,6 +12,7 @@
 #include "view.h"
 #include "pawn.h"
 #include "loadmenu.h"
+#include "rules.h"
 
 void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack* texts,
                   TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,
@@ -19,6 +20,7 @@ void handleEvents(SDL_Event* event, EtatJeu* state, ButtonsPack* btn, TextsPack*
                   CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx,
                   PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts,
                   Pawn pawns[MAX_PLAYERS],
-                  LoadMenuState* lm);
+                  LoadMenuState* lm,
+                  RulesMenuState* rm);
 
 #endif

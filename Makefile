@@ -21,6 +21,7 @@ SRC_MOD = $(MOD_DIR)/cartes.c       \
           $(MOD_DIR)/prison.c
 
 SRC_CTRL = $(CTRL_DIR)/game_engine.c \
+           $(CTRL_DIR)/engine_logic.c \
            $(CTRL_DIR)/plateau.c
 
 SRC_CTRL_CONSOLE = $(CTRL_DIR)/game_engine_console.c \
@@ -40,6 +41,7 @@ SRC_IFACE = $(IFACE_DIR)/main_interface.c \
             $(IFACE_DIR)/savegame.c       \
             $(IFACE_DIR)/pausemenu.c      \
             $(IFACE_DIR)/loadmenu.c       \
+            $(IFACE_DIR)/rules.c          \
             $(UI_DIR)/button.c            \
             $(UI_DIR)/text.c              \
             $(UI_DIR)/textbox.c           \

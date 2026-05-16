@@ -16,6 +16,7 @@
 #include "pawn.h" 
 
 typedef struct LoadMenuState LoadMenuState;
+typedef struct RulesMenuState RulesMenuState;
 
 #define REF_W 1280.0f
 #define REF_H 720.0f
@@ -31,6 +32,8 @@ typedef struct{
     Button pauseResume;     
     /*New Game*/
     Button launchGame, cancel;
+    /*Carte popup*/
+    Button okCarte;
 } ButtonsPack;
 
 typedef struct {
@@ -63,6 +66,8 @@ typedef struct {
 
 void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font,const EtatPartie* partie, ContexteJeu* ctx);
 void refreshTextures(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex);
+void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal, TTF_Font* fontTitle, const EtatPartie* partie, ButtonsPack* btn);
+void renderEvenementActif(SDL_Renderer* renderer, TTF_Font* fontNormal, const ContexteJeu* ctx, int winW, int winH);
 
 void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex,
             TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,
@@ -70,7 +75,8 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex,
             EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn,
             PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts,
             Pawn pawns[MAX_PLAYERS],
-            LoadMenuState* lm);
+            LoadMenuState* lm,
+            RulesMenuState* rm);
 
 void cleanup(SDL_Window* win, SDL_Renderer* rdr, TexturesPack* tex);
 

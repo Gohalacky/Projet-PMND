@@ -1,0 +1,167 @@
+INSA’POLY - RÈGLES DU JEU
+
+1. PRÉSENTATION GÉNÉRALE
+INSA’poly est une adaptation du Monopoly classique dans l’univers de l’INSA, 
+intégrant des mécaniques modernes liées à l’écologie et aux événements globaux.
+
+Les joueurs incarnent des étudiants évoluant sur un campus, 
+achetant des propriétés, développant leur patrimoine, 
+tout en gérant leur impact écologique et en s’adaptant à des événements imprévus.
+
+2. OBJECTIF DU JEU
+Le but du jeu est de devenir le joueur le plus riche en accumulant 
+des crédits (ECTS) grâce à :
+l’achat de propriétés
+la perception de loyers
+une gestion stratégique des événements et des cartes
+
+Un joueur est éliminé lorsqu’il ne peut plus payer ses dettes.
+Le dernier joueur restant gagne la partie.
+
+3. MISE EN PLACE
+Chaque joueur choisit un pion
+Tous les joueurs commencent sur la case départ
+Chaque joueur reçoit un capital initial (ex : 1500 ECTS)
+Les pioches Chance et Caisse Communauté sont mélangées
+Aucun événement global n’est actif au début
+
+4. DÉROULEMENT D’UN TOUR
+Chaque joueur joue à tour de rôle.
+
+4.1 Lancer de dés
+Le joueur lance les dés et avance son pion du nombre de cases correspondant.
+
+4.2 Action selon la case
+-> Propriété non possédée
+Le joueur peut l’acheter
+Sinon, elle peut être mise aux enchères
+
+-> Propriété possédée
+Si elle appartient à un autre joueur → paiement du loyer
+Si elle appartient au joueur lui-même → rien
+
+-> Chance / Caisse Communauté
+Le joueur pioche une carte et applique son effet
+
+-> Prison
+Le joueur est envoyé en prison ou reste bloqué
+
+5. CARTES
+5.1 Types de cartes
+-> Cartes Chance (individuelles)
+Effets personnels :
+gains ou pertes d’ECTS
+déplacements
+pénalités ou bonus
+
+-> Cartes Caisse Communauté (collectives)
+Effets globaux :
+gains ou pertes pour tous les joueurs
+taxes écologiques
+
+5.2 Carte spéciale : Sortie de prison
+Cette carte est conservée par le joueur
+Elle ne retourne pas dans la pioche immédiatement
+Elle peut être utilisée pour sortir de prison
+Une fois utilisée, elle est remise dans la pioche
+Elle peut être échangée entre joueurs
+
+6. SYSTÈME ÉCOLOGIQUE
+Chaque joueur possède un indice écologique (A à F) :
+A = excellent
+F = très mauvais
+
+6.1 Impact de l’indice écologique
+L’indice écologique influence :
+les taxes écologiques
+le risque d’événements globaux
+
+6.2 Taxes écologiques
+Certaines cartes imposent une taxe dépendant de l’indice :
+
+Note	Coefficient
+A	x0.5
+B	x0.8
+C	x1.0
+D	x1.2
+E	x1.5
+F	x2.0
+
+7. ÉVÉNEMENTS GLOBAUX
+À la fin de chaque round (tous les joueurs ont joué), un événement peut apparaître.
+
+7.1 Probabilité
+Probabilité de base (ex : 8%)
+Augmentée si l’état écologique global est mauvais
+
+7.2 Liste des événements
+-> Crise énergétique
+Coût de construction +20%
+
+-> Inflation
+Loyers +15%
+Gains des cartes réduits
+
+-> Mouvement étudiant
+Interdiction de construire
+Loyers réduits
+
+-> Canicule
+Tous les joueurs paient un coût fixe
+Les joueurs avec une bonne note écologique paient moins
+
+-> Inondations
+Une zone du plateau est bloquée
+Impossible d’y passer ou d’y agir
+
+-> Confinement
+Pendant le confinement :
+Si un joueur tombe sur une propriété adverse → loyer doublé
+Si un joueur tombe sur sa propre propriété :
+il peut choisir de s’arrêter immédiatement
+ou de continuer normalement
+
+7.3 Durée
+Chaque événement dure plusieurs tours (généralement 2 à 3 rounds).
+
+8. CONSTRUCTION
+Les joueurs peuvent construire sur leurs propriétés :
+maisons
+logements sociaux
+parc
+
+8.1 Restrictions
+Interdit pendant certains événements (ex : mouvement étudiant)
+Coût modifié selon les événements
+
+9. ÉCHANGES ENTRE JOUEURS
+Les joueurs peuvent échanger :
+propriétés
+argent
+cartes
+
+Les échanges doivent être acceptés par les deux joueurs.
+
+10. PRISON
+Un joueur peut être envoyé en prison après certaines cases
+
+Pour sortir :
+payer une amende
+faire un double
+utiliser une carte Sortie de prison
+
+11. FIN DE PARTIE
+
+Un joueur est éliminé lorsqu’il ne peut plus payer ses dettes.
+
+Le jeu continue jusqu’à ce qu’il ne reste qu’un joueur ou que le nombre de tour soit atteint. Le joueur alors vainqueur est celui avec le plus d'argent en comptant ces propriété et son indice écologique.
+
+12. REMARQUES STRATÉGIQUES
+Un bon indice écologique réduit les pénalités
+Les événements peuvent renverser la situation
+La carte Sortie de prison est précieuse
+Le confinement favorise les joueurs agressifs
+
+13. NOTES
+INSA’poly est un jeu stratégique mêlant gestion économique, adaptation aux événements et responsabilité écologique.
+Chaque décision compte, et chaque événement peut changer le cours de la partie.

@@ -12,6 +12,7 @@
 #include "pawn.h"
 #include "savegame.h"
 #include "loadmenu.h"
+#include "rules.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,13 +20,14 @@
 #define FONT "assets/FONT/fontPixel.ttf"
 #define DELAI_LANCER 2500 //en ms
 
-static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack* texts,TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, PropButtonsPack* pb, TradeButtonsPack* tb, LoadMenuState* lm){
+static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack* texts,TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, PropButtonsPack* pb, TradeButtonsPack* tb, LoadMenuState* lm, RulesMenuState* rm){
     
     Button* allButtons[] = {
        &btn->newGame, &btn->loadGame, &btn->save,
        &btn->backToMenu, &btn->throwDice, &btn->properties,
        &btn->trade, &btn->launchGame, &btn->cancel, &btn->endTurn,
        &btn->pauseMenu, &btn->pauseResume, &btn->pauseSaveQuit,
+       &btn->okCarte,
     };
     int btnCount = sizeof(allButtons) / sizeof(allButtons[0]);
     for (int i = 0; i < btnCount; i++) {
@@ -57,9 +59,10 @@ static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack
     scalePropButtons(pb, ratioX, ratioY);
     scaleTradeButtons(tb, ratioX, ratioY);
     scaleLoadMenu(lm, ratioX, ratioY);
+    scaleRulesMenu(rm, ratioX, ratioY);
 }
 
-static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter* counterJoueurs,TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie,ContexteJeu* ctx, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm){
+static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter* counterJoueurs,TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie,ContexteJeu* ctx, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm){
     if (*state == NOUVPARTIE) handleTextBoxClick(tboxes, x, y);
  
     switch(*state){
@@ -69,7 +72,14 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 initLoadMenu(lm);
                 *state = CHARGERPARTIE;
             }
-            if (isClicked(&btn->save,     x, y)) *state = TEST;
+            if (isClicked(&btn->save, x, y)) {
+                initRulesMenu(rm);
+                *state = REGLEMENT;
+            }
+            break;
+
+        case REGLEMENT:
+            handleRulesMenuClick(rm, x, y, state);
             break;
         
         case NOUVPARTIE:
@@ -87,6 +97,8 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 partie->joueursActif = 0;
                 partie->tourActuel   = 1;
                 partie->tourMax      = tourMax;
+                partie->carteEnCours = 0;
+                partie->doubleEnAttente = 0;
  
                 for(int i=0; i<partie->nbJoueurs;i++){
                     partie->joueurs[i].credits=argentInitial;
@@ -141,20 +153,38 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 partie->temps_lancer = SDL_GetTicks();
                 partie->dejaLance = 1;
 
-                btn->endTurn.disabled = 0;
-                if (bridge_is_double(ctx)) {
-                    btn->throwDice.disabled = 0; 
-                } else {
+                CarteInfo carteInfo;
+                int pioche = bridge_play_turn(ctx, partie, &carteInfo);
+
+                if (pioche) {
+                    strncpy(partie->derniereCarte.titre,       carteInfo.titre,       63);
+                    strncpy(partie->derniereCarte.description, carteInfo.description, 127);
+                    partie->derniereCarte.paquet = carteInfo.paquet;
+                    partie->derniereCarte.valeur = carteInfo.valeur;
+                    partie->derniereCarte.effet  = carteInfo.effet;
+                    partie->carteEnCours = 1;
+                    partie->doubleEnAttente = bridge_is_double(ctx) ? 1 : 0;
                     btn->throwDice.disabled = 1;
+                    btn->endTurn.disabled   = 1;
+                    *state = CARTE;
+                } else {
+                    partie->carteEnCours = 0;
+                    btn->endTurn.disabled = 0;
+                    if (bridge_is_double(ctx)) {
+                        btn->throwDice.disabled = 0;
+                    } else {
+                        btn->throwDice.disabled = 1;
+                    }
+                    *state = LANCER;
                 }
-                *state = LANCER;
             }
             if (isClicked(&btn->endTurn, x, y)) {
-                bridge_play_turn(ctx, partie);
                 partie->dejaLance = 0;
                 btn->throwDice.disabled = 0;
                 btn->endTurn.disabled = 1;
                 bridge_reset_doubles(ctx);
+                partie->carteEnCours = 0;
+                bridge_tick_evenement(ctx);
                 int fini = bridge_next_turn(partie);
                 if (fini) {
                     bridge_free(ctx); *state = MENU;
@@ -179,12 +209,13 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 break;
             }
             if (isClicked(&btn->endTurn, x, y)) {
-                bridge_play_turn(ctx, partie);
                 partie->temps_lancer = 0;
                 partie->dejaLance = 0;
                 btn->throwDice.disabled = 0;
                 btn->endTurn.disabled = 1;
-                bridge_reset_doubles(ctx);           
+                bridge_reset_doubles(ctx);
+                partie->carteEnCours = 0;
+                bridge_tick_evenement(ctx);
                 int fini = bridge_next_turn(partie);
                 if (fini) { 
                     bridge_free(ctx); *state = MENU; 
@@ -200,6 +231,22 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
 
         case CHARGERPARTIE:
             handleLoadMenuClick(lm, x, y, state, partie, ctx, pawns);
+            break;
+
+        case CARTE:
+            if (isClicked(&btn->okCarte, x, y)) {
+                partie->carteEnCours = 0;
+                if (partie->doubleEnAttente) {
+                    partie->doubleEnAttente = 0;
+                    btn->throwDice.disabled = 0;
+                    btn->endTurn.disabled   = 1;
+                    switch(partie->nbJoueurs){ case 2: *state=PLATEAU2J; break; case 3: *state=PLATEAU3J; break; case 4: *state=PLATEAU4J; break; }
+                } else {
+                    btn->endTurn.disabled   = 0;
+                    btn->throwDice.disabled = 1;
+                    switch(partie->nbJoueurs){ case 2: *state=LANCER; break; case 3: *state=LANCER; break; case 4: *state=LANCER; break; }
+                }
+            }
             break;
 
         case PROPRIETE:
@@ -230,7 +277,7 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
     }
 }
 
-static void endThrow(EtatJeu* state, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn){
+static void endThrow(EtatJeu* state, EtatPartie* partie){
     partie->temps_lancer = 0;
     switch(partie->nbJoueurs){
         case 2: *state = PLATEAU2J; break;
@@ -239,11 +286,11 @@ static void endThrow(EtatJeu* state, EtatPartie* partie, ContexteJeu* ctx, Butto
     }
 }
 
-void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* texts, TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm) {
+void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* texts, TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm) {
 
     if(*state==LANCER && partie->temps_lancer>0){
         if(SDL_GetTicks()- partie->temps_lancer>= DELAI_LANCER){
-            endThrow(state, partie, ctx, btn);
+            endThrow(state, partie);
             return;
         }
     }
@@ -282,14 +329,14 @@ void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* 
             int x, y;
             SDL_GetMouseState(&x, &y);
             printf("Click en x : %d ; y : %d\n", x,y);
-            handleClick(x, y, state, btn, counterJoueurs, tboxes, checkboxes, partie, ctx, pb, tb, ts, pawns, lm);
+            handleClick(x, y, state, btn, counterJoueurs, tboxes, checkboxes, partie, ctx, pb, tb, ts, pawns, lm, rm);
         }
  
         if (event->type == SDL_WINDOWEVENT &&
             event->window.event == SDL_WINDOWEVENT_RESIZED) {
             float ratioX = (float)event->window.data1 / REF_W;
             float ratioY = (float)event->window.data2 / REF_H;
-            handleResize(ratioX, ratioY, btn, texts, fontNormal, fontTitle, fontButton, counterJoueurs, tboxes, checkboxes, pb, tb, lm);
+            handleResize(ratioX, ratioY, btn, texts, fontNormal, fontTitle, fontButton, counterJoueurs, tboxes, checkboxes, pb, tb, lm, rm);
         }
     }
 }

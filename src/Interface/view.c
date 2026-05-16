@@ -7,6 +7,7 @@
 #include "propwindow.h"
 #include "pausemenu.h"
 #include "loadmenu.h"
+#include "rules.h"
 #include "ui/playercard.h"
 #include "ui/text.h"
 #include "ui/button.h"
@@ -122,7 +123,113 @@ void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie*
 
 }
 
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm){
+void renderEvenementActif(SDL_Renderer* renderer, TTF_Font* fontNormal,const ContexteJeu* ctx, int winW, int winH) {
+    EvenementInfo ev;
+    bridge_get_evenement(ctx, &ev);
+    if (!ev.actif) return;
+
+    /* Bandeau semi-transparent en haut du plateau */
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 180, 60, 30, 200);
+    SDL_Rect bandeau = { 0, (int)(65.0f * winH / REF_H),(int)(1060.0f * winW / REF_W),(int)(28.0f  * winH / REF_H) };
+    SDL_RenderFillRect(renderer, &bandeau);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+    /* Texte de l'événement */
+    char buf[160];
+    snprintf(buf, sizeof(buf), "EVENEMENT : %s  (%d tour(s) restant(s))", ev.nom, ev.tours_restants);
+    SDL_Color blanc = {255, 240, 220, 255};
+    int lineH = TTF_FontHeight(fontNormal);
+    printTextCentered(renderer, fontNormal, buf, blanc,
+                      bandeau.y + (bandeau.h - lineH) / 2, winW);
+}
+
+
+void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
+                         TTF_Font* fontTitle, const EtatPartie* partie,
+                         ButtonsPack* btn) {
+    int winW, winH;
+    SDL_GetRendererOutputSize(renderer, &winW, &winH);
+
+    /* Fond assombri */
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
+    SDL_Rect full = {0, 0, winW, winH};
+    SDL_RenderFillRect(renderer, &full);
+
+    /* Fenêtre de carte : couleur selon Chance (orange) ou Communauté (violet) */
+    int isComm = (partie->derniereCarte.paquet == 1);
+    SDL_Rect fenetre = {
+        (int)(340.0f * winW / REF_W),
+        (int)(160.0f * winH / REF_H),
+        (int)(600.0f * winW / REF_W),
+        (int)(360.0f * winH / REF_H),
+    };
+
+    /* Fond carte */
+    SDL_SetRenderDrawColor(renderer, 20, 20, 40, 245);
+    SDL_RenderFillRect(renderer, &fenetre);
+
+    /* Bordure colorée */
+    if (isComm) SDL_SetRenderDrawColor(renderer, 160, 80, 220, 255);
+    else        SDL_SetRenderDrawColor(renderer, 220, 160, 30,  255);
+    for (int t = 0; t < 3; t++) {
+        SDL_Rect border = { fenetre.x - t, fenetre.y - t,fenetre.w + 2*t, fenetre.h + 2*t };
+        SDL_RenderDrawRect(renderer, &border);
+    }
+
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+    /* Titre du paquet */
+    SDL_Color couleurPaquet = isComm ? (SDL_Color){200, 140, 255, 255}: (SDL_Color){255, 200, 50,  255};
+    const char* labelPaquet = isComm ? "CAISSE DE COMMUNAUTE" : "CHANCE";
+    int lineH = TTF_FontHeight(fontTitle);
+    printTextCentered(renderer, fontTitle, labelPaquet, couleurPaquet,fenetre.y + 18, winW);
+
+    /* Séparateur */
+    SDL_SetRenderDrawColor(renderer, 100, 100, 130, 255);
+    SDL_RenderDrawLine(renderer, fenetre.x + 20, fenetre.y + lineH + 28,fenetre.x + fenetre.w - 20, fenetre.y + lineH + 28);
+
+    /* Titre de la carte */
+    SDL_Color blanc = {235, 221, 192, 255};
+    int lineHN = TTF_FontHeight(fontNormal);
+    int y = fenetre.y + lineH + 44;
+    printTextCentered(renderer, fontNormal, partie->derniereCarte.titre, blanc, y, winW);
+
+    /* Description */
+    SDL_Color gris = {180, 170, 155, 255};
+    y += lineHN + 14;
+    printTextCentered(renderer, fontNormal, partie->derniereCarte.description, gris, y, winW);
+
+    /* Valeur : vert si gain, rouge si perte/taxe */
+    if (partie->derniereCarte.valeur != 0) {
+        char valBuf[48];
+        int estPerte = (partie->derniereCarte.effet == 1   /* CARTE_PERTE_ECTS */
+                     || partie->derniereCarte.effet == 2); /* CARTE_TAXE_ECO   */
+        if (estPerte)
+            snprintf(valBuf, sizeof(valBuf), "-%d ECTS", partie->derniereCarte.valeur < 0 ? -partie->derniereCarte.valeur : partie->derniereCarte.valeur);
+        else
+            snprintf(valBuf, sizeof(valBuf), "+%d ECTS", partie->derniereCarte.valeur < 0 ? -partie->derniereCarte.valeur : partie->derniereCarte.valeur);
+        SDL_Color couleurVal = estPerte ? (SDL_Color){220, 70, 70, 255}: (SDL_Color){100, 220, 100, 255};
+        y += lineHN + 20;
+        printTextCentered(renderer, fontNormal, valBuf, couleurVal, y, winW);
+    }
+
+    /* Bouton OK */
+    btn->okCarte.rect = (SDL_Rect){
+        (int)(570.0f * winW / REF_W),
+        (int)(460.0f * winH / REF_H),
+        (int)(140.0f * winW / REF_W),
+        (int)(44.0f  * winH / REF_H),
+    };
+    SDL_SetRenderDrawColor(renderer, isComm ? 140 : 200, isComm ? 60 : 140, isComm ? 200 : 20, 255);
+    SDL_RenderFillRect(renderer, &btn->okCarte.rect);
+    SDL_SetRenderDrawColor(renderer, 235, 221, 192, 255);
+    SDL_RenderDrawRect(renderer, &btn->okCarte.rect);
+    printTextCentered(renderer, fontNormal, "OK", blanc,btn->okCarte.rect.y + (btn->okCarte.rect.h - lineHN) / 2, winW);
+}
+
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm){
     
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
@@ -165,6 +272,10 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             renderLoadMenu(renderer, fontTitle, fontNormal, fontButton, lm, tex);
             break;
 
+        case REGLEMENT:
+            renderRulesMenu(renderer, fontTitle, fontNormal, fontButton, rm, tex);
+            break;
+
         case PROPRIETE: {
             EtatJeu plateauActuel = PLATEAU2J;
             if(partie->nbJoueurs==3){ 
@@ -173,6 +284,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
                 plateauActuel=PLATEAU4J;
             }
             renderPlateau(renderer, plateauActuel, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             renderPropWindow(renderer, fontTitle, fontNormal, fontButton, tex, ctx, partie, pb, winW, winH);
             break;
         }
@@ -185,6 +297,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
                 plateauActuel=PLATEAU4J;
             }
             renderPlateau(renderer, plateauActuel, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             renderTradeWindow(renderer, fontTitle, fontNormal, fontButton, tex, ctx, partie, tb, ts, winW, winH);
             break;
         }
@@ -197,15 +310,24 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
         case PLATEAU4J:
         case LANCER:
             renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             break;
 
+        case CARTE: {
+            EtatJeu plateauCarte = PLATEAU2J;
+            if (partie->nbJoueurs == 3) plateauCarte = PLATEAU3J;
+            else if (partie->nbJoueurs == 4) plateauCarte = PLATEAU4J;
+            renderPlateau(renderer, plateauCarte, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
+            renderCartePiochee(renderer, fontNormal, fontTitle, partie, btn);
+            break;
+        }
+
         case PAUSE: {
-            /* Rendu du plateau derrière (fond figé) */
             EtatJeu plateauPause = PLATEAU2J;
             if (partie->nbJoueurs == 3) plateauPause = PLATEAU3J;
             else if (partie->nbJoueurs == 4) plateauPause = PLATEAU4J;
             renderPlateau(renderer, plateauPause, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
-            /* Overlay + menu pause */
             renderPauseMenu(renderer, fontNormal, btn);
             break;
         }

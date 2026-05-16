@@ -19,6 +19,7 @@
 #include "pawn.h"
 #include "pausemenu.h"
 #include "loadmenu.h"
+#include "rules.h"
 
 #define FONT "FONT/fontPixel.ttf"
 
@@ -128,6 +129,9 @@ int main(){
     LoadMenuState lm;
     initLoadMenu(&lm);
 
+    RulesMenuState rm;
+    initRulesMenu(&rm);
+
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,
         &btn.backToMenu, &btn.throwDice, &btn.properties,
@@ -163,9 +167,9 @@ int main(){
         Uint32 delta = now-lastTime;
         lastTime=now;
 
-        handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb, &tb, &ts, pawns, &lm);
+        handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb, &tb, &ts, pawns, &lm, &rm);
         updatePawns(pawns, partie.nbJoueurs, delta);
-        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm);
+        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm, &rm);
     }
 
     TTF_CloseFont(fontNormal);

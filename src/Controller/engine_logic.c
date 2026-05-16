@@ -1,6 +1,6 @@
 
 #include "engine_logic.h"
-#include "game_engine_console.h" // Pour engine_resolve_case (déplacement par carte)
+#include "game_engine.h"
 #include <stdio.h>
  
 #define NB_CASE_PLATEAU 40
@@ -74,7 +74,7 @@ void logic_apply_card_effect(GameContext *ctx, Player *p, Carte *c,
                    plateau->cases[p->position].nom_affichage);
             engine_resolve_case(p, all_players, ctx->properties,
                                 ctx->gares, ctx->compagnies,
-                                plateau, jail, 0, ctx);
+                                plateau, jail, 0);
             break;
         }
  
@@ -90,7 +90,7 @@ void logic_apply_card_effect(GameContext *ctx, Player *p, Carte *c,
                        p->name, cible, plateau->cases[cible].nom_affichage);
                 engine_resolve_case(p, all_players, ctx->properties,
                                     ctx->gares, ctx->compagnies,
-                                    plateau, jail, 0, ctx);
+                                    plateau, jail, 0);
             }
             break;
         }
@@ -135,7 +135,7 @@ void logic_update_global_eco(GameContext *ctx)
 }
  
 
- // Appeler en fin de round (après que tous les joueurs ont joué).
+ // Appeler en fin de round
 void logic_handle_global_events(GameContext *ctx)
 {
     if (!ctx) return;
