@@ -2,9 +2,6 @@
 
 #include <stdio.h>
 
-#define FONT_SIZE_NORMAL 32
-#define FONT_SIZE_TITLE 38  
-#define FONT_SIZE_BUTTON 22
 
 void ScaleText(Text* t, float ratioX, float ratioY){
     t->x    = (int)(t->refX    * ratioX);

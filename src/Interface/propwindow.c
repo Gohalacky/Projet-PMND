@@ -17,23 +17,21 @@
 #define BTN_W 180
 #define BTN_H 40
 
-/* Liste des propriétés possédées */
-#define PROP_LABEL_Y  205   
-#define PROP_ROW_H     28   
+#define PROP_LABEL_Y 205   
+#define PROP_ROW_H 28   
 
-/* Boutons de scroll de la liste */
-#define PROP_SCR_W    28
-#define PROP_SCR_H    22
-#define PROP_SCR_X   (WIN_X + WIN_W - 44)
+#define PROP_SCR_W 28
+#define PROP_SCR_H 22
+#define PROP_SCR_X (WIN_X + WIN_W - 44)
 #define PROP_SCR_UP_Y (PROP_LABEL_Y + 22)
 #define PROP_SCR_DN_Y (PROP_LABEL_Y + 22 + PROP_LIST_VISIBLE * PROP_ROW_H + 4)
 
 void initPropButtons(PropButtonsPack* pb) {
-    pb->fermer           = (Button){ .ref = {WIN_X + WIN_W - 60,          WIN_Y + 40,          36,       36    } };
-    pb->acheter          = (Button){ .ref = {WIN_X + 30,                  WIN_Y + WIN_H - 150, BTN_W,    BTN_H } };
-    pb->construire       = (Button){ .ref = {WIN_X + 30,                  WIN_Y + WIN_H - 280, BTN_W,    BTN_H } };
-    pb->construireSocial = (Button){ .ref = {WIN_X + 230,                 WIN_Y + WIN_H - 280, BTN_W,    BTN_H } };
-    pb->construireParc   = (Button){ .ref = {WIN_X + 430,                 WIN_Y + WIN_H - 280, BTN_W,    BTN_H } };
+    pb->fermer           = (Button){ .ref = {WIN_X + WIN_W - 60,  WIN_Y + 40,          36,       36    } };
+    pb->acheter          = (Button){ .ref = {WIN_X + 30,WIN_Y + WIN_H - 150, BTN_W,    BTN_H } };
+    pb->construire       = (Button){ .ref = {WIN_X + 30,WIN_Y + WIN_H - 280, BTN_W,    BTN_H } };
+    pb->construireSocial = (Button){ .ref = {WIN_X + 230,WIN_Y + WIN_H - 280, BTN_W,    BTN_H } };
+    pb->construireParc   = (Button){ .ref = {WIN_X + 430,WIN_Y + WIN_H - 280, BTN_W,    BTN_H } };
     pb->echanger         = (Button){ .ref = {WIN_X + WIN_W - BTN_W - 30,  WIN_Y + WIN_H - 150, BTN_W,    BTN_H } };
     pb->propScrollUp     = (Button){ .ref = {PROP_SCR_X, PROP_SCR_UP_Y,   PROP_SCR_W, PROP_SCR_H} };
     pb->propScrollDown   = (Button){ .ref = {PROP_SCR_X, PROP_SCR_DN_Y,   PROP_SCR_W, PROP_SCR_H} };
@@ -71,9 +69,7 @@ static void drawButton(SDL_Renderer* renderer, TTF_Font* font, const Button* btn
     if (font && label) {
         int tw, th;
         TTF_SizeUTF8(font, label, &tw, &th);
-        printText(renderer, font, label, textColor,
-                  btn->rect.x + (btn->rect.w - tw) / 2,
-                  btn->rect.y + (btn->rect.h - th) / 2);
+        printText(renderer, font, label, textColor,btn->rect.x + (btn->rect.w - tw) / 2,btn->rect.y + (btn->rect.h - th) / 2);
     }
 }
 
@@ -94,29 +90,24 @@ void renderPropWindow(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fon
     SDL_Color arrow_off= { 80,  70,  60, 180};
     SDL_Color row_bg   = { 42,  33,  22, 200};
 
-    /* Overlay sombre */
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 160);
     SDL_Rect overlay = {0, 0, winW, winH};
     SDL_RenderFillRect(renderer, &overlay);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
-    /* Image de fond */
     SDL_Rect fondRect = {(int)(FOND_X*rx),(int)(FOND_Y*ry),(int)(FOND_W*rx),(int)(FOND_H*ry)};
     SDL_RenderCopy(renderer, tex->fondProp, NULL, &fondRect);
 
-    /* Titre */
     int titleY = (int)((WIN_Y + TITLE_H - 30) * ry);
     printTextCentered(renderer, fontTitle, "Gestion des proprietes", noir, titleY, winW);
 
-    /* Bouton fermer */
     drawButton(renderer, fontNormal, &pb->fermer, "X", rouge, blanc);
 
     int contentY = (int)((WIN_Y + TITLE_H + 40) * ry);
     int leftX    = (int)((WIN_X + 30) * rx);
     char buf[128];
 
-    /* --- Case actuelle --- */
     char propName[50];
     int  prix = 0, credits = 0, owner = 0;
     int  hasProp = bridge_get_current_prop_info(ctx, partie, propName, &prix, &credits, &owner);
@@ -153,7 +144,6 @@ void renderPropWindow(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fon
         drawButton(renderer, fontSmall, &pb->acheter, "Acheter", gris, blanc);
     }
 
-    /* --- Liste des propriétés possédées avec scroll --- */
     int labelY  = (int)(PROP_LABEL_Y * ry);
     int rowH    = (int)(PROP_ROW_H   * ry);
 
@@ -162,7 +152,6 @@ void renderPropWindow(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fon
     PropInfo owned[NB_PROPRIETE];
     int nbOwned = bridge_get_owned_props(ctx, partie, owned, NB_PROPRIETE);
 
-    /* Borner le scroll si le nombre de propriétés a diminué */
     if (pb->propScroll > 0 && pb->propScroll + PROP_LIST_VISIBLE > nbOwned)
         pb->propScroll = (nbOwned > PROP_LIST_VISIBLE) ? nbOwned - PROP_LIST_VISIBLE : 0;
 
@@ -183,7 +172,6 @@ void renderPropWindow(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fon
             printText(renderer, fontSmall, buf, noir, leftX, ty);
         }
 
-        /* Compteur */
         if (fontSmall && nbOwned > PROP_LIST_VISIBLE) {
             int shown_end = pb->propScroll + PROP_LIST_VISIBLE;
             if (shown_end > nbOwned) shown_end = nbOwned;
@@ -196,7 +184,6 @@ void renderPropWindow(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fon
                       pb->propScrollUp.rect.y + (pb->propScrollUp.rect.h - th) / 2);
         }
 
-        /* Boutons scroll */
         int canUp   = (pb->propScroll > 0);
         int canDown = (pb->propScroll + PROP_LIST_VISIBLE < nbOwned);
         drawButton(renderer, fontSmall, &pb->propScrollUp,
@@ -207,7 +194,6 @@ void renderPropWindow(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fon
                    canDown ? arrow_on : arrow_off);
     }
 
-    /* --- Boutons construction --- */
     int anyBuildable = bridge_has_buildable(ctx, partie);
     pb->construire.disabled       = !anyBuildable;
     pb->construireSocial.disabled = !anyBuildable;
@@ -218,15 +204,12 @@ void renderPropWindow(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fon
     drawButton(renderer, fontSmall, &pb->construireSocial, "Social", bgBuild, blanc);
     drawButton(renderer, fontSmall, &pb->construireParc,   "Parc",   bgBuild, blanc);
 
-    /* Bouton echanger */
     SDL_Color bleu = {60, 100, 180, 220};
     drawButton(renderer, fontSmall, &pb->echanger, "Echanger", bleu, blanc);
 }
 
-void handlePropClick(int x, int y, EtatJeu* state, PropButtonsPack* pb,
-                     ContexteJeu* ctx, EtatPartie* partie, TradeState* ts) {
+void handlePropClick(int x, int y, EtatJeu* state, PropButtonsPack* pb,ContexteJeu* ctx, EtatPartie* partie, TradeState* ts) {
 
-    /* Scroll liste propriétés */
     PropInfo owned[NB_PROPRIETE];
     int nbOwned = bridge_get_owned_props(ctx, partie, owned, NB_PROPRIETE);
 
@@ -240,14 +223,12 @@ void handlePropClick(int x, int y, EtatJeu* state, PropButtonsPack* pb,
         return;
     }
 
-    /* Echanger */
     if (isClicked(&pb->echanger, x, y)) {
         bridge_trade_init(ctx, partie, ts);
         *state = TRADE;
         return;
     }
 
-    /* Fermer */
     if (isClicked(&pb->fermer, x, y)) {
         switch (partie->nbJoueurs) {
             case 2: *state = PLATEAU2J; break;
@@ -257,13 +238,11 @@ void handlePropClick(int x, int y, EtatJeu* state, PropButtonsPack* pb,
         return;
     }
 
-    /* Acheter */
     if (isClicked(&pb->acheter, x, y) && !pb->acheter.disabled) {
         bridge_buy_current(ctx, partie);
         return;
     }
 
-    /* Construire */
     if (isClicked(&pb->construire, x, y) && !pb->construire.disabled) {
         bridge_build(ctx, partie, 1);
     } else if (isClicked(&pb->construireSocial, x, y) && !pb->construireSocial.disabled) {

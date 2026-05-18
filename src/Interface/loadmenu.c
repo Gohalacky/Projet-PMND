@@ -86,16 +86,16 @@ static int hitRef(int x, int y, int refX, int refY, int refW, int refH) {
 void initLoadMenu(LoadMenuState* lm) {
     memset(lm, 0, sizeof(*lm));
     lm->selected = -1;
-    lm->scroll   =  0;
-    lm->count    = savegame_list(lm->saves);
+    lm->scroll=  0;
+    lm->count= savegame_list(lm->saves);
 
-    lm->btnScrollUp   = (Button){ .ref = { BTN_SCR_X, BTN_UP_Y,   BTN_SCR_W, BTN_SCR_H } };
+    lm->btnScrollUp= (Button){ .ref = { BTN_SCR_X, BTN_UP_Y,   BTN_SCR_W, BTN_SCR_H } };
     lm->btnScrollDown = (Button){ .ref = { BTN_SCR_X, BTN_DOWN_Y, BTN_SCR_W, BTN_SCR_H } };
-    lm->btnBack       = (Button){ .ref = { BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H } };
+    lm->btnBack= (Button){ .ref = { BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H } };
 
-    ScaleButton(&lm->btnScrollUp,   g_rx, g_ry);
+    ScaleButton(&lm->btnScrollUp,g_rx, g_ry);
     ScaleButton(&lm->btnScrollDown, g_rx, g_ry);
-    ScaleButton(&lm->btnBack,       g_rx, g_ry);
+    ScaleButton(&lm->btnBack,g_rx, g_ry);
 }
 
 
@@ -105,7 +105,7 @@ void scaleLoadMenu(LoadMenuState* lm, float rx, float ry) {
     g_ry = ry;
     ScaleButton(&lm->btnScrollUp,   rx, ry);
     ScaleButton(&lm->btnScrollDown, rx, ry);
-    ScaleButton(&lm->btnBack,       rx, ry);
+    ScaleButton(&lm->btnBack,rx, ry);
 }
 
 

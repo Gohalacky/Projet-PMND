@@ -43,7 +43,9 @@ void renderPlayerCard(SDL_Renderer *renderer, TTF_Font *font, const Joueur *j, i
     snprintf(buffer,sizeof(buffer), "CR : %d",j->credits);
     printText(renderer, scaledFont, buffer, blanc,offsetCrEco,baseY+lineH*1.7);
 
-    snprintf(buffer,sizeof(buffer), "Eco : %1.f",j->noteEco);
+    int gradeIdx = (int)j->noteEco;
+    char gradeLetter = (gradeIdx >= 1 && gradeIdx <= 6) ? ('A' + gradeIdx - 1) : '?';
+    snprintf(buffer, sizeof(buffer), "Eco : %c", gradeLetter);
     printText(renderer, scaledFont, buffer, blanc,offsetCrEco,baseY+lineH*2.9);
 
     if(scaledFont!=font){

@@ -6,6 +6,7 @@
 #include "pawn.h"
 #include "anim.h"
 #include "propwindow.h"
+#include "prisonwindow.h"
 #include "pausemenu.h"
 #include "loadmenu.h"
 #include "rules.h"
@@ -47,7 +48,7 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
             snprintf(bufferTour, sizeof(bufferTour), "%d/infini", partie->tourActuel);
         }
         SDL_Color couleur = {235, 221, 192, 255};
-        printText(renderer, fontNormal, bufferTour, couleur, texts->indNbTurn.x, texts->indNbTurn.y + lineH + 12);
+        printText(renderer, fontNormal, bufferTour, couleur, texts->indNbTurn.x, texts->indNbTurn.y + lineH +5);
  
     const CardRef* cards;
     switch (partie->nbJoueurs) {
@@ -92,18 +93,25 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
         SDL_RenderCopy(renderer, tex->throws, NULL, &fenetreLancer);
 
         SDL_Color blanc = {235,221,192,255};
+        SDL_Color rouge = {255,72,41,255};
         if(ctx->dernier_de>0){
             char bufferDe[8];
             snprintf(bufferDe, sizeof(bufferDe), "%d",ctx->dernier_de);
-            printTextCentered(renderer, fontNormal, bufferDe, blanc, fenetreLancer.y+fenetreLancer.h/3,winW);
+            printTextCentered(renderer, fontNormal, bufferDe, blanc, fenetreLancer.y+fenetreLancer.h/3-100,winW);
         }
 
+        if (bridge_is_double(ctx))
+            printTextCentered(renderer, fontNormal, "DOUBLE !", rouge,fenetreLancer.y + (int)(fenetreLancer.h * 0.50f)+100, winW);
+
         char bufferCase[64];
-        snprintf(bufferCase, sizeof(bufferCase), "Case : %s",bridge_get_case_joueur_actif(ctx, partie));
-        printTextCentered(renderer, fontNormal, bufferCase, blanc,fenetreLancer.y + (int)(fenetreLancer.h * 0.65f),winW);
+        if (bridge_is_in_jail(ctx, partie))
+            snprintf(bufferCase, sizeof(bufferCase), "Case : En prison !");
+        else
+            snprintf(bufferCase, sizeof(bufferCase), "Case : %s", bridge_get_case_joueur_actif(ctx, partie));
+        printTextCentered(renderer, fontNormal, bufferCase, blanc,fenetreLancer.y + (int)(fenetreLancer.h * 0.65f)+10,winW);
     }
 
-    renderPauseButton(renderer, fontButton, btn);
+    renderPauseButton(renderer, btn);
 }
 
 void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie* partie, ContexteJeu* ctx){
@@ -119,7 +127,10 @@ void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie*
     printTextCentered(renderer, font, bufferJoueur, blanc, 10*winH/REF_H, winW);
 
     char bufferCase[64];
-    snprintf(bufferCase, sizeof(bufferCase), "Case : %s", bridge_get_case_joueur_actif(ctx, partie));
+    if (bridge_is_in_jail(ctx, partie))
+        snprintf(bufferCase, sizeof(bufferCase), "Case : En prison !");
+    else
+        snprintf(bufferCase, sizeof(bufferCase), "Case : %s", bridge_get_case_joueur_actif(ctx, partie));
     printTextCentered(renderer, font, bufferCase, blanc, 40*winH/REF_H, winW);
 
 
@@ -208,13 +219,29 @@ void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
         char valBuf[48];
         int estPerte = (partie->derniereCarte.effet == 1   /* CARTE_PERTE_ECTS */
                      || partie->derniereCarte.effet == 2); /* CARTE_TAXE_ECO   */
+        int valAbs = partie->derniereCarte.valeur < 0 ? -partie->derniereCarte.valeur : partie->derniereCarte.valeur;
         if (estPerte)
-            snprintf(valBuf, sizeof(valBuf), "-%d ECTS", partie->derniereCarte.valeur < 0 ? -partie->derniereCarte.valeur : partie->derniereCarte.valeur);
+            snprintf(valBuf, sizeof(valBuf), "-%d ECTS", valAbs);
         else
-            snprintf(valBuf, sizeof(valBuf), "+%d ECTS", partie->derniereCarte.valeur < 0 ? -partie->derniereCarte.valeur : partie->derniereCarte.valeur);
+            snprintf(valBuf, sizeof(valBuf), "+%d ECTS", valAbs);
         SDL_Color couleurVal = estPerte ? (SDL_Color){220, 70, 70, 255}: (SDL_Color){100, 220, 100, 255};
         y += lineHN + 20;
         printTextCentered(renderer, fontNormal, valBuf, couleurVal, y, winW);
+
+        /* Mention du bonus/malus éco pour les taxes écologiques */
+        if (partie->derniereCarte.effet == 2) { /* CARTE_TAXE_ECO */
+            EcoGrade grade = (EcoGrade)(int)partie->joueurs[partie->joueursActif].noteEco;
+            int reel = calcul_taxe_ecologique(valAbs, grade);
+            char ecoBuf[64];
+            if (reel != valAbs)
+                snprintf(ecoBuf, sizeof(ecoBuf), "(Taxe reelle : %d ECTS - bonus eco Grade %c)",
+                         reel, 'A' + (int)grade - 1);
+            else
+                snprintf(ecoBuf, sizeof(ecoBuf), "(Taxe pleine - Grade %c)", 'A' + (int)grade - 1);
+            SDL_Color grisEco = {160, 200, 160, 255};
+            y += lineHN + 6;
+            printTextCentered(renderer, fontNormal, ecoBuf, grisEco, y, winW);
+        }
     }
 
     /* Bouton OK */
@@ -231,7 +258,7 @@ void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
     printTextCentered(renderer, fontNormal, "OK", blanc,btn->okCarte.rect.y + (btn->okCarte.rect.h - lineHN) / 2, winW);
 }
 
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm, Animation* diceAnim){
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm, Animation* diceAnim, PrisonButtonsPack* pb_prison){
     
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
@@ -259,7 +286,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             printTextResponsive(renderer, fontNormal, &texts->numbTurns);
             printTextResponsive(renderer, fontNormal, &texts->event);
 
-            renderCounter(renderer, counterJoueurs, fontTitle, 634, 176);
+            renderCounter(renderer, counterJoueurs, fontTitle);
 
             renderTextBox(renderer, fontNormal, &tboxes->initialMoney);
             renderTextBox(renderer, fontNormal, &tboxes->numbTurns);
@@ -323,6 +350,16 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
                 renderAnim(renderer, diceAnim, 0, 0, &dst);
             }
             break;
+
+        case PRISON: {
+            EtatJeu plateauPrison = PLATEAU2J;
+            if (partie->nbJoueurs == 3) plateauPrison = PLATEAU3J;
+            else if (partie->nbJoueurs == 4) plateauPrison = PLATEAU4J;
+            renderPlateau(renderer, plateauPrison, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
+            renderPrisonWindow(renderer, fontTitle, fontNormal, ctx, partie, pb_prison, winW, winH);
+            break;
+        }
 
         case CARTE: {
             EtatJeu plateauCarte = PLATEAU2J;

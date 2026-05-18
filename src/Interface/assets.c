@@ -16,15 +16,15 @@ int loadTextures(SDL_Renderer* renderer, TexturesPack* tex){
     tex->menuProperties         = IMG_LoadTexture(renderer, "assets/IMAGE/Menu_interne.png");
     tex->test                   = IMG_LoadTexture(renderer, "assets/IMAGE/TEST.png");
 
-    tex->maison[0]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maison x1.png");
-    tex->maison[1]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maison x2.png");
-    tex->maison[2]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maison x3.png");
-    tex->immeuble[0] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeuble x1.png");
-    tex->immeuble[1] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeuble x2.png");
-    tex->immeuble[2] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeuble x3.png");
-    tex->parc[0]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parc x1.png");
-    tex->parc[1]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parc x2.png");
-    tex->parc[2]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parc x3.png");
+    tex->maison[0]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maisonx1.png");
+    tex->maison[1]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maisonx2.png");
+    tex->maison[2]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maisonx3.png");
+    tex->immeuble[0] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeublex1.png");
+    tex->immeuble[1] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeublex2.png");
+    tex->immeuble[2] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeublex3.png");
+    tex->parc[0]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parcx1.png");
+    tex->parc[1]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parcx2.png");
+    tex->parc[2]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parcx3.png");
     tex->fondProp    = IMG_LoadTexture(renderer, "assets/IMAGE/Fond_prop.png");
 
     tex->pion[0]=IMG_LoadTexture(renderer, "assets/IMAGE/pion1.png");

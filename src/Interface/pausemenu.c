@@ -2,16 +2,15 @@
 #include "ui/text.h"
 #include "ui/button.h"
 
-#define BTN_PAUSE_X   1220
-#define BTN_PAUSE_Y      5
-#define BTN_PAUSE_W     38
-#define BTN_PAUSE_H     38
+#define BTN_PAUSE_X 1220
+#define BTN_PAUSE_Y 5
+#define BTN_PAUSE_W 38
+#define BTN_PAUSE_H 38
 
-
-#define MENU_W  380
-#define MENU_H  220
-#define MENU_X  ((1280 - MENU_W) / 2)
-#define MENU_Y  ((720  - MENU_H) / 2)
+#define MENU_W 380
+#define MENU_H 220
+#define MENU_X ((1280 - MENU_W) / 2)
+#define MENU_Y ((720  - MENU_H) / 2)
 
 
 #define BTN_W   300
@@ -70,7 +69,7 @@ static void drawMenuButton(SDL_Renderer* renderer, TTF_Font* font,const Button* 
     }
 }
 
-void renderPauseButton(SDL_Renderer* renderer, TTF_Font* font,const ButtonsPack* btn) {
+void renderPauseButton(SDL_Renderer* renderer, const ButtonsPack* btn) {
     SDL_Color bg     = {50,  40,  30, 210};
     SDL_Color border = {140, 120, 90, 255};
     drawRoundedRect(renderer, &btn->pauseMenu.rect, bg, border);
@@ -92,7 +91,6 @@ void renderPauseButton(SDL_Renderer* renderer, TTF_Font* font,const ButtonsPack*
         SDL_RenderFillRect(renderer, &bar);
     }
 
-    (void)font; 
 }
 
 void renderPauseMenu(SDL_Renderer* renderer, TTF_Font* font,const ButtonsPack* btn) {

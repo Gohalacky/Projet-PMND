@@ -23,9 +23,7 @@ static const SDL_Color C_NOIR     = { 60,  45,  35, 255};
 static const SDL_Color C_VERT     = { 80, 160,  80, 220};
 static const SDL_Color C_ROUGE    = {180,  60,  60, 220};
 static const SDL_Color C_GRIS     = {120, 110, 100, 180};
-static const SDL_Color C_OR       = {200, 165,  40, 220};
 static const SDL_Color C_BLEU     = { 60, 100, 180, 220};
-/* C_DISABLED supprimé (non utilisé) */
 
 static void _draw_button(SDL_Renderer* r, TTF_Font* font,const Button* btn, const char* label,SDL_Color bg, SDL_Color fg) {
     SDL_SetRenderDrawBlendMode(r, SDL_BLENDMODE_BLEND);
@@ -162,7 +160,7 @@ static void _render_build_offer(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* 
     }
 
     TradeAssetInfo assets[TRADE_MAX_ASSETS];
-    int nb = bridge_trade_get_assets(ctx, joueur_idx, assets, TRADE_MAX_ASSETS);
+    int nb = bridge_trade_get_assets(ctx, joueur_idx, assets, TRADE_MAX_ASSETS, ts);
     tb->nb_asset_btns = nb;
 
     int lineH = 46;
@@ -183,12 +181,11 @@ static void _render_build_offer(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* 
         tb->asset_btn[i].rect.h = (int)(40 * ry);
 
         int sel = bridge_trade_is_selected(ts, &assets[i]);
-        SDL_Color bg = sel ? C_OR : C_GRIS;
+        SDL_Color bg = sel ? C_BLEU : C_GRIS;
 
         const char* type_str = (assets[i].type == 1) ? "[T]"
                              : (assets[i].type == 2) ? "[G]" : "[C]";
-        snprintf(buf, sizeof(buf), "%s %-20s  %d ECTS %s",
-                 type_str, assets[i].name, assets[i].value, sel ? "[SELECTIONNE]" : "");
+        snprintf(buf, sizeof(buf), "%s %-20s  %d ECTS",type_str, assets[i].name, assets[i].value);
         _draw_button(r, fontSmall, &tb->asset_btn[i], buf, bg, C_BLANC);
     }
 }
@@ -302,8 +299,8 @@ static void _render_recap(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* fontSm
 /* ------ Phase 5 : résultat ------ */
 static void _render_done(SDL_Renderer* r, TTF_Font* fontNormal, TTF_Font* fontSmall,
                           const TradeState* ts, float rx, float ry) {
-    int cx = (int)lround((WIN_X + WIN_W / 2) * rx);
-    int cy = (int)lround((WIN_Y + WIN_H / 2 - 30) * ry);
+    int cx = (int)lround((WIN_X + WIN_W / 2.0f) * rx);
+    int cy = (int)lround((WIN_Y + WIN_H / 2.0f - 30) * ry);
 
     SDL_Color col = (ts->accepted == 1) ? C_VERT : C_ROUGE;
     const char* titre = (ts->accepted == 1) ? "Echange effectue !"
@@ -330,7 +327,7 @@ void renderTradeWindow(SDL_Renderer* renderer,TTF_Font* fontTitle, TTF_Font* fon
     _draw_background(renderer, tex, winW, winH, rx, ry);
 
     /* Titre */
-    int titleY = (int)lround((WIN_Y + TITLE_H - 60 / 2) * ry);
+    int titleY = (int)lround((WIN_Y + TITLE_H - 60 / 2.0f) * ry);
     printTextCentered(renderer, fontTitle, "Salon de negociation", C_NOIR, titleY, winW);
 
     /* Bouton fermer */
@@ -415,7 +412,7 @@ void handleTradeClick(int x, int y,EtatJeu* state,TradeButtonsPack* tb,ContexteJ
                              ? ts->joueur_actif_idx : ts->joueur_cible_idx;
 
             TradeAssetInfo assets[TRADE_MAX_ASSETS];
-            int nb = bridge_trade_get_assets(ctx, joueur_idx, assets, TRADE_MAX_ASSETS);
+            int nb = bridge_trade_get_assets(ctx, joueur_idx, assets, TRADE_MAX_ASSETS, ts);
 
             for (int i = 0; i < nb && i < tb->nb_asset_btns; i++) {
                 if (isClicked(&tb->asset_btn[i], x, y)) {
