@@ -1201,6 +1201,124 @@ static void test_auction_system(void **state) {
     free(p1); free(p2); free(p3); free(p4);
 }
 
+static void test_auction_system_comp(void **state) {
+    (void) state;
+    // 1. --- PRÉPARATION DU JEU ---
+    Player *p1 = init_player("Alice (Refuse)", 1);
+    Player *p2 = init_player("Bob", 2);
+    Player *p3 = init_player("Charlie", 3);
+    Player *p4 = init_player("David", 4);
+    
+    p2->credit = 1000;
+    p3->credit = 100; // Charlie est pauvre pour tester la sécurité
+    
+    Player *tous_les_joueurs[4] = {p1, p2, p3, p4};
+
+    Compagnies *prop = calloc(1, sizeof(Compagnies));
+    strcpy(prop->name, "Rue de la Soif");
+    prop->owner = 0; // Appartient à la banque
+
+    // 2. --- INITIALISATION ---
+    // Alice (p1) tombe dessus et refuse de l'acheter.
+    AuctionState *auction = init_auction_comp(prop, p1, tous_les_joueurs, 4);
+
+    assert_non_null(auction);
+    assert_int_equal(auction->players_left, 3); // 4 joueurs - Alice = 3
+    assert_int_equal(auction->current_bid, 10);
+    assert_ptr_equal(auction->comp_item, prop);
+    assert_null(auction->gar_item);
+
+    // Alice essaie de parier (doit échouer car exclue)
+    assert_int_equal(process_bid(auction, p1, 20), 0);
+
+    // 3. --- BATAILLE D'ENCHÈRES ---
+    // Bob propose 50 (Succès)
+    assert_int_equal(process_bid(auction, p2, 50), 1);
+    assert_ptr_equal(auction->highest_bidder, p2);
+
+    // Charlie propose 20 (Échec : trop bas)
+    assert_int_equal(process_bid(auction, p3, 20), 0);
+    
+    // Charlie propose 200 (Échec : il n'a que 100 crédits)
+    assert_int_equal(process_bid(auction, p3, 200), 0);
+
+    // 4. --- ABANDONS ---
+    fold_player(auction, p3); // Charlie se couche
+    fold_player(auction, p4); // David se couche
+    assert_int_equal(auction->players_left, 1); // Il ne reste que Bob !
+
+    // 5. --- FINALISATION ---
+    finalize_auction(auction);
+
+    // Vérifications : Bob doit avoir payé 50 ECTS et reçu la carte
+    assert_int_equal(p2->credit, 950); // 1000 - 50
+    assert_int_equal(prop->owner, 2);  // Appartient maintenant à Bob
+
+    // 6. --- NETTOYAGE ---
+    free(auction);
+    free(prop);
+    free(p1); free(p2); free(p3); free(p4);
+}
+
+static void test_auction_system_gar(void **state) {
+    (void) state;
+    // 1. --- PRÉPARATION DU JEU ---
+    Player *p1 = init_player("Alice (Refuse)", 1);
+    Player *p2 = init_player("Bob", 2);
+    Player *p3 = init_player("Charlie", 3);
+    Player *p4 = init_player("David", 4);
+    
+    p2->credit = 1000;
+    p3->credit = 100; // Charlie est pauvre pour tester la sécurité
+    
+    Player *tous_les_joueurs[4] = {p1, p2, p3, p4};
+
+    Gares *prop = calloc(1, sizeof(Gares));
+    strcpy(prop->name, "Rue de la Soif");
+    prop->owner = 0; // Appartient à la banque
+
+    // 2. --- INITIALISATION ---
+    // Alice (p1) tombe dessus et refuse de l'acheter.
+    AuctionState *auction = init_auction_gar(prop, p1, tous_les_joueurs, 4);
+
+    assert_non_null(auction);
+    assert_int_equal(auction->players_left, 3); // 4 joueurs - Alice = 3
+    assert_int_equal(auction->current_bid, 10);
+    assert_ptr_equal(auction->gar_item, prop);
+    assert_null(auction->comp_item);
+
+    // Alice essaie de parier (doit échouer car exclue)
+    assert_int_equal(process_bid(auction, p1, 20), 0);
+
+    // 3. --- BATAILLE D'ENCHÈRES ---
+    // Bob propose 50 (Succès)
+    assert_int_equal(process_bid(auction, p2, 50), 1);
+    assert_ptr_equal(auction->highest_bidder, p2);
+
+    // Charlie propose 20 (Échec : trop bas)
+    assert_int_equal(process_bid(auction, p3, 20), 0);
+    
+    // Charlie propose 200 (Échec : il n'a que 100 crédits)
+    assert_int_equal(process_bid(auction, p3, 200), 0);
+
+    // 4. --- ABANDONS ---
+    fold_player(auction, p3); // Charlie se couche
+    fold_player(auction, p4); // David se couche
+    assert_int_equal(auction->players_left, 1); // Il ne reste que Bob !
+
+    // 5. --- FINALISATION ---
+    finalize_auction(auction);
+
+    // Vérifications : Bob doit avoir payé 50 ECTS et reçu la carte
+    assert_int_equal(p2->credit, 950); // 1000 - 50
+    assert_int_equal(prop->owner, 2);  // Appartient maintenant à Bob
+
+    // 6. --- NETTOYAGE ---
+    free(auction);
+    free(prop);
+    free(p1); free(p2); free(p3); free(p4);
+}
+
 int main(void) {
     const struct CMUnitTest tests[] = {
         //property
@@ -1246,7 +1364,9 @@ int main(void) {
         cmocka_unit_test(test_tours_in_jail),
         cmocka_unit_test(test_pay_to_get_out),
         //voe
-        cmocka_unit_test(test_auction_system)
+        cmocka_unit_test(test_auction_system),
+        cmocka_unit_test(test_auction_system_comp),
+        cmocka_unit_test(test_auction_system_gar)
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);

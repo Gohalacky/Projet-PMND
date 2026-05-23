@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall -Wextra -Werror -std=c11 -g -I. -IInterface -IModele -IControlleur $(shell sdl2-config --cflags)
+CFLAGS  = -Wall -Wextra -Werror -std=c11 -g -O0 --coverage -I. -IInterface -IModele -IControlleur $(shell sdl2-config --cflags)
 LDFLAGS = -lcmocka
 LIBS    = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf
 
@@ -60,13 +60,13 @@ CONTROLLEUR = controlleur
 all: $(TARGET)
 
 $(TARGET): $(ALL_OBJ)
-	$(CC) $^ -o $@ $(LIBS)
+	$(CC) $^ -o $@ --coverage $(LIBS)
 	@echo "✔  Compilation réussie → ./$(TARGET)"
 
 test: $(MOD_DIR)/test.o $(OBJ_COMMON)
 	$(CC) $(CFLAGS) $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS)
 
-test_cartes: $(MOD_DIR)/main_test_cartes.o $(OBJ_COMMON)
+test_cartes: $(MOD_DIR)/test_cartes_evenements.o $(OBJ_COMMON)
 	$(CC) $(CFLAGS) $^ -o $(TEST_CARTES) $(LDFLAGS) $(LIBS)
 
 controlleur: $(CTRL_DIR)/main.o $(OBJ_CTRL_CONSOLE) $(OBJ_COMMON)
@@ -93,12 +93,23 @@ doc:
 	@echo "Documentation générée dans docs/html/"
 	xdg-open docs/html/index.html
 
+coverage: run_unit_tests run_test
+	gcovr -r . --html-details -o rapport_global.html
+	firefox rapport_global.html &
+
 clean:
 	rm -f $(ALL_OBJ) $(MOD_DIR)/test.o $(MOD_DIR)/main_test_cartes.o $(CTRL_DIR)/main.o $(CTRL_DIR)/game_engine_console.o $(CTRL_DIR)/engine_logic.o
 	rm -f $(TARGET) $(TEST_EXEC) $(TEST_CARTES) $(CONTROLLEUR)
+	rm -f Modele/*.o
+	rm -f Modele/*.gcno
+	rm -f Interface/*.gcno
+	rm -f Controlleur/*.gcno
+	rm -f Modele/*.gcda
+	rm -f Interface/*.gcda
+	rm -f Controlleur/*.gcda
 	@echo "✔  Nettoyage terminé"
 
 mrproper: clean
-	rm -rf docs/
+	rm -rf docs/ *.gcov *.html *.css 
 
 .PHONY: all run run_unit_tests run_test run_controlleur valgrind doc clean mrproper
