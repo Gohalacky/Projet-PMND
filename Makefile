@@ -67,6 +67,7 @@ CONTROLLEUR = $(BIN_DIR)/controlleur
 all: $(TARGET)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(ALL_OBJ)
