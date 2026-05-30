@@ -15,8 +15,8 @@
 
 #define LIST_X       (PANEL_X + 30)
 #define LIST_Y       (PANEL_Y + 90)
-#define ROW_H         66      
-#define ROW_LABEL_W  580   
+#define ROW_H         66
+#define ROW_LABEL_W  580
 #define ROW_LABEL_H   50
 
 #define BTN_LOAD_W   120
@@ -26,12 +26,6 @@
 
 #define BTN_LOAD_X  (LIST_X + ROW_LABEL_W + 18)
 #define BTN_DEL_X   (BTN_LOAD_X + BTN_LOAD_W + BTN_GAP)
-
-#define BTN_SCR_W    40
-#define BTN_SCR_H    40
-#define BTN_SCR_X   (PANEL_X + PANEL_W - 55)
-#define BTN_UP_Y    (LIST_Y - 48)
-#define BTN_DOWN_Y  (LIST_Y + LOAD_MAX_VISIBLE * ROW_H + 8)
 
 #define BTN_BACK_W  160
 #define BTN_BACK_H   46
@@ -86,42 +80,30 @@ static int hitRef(int x, int y, int refX, int refY, int refW, int refH) {
 void initLoadMenu(LoadMenuState* lm) {
     memset(lm, 0, sizeof(*lm));
     lm->selected = -1;
-    lm->scroll=  0;
-    lm->count= savegame_list(lm->saves);
+    lm->scroll = 0;
+    lm->count = savegame_list(lm->saves);
 
-    lm->btnScrollUp= (Button){ .ref = { BTN_SCR_X, BTN_UP_Y,   BTN_SCR_W, BTN_SCR_H } };
-    lm->btnScrollDown = (Button){ .ref = { BTN_SCR_X, BTN_DOWN_Y, BTN_SCR_W, BTN_SCR_H } };
-    lm->btnBack= (Button){ .ref = { BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H } };
-
-    ScaleButton(&lm->btnScrollUp,g_rx, g_ry);
-    ScaleButton(&lm->btnScrollDown, g_rx, g_ry);
-    ScaleButton(&lm->btnBack,g_rx, g_ry);
+    lm->btnBack = (Button){ .ref = { BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H } };
+    ScaleButton(&lm->btnBack, g_rx, g_ry);
 }
-
-
 
 void scaleLoadMenu(LoadMenuState* lm, float rx, float ry) {
     g_rx = rx;
     g_ry = ry;
-    ScaleButton(&lm->btnScrollUp,   rx, ry);
-    ScaleButton(&lm->btnScrollDown, rx, ry);
-    ScaleButton(&lm->btnBack,rx, ry);
+    ScaleButton(&lm->btnBack, rx, ry);
 }
 
+void handleLoadMenuScroll(LoadMenuState* lm, int delta) {
+    if (delta > 0) {
+        if (lm->scroll > 0) lm->scroll--;
+    } else if (delta < 0) {
+        if (lm->scroll + LOAD_MAX_VISIBLE < lm->count) lm->scroll++;
+    }
+}
 
 void handleLoadMenuClick(LoadMenuState* lm, int x, int y,EtatJeu* state,EtatPartie* partie, ContexteJeu* ctx,Pawn pawns[MAX_PLAYERS]) {
     if (isClicked(&lm->btnBack, x, y)) {
         *state = MENU;
-        return;
-    }
-
-    if (isClicked(&lm->btnScrollUp, x, y) && lm->scroll > 0) {
-        lm->scroll--;
-        return;
-    }
-    if (isClicked(&lm->btnScrollDown, x, y) &&
-        lm->scroll + LOAD_MAX_VISIBLE < lm->count) {
-        lm->scroll++;
         return;
     }
 
@@ -176,12 +158,9 @@ void renderLoadMenu(SDL_Renderer* renderer,TTF_Font* fontTitle, TTF_Font* fontNo
     SDL_Color marron   = { 80,  60,  40, 255};
     SDL_Color vert     = { 55, 120,  65, 230};
     SDL_Color rouge    = {155,  50,  50, 230};
-    SDL_Color gris     = { 75,  70,  65, 200};
     SDL_Color row_bg   = { 42,  33,  22, 210};
     SDL_Color row_sel  = { 80,  62,  38, 235};
     SDL_Color panel_bg = { 30,  22,  12, 225};
-    SDL_Color arrow_on = {220, 190, 130, 255};
-    SDL_Color arrow_off= { 80,  70,  60, 180};
 
     if (tex && tex->launchGame)
         SDL_RenderCopy(renderer, tex->launchGame, NULL, NULL);
@@ -233,23 +212,6 @@ void renderLoadMenu(SDL_Renderer* renderer,TTF_Font* fontTitle, TTF_Font* fontNo
 
         SDL_Rect delRect = scaledRect(BTN_DEL_X, by_r, BTN_DEL_W, BTN_ROW_H);
         drawBtn(renderer, fontBtn, &delRect, "Supprimer", rouge, blanc, marron);
-    }
-
-    int canUp   = (lm->scroll > 0);
-    int canDown = (lm->scroll + LOAD_MAX_VISIBLE < lm->count);
-
-    drawBtn(renderer, fontBtn, &lm->btnScrollUp.rect, "^",canUp ? row_bg : gris, canUp ? arrow_on : arrow_off, or_clair);
-    drawBtn(renderer, fontBtn, &lm->btnScrollDown.rect, "v",canDown ? row_bg : gris, canDown ? arrow_on : arrow_off, or_clair);
-
-    if (fontBtn && lm->count > 0) {
-        char buf[32];
-        int shown_end = lm->scroll + LOAD_MAX_VISIBLE;
-        if (shown_end > lm->count) shown_end = lm->count;
-        snprintf(buf, sizeof(buf), "%d-%d / %d",lm->scroll + 1, shown_end, lm->count);
-        SDL_Color gris3 = {155, 145, 125, 200};
-        int tw, th;
-        TTF_SizeUTF8(fontBtn, buf, &tw, &th);
-        printText(renderer, fontBtn, buf, gris3,lm->btnScrollUp.rect.x - tw - (int)(12 * g_rx),lm->btnScrollUp.rect.y + (lm->btnScrollUp.rect.h - th) / 2);
     }
 
     drawBtn(renderer, fontNormal, &lm->btnBack.rect, "< Retour",row_bg, blanc, or_clair);

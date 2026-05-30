@@ -24,8 +24,6 @@ typedef struct RulesMenuState {
     char lines[RULES_MAX_LINES][256]; /**< Lignes de texte chargées depuis rules.txt. */
     int  count;                       /**< Nombre de lignes effectivement chargées. */
     int  scroll;                      /**< Index de la première ligne visible. */
-    Button btnScrollUp;               /**< Bouton de défilement vers le haut. */
-    Button btnScrollDown;             /**< Bouton de défilement vers le bas. */
     Button btnBack;                   /**< Bouton "< Retour" vers le menu principal. */
 } RulesMenuState;
 

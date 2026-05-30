@@ -97,7 +97,17 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
         if(ctx->dernier_de>0){
             char bufferDe[8];
             snprintf(bufferDe, sizeof(bufferDe), "%d",ctx->dernier_de);
-            printTextCentered(renderer, fontNormal, bufferDe, blanc, fenetreLancer.y+fenetreLancer.h/3-100,winW);
+            int tw, th;
+            TTF_SizeUTF8(fontNormal, bufferDe, &tw, &th);
+            int textY = fenetreLancer.y + fenetreLancer.h/3 - 100;
+            int pad = 12;
+            int size = (tw > th ? tw : th) + pad*2;
+            SDL_Rect fond = { winW/2 - size/2, textY + th/2 - size/2, size, size };
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer, 10, 8, 5, 210);
+            SDL_RenderFillRect(renderer, &fond);
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+            printTextCentered(renderer, fontNormal, bufferDe, blanc, textY, winW);
         }
 
         if (bridge_is_double(ctx))
@@ -120,7 +130,7 @@ void renderJoueurActif(SDL_Renderer* renderer, TTF_Font* font, const EtatPartie*
 
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
-    SDL_Color blanc = {0,0,0,255}; 
+    SDL_Color blanc = {235, 221, 192, 255};
 
     char bufferJoueur[64];
     snprintf(bufferJoueur, sizeof(bufferJoueur), "Au tour de : %s", partie->joueurs[partie->joueursActif].nom);
@@ -141,20 +151,19 @@ void renderEvenementActif(SDL_Renderer* renderer, TTF_Font* fontNormal,const Con
     bridge_get_evenement(ctx, &ev);
     if (!ev.actif) return;
 
-    /* Bandeau semi-transparent en haut du plateau */
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 180, 60, 30, 200);
-    SDL_Rect bandeau = { 0, (int)(65.0f * winH / REF_H),(int)(winW ),(int)(28.0f  * winH / REF_H) };
+    SDL_Rect bandeau = { 0, (int)(65.0f * winH / REF_H)+20, (int)(winW), (int)(46.0f * winH / REF_H) };
     SDL_RenderFillRect(renderer, &bandeau);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
-    /* Texte de l'événement */
     char buf[160];
     snprintf(buf, sizeof(buf), "EVENEMENT : %s  (%d tour(s) restant(s))", ev.nom, ev.tours_restants);
     SDL_Color blanc = {255, 240, 220, 255};
     int lineH = TTF_FontHeight(fontNormal);
-    printTextCentered(renderer, fontNormal, buf, blanc,
-                      bandeau.y + (bandeau.h - lineH) / 2, winW);
+    int midY = bandeau.y + bandeau.h / 2;
+    printTextCentered(renderer, fontNormal, buf, blanc, midY - lineH, winW);
+    printTextCentered(renderer, fontNormal, ev.cases_affectees, blanc, midY + 2, winW);
 }
 
 
@@ -345,8 +354,8 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
             renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             if (diceAnim && diceAnim->sheet) {
-                int animSize = (int)(200.0f * winW / REF_W);
-                SDL_Rect dst = {(winW - animSize) / 2, (winH - animSize) / 2, animSize, animSize};
+                int animSize = (int)(150.0f * winW / REF_W);
+                SDL_Rect dst = {(winW - animSize) / 2, (winH - animSize) / 2 - 60, animSize, animSize};
                 renderAnim(renderer, diceAnim, 0, 0, &dst);
             }
             break;

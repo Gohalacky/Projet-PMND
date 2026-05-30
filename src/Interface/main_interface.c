@@ -138,7 +138,7 @@ int main(){
     initRulesMenu(&rm);
 
     Animation diceAnim;
-    //initAnim(&diceAnim, tex.diceSheet, 100, 100, 15, 5, 8, true);
+    initAnim(&diceAnim, tex.diceSheet, 156, 153, 27, 9, 15, true);
 
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,

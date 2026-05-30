@@ -14,12 +14,6 @@
 #define TEXT_Y (PANEL_Y + 80)
 #define LINE_H 28
 
-#define BTN_SCR_W 40
-#define BTN_SCR_H 40
-#define BTN_SCR_X (PANEL_X + PANEL_W - 55)
-#define BTN_UP_Y (TEXT_Y - 48)
-#define BTN_DOWN_Y (TEXT_Y + RULES_VISIBLE * LINE_H + 8)
-
 #define BTN_BACK_W 160
 #define BTN_BACK_H 46
 #define BTN_BACK_X (PANEL_X + (PANEL_W - BTN_BACK_W) / 2)
@@ -79,21 +73,14 @@ void initRulesMenu(RulesMenuState* rm) {
         fclose(f);
     }
 
-    rm->btnScrollUp   = (Button){ .ref = { BTN_SCR_X, BTN_UP_Y,   BTN_SCR_W, BTN_SCR_H } };
-    rm->btnScrollDown = (Button){ .ref = { BTN_SCR_X, BTN_DOWN_Y, BTN_SCR_W, BTN_SCR_H } };
-    rm->btnBack       = (Button){ .ref = { BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H } };
-
-    ScaleButton(&rm->btnScrollUp,   g_rx, g_ry);
-    ScaleButton(&rm->btnScrollDown, g_rx, g_ry);
-    ScaleButton(&rm->btnBack,       g_rx, g_ry);
+    rm->btnBack = (Button){ .ref = { BTN_BACK_X, BTN_BACK_Y, BTN_BACK_W, BTN_BACK_H } };
+    ScaleButton(&rm->btnBack, g_rx, g_ry);
 }
 
 void scaleRulesMenu(RulesMenuState* rm, float rx, float ry) {
     g_rx = rx;
     g_ry = ry;
-    ScaleButton(&rm->btnScrollUp,   rx, ry);
-    ScaleButton(&rm->btnScrollDown, rx, ry);
-    ScaleButton(&rm->btnBack,       rx, ry);
+    ScaleButton(&rm->btnBack, rx, ry);
 }
 
 void handleRulesMenuScroll(RulesMenuState* rm, int delta) {
@@ -109,15 +96,6 @@ void handleRulesMenuClick(RulesMenuState* rm, int x, int y, EtatJeu* state) {
         *state = MENU;
         return;
     }
-    if (isClicked(&rm->btnScrollUp, x, y) && rm->scroll > 0) {
-        rm->scroll--;
-        return;
-    }
-    if (isClicked(&rm->btnScrollDown, x, y) &&
-        rm->scroll + RULES_VISIBLE < rm->count) {
-        rm->scroll++;
-        return;
-    }
 }
 
 void renderRulesMenu(SDL_Renderer* renderer,TTF_Font* fontTitle,TTF_Font* fontNormal,TTF_Font* fontBtn,const RulesMenuState* rm,const TexturesPack* tex) {
@@ -129,9 +107,6 @@ void renderRulesMenu(SDL_Renderer* renderer,TTF_Font* fontTitle,TTF_Font* fontNo
     SDL_Color or_clair = {180, 150, 100, 255};
     SDL_Color panel_bg = { 20,  14,   8, 220};
     SDL_Color row_bg   = { 42,  33,  22, 200};
-    SDL_Color arrow_on = {220, 190, 130, 255};
-    SDL_Color arrow_off= { 80,  70,  60, 180};
-    SDL_Color gris     = { 75,  70,  65, 200};
     SDL_Color texte_c  = {235, 221, 192, 255};
 
     SDL_Rect panel = scaledRect(PANEL_X, PANEL_Y, PANEL_W, PANEL_H);
@@ -162,24 +137,6 @@ void renderRulesMenu(SDL_Renderer* renderer,TTF_Font* fontTitle,TTF_Font* fontNo
             int tx  = (int)(TEXT_X * g_rx);
             printText(renderer, fontNormal, rm->lines[i], texte_c, tx, ty);
         }
-    }
-
-    int canUp   = (rm->scroll > 0);
-    int canDown = (rm->scroll + RULES_VISIBLE < rm->count);
-
-    drawBtn(renderer, fontBtn, &rm->btnScrollUp.rect, "^",canUp   ? row_bg : gris,canUp   ? arrow_on : arrow_off, or_clair);
-    drawBtn(renderer, fontBtn, &rm->btnScrollDown.rect, "v",canDown ? row_bg : gris,canDown ? arrow_on : arrow_off, or_clair);
-
-    if (fontBtn && rm->count > 0) {
-        char buf[32];
-        int shown_end = rm->scroll + RULES_VISIBLE;
-        if (shown_end > rm->count) shown_end = rm->count;
-        snprintf(buf, sizeof(buf), "%d-%d / %d",
-                 rm->scroll + 1, shown_end, rm->count);
-        SDL_Color gris3 = {155, 145, 125, 200};
-        int tw, th;
-        TTF_SizeUTF8(fontBtn, buf, &tw, &th);
-        printText(renderer, fontBtn, buf, gris3,rm->btnScrollUp.rect.x - tw - (int)(12 * g_rx),rm->btnScrollUp.rect.y + (rm->btnScrollUp.rect.h - th) / 2);
     }
 
     drawBtn(renderer, fontNormal, &rm->btnBack.rect, "< Retour",row_bg, blanc, or_clair);

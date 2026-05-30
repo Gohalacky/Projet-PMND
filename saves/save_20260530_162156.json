@@ -1,0 +1,223 @@
+{
+	"version":	1,
+	"date":	"2026-05-30 16:21:56",
+	"etatPartie":	{
+		"nbJoueurs":	2,
+		"joueursActif":	0,
+		"tourActuel":	1,
+		"tourMax":	10,
+		"dejaLance":	1,
+		"joueurs":	[{
+				"nom":	"Etudiant 1",
+				"credits":	1550,
+				"noteEco":	1
+			}, {
+				"nom":	"Etudiant 2",
+				"credits":	1500,
+				"noteEco":	1
+			}]
+	},
+	"joueurs":	[{
+			"name":	"Etudiant 1",
+			"number":	1,
+			"credit":	1550,
+			"position":	7,
+			"eco_index":	1
+		}, {
+			"name":	"Etudiant 2",
+			"number":	2,
+			"credit":	1500,
+			"position":	0,
+			"eco_index":	1
+		}],
+	"proprietes":	[{
+			"name":	"LongsChamps",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Plaine de Baud",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Jeanne d'Arc",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Brequiny",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Le Bosne",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Rue de Fougères",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Boulevard de Vitré",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Avenue des Gayeulles",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Place des Champs Libre",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"République",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Place du Colombier",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Résidence Cézembre",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Résidence Brehat",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Résidence Arz",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Le Diapason",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Glaz Arena",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Le Blizz",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Atalante",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Cessons-Sévigné",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Boulevard des Alliés",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Avenue des Buttes de Coësmes",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}, {
+			"name":	"Résidence Glénan",
+			"owner":	0,
+			"level":	0,
+			"type":	0,
+			"indice":	0,
+			"hypo":	0
+		}],
+	"gares":	[{
+			"name":	"Beaulieu-Université",
+			"owner":	0,
+			"hypo":	0
+		}, {
+			"name":	"Saint-Anne",
+			"owner":	0,
+			"hypo":	0
+		}, {
+			"name":	"Gare de Rennes",
+			"owner":	0,
+			"hypo":	0
+		}, {
+			"name":	"Saint-Germain",
+			"owner":	0,
+			"hypo":	0
+		}],
+	"compagnies":	[{
+			"name":	"Foy",
+			"owner":	0,
+			"hypo":	0
+		}, {
+			"name":	"K'Fet",
+			"owner":	0,
+			"hypo":	0
+		}],
+	"prison":	[{
+			"joueur_idx":	0,
+			"en_prison":	0,
+			"tours":	0
+		}, {
+			"joueur_idx":	1,
+			"en_prison":	0,
+			"tours":	0
+		}]
+}

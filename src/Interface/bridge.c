@@ -221,12 +221,31 @@ void bridge_get_evenement(const ContexteJeu* ctx, EvenementInfo* out) {
         out->mult_loyers         = def->mult_loyers;
         out->mult_construction   = def->mult_cout_construction;
         out->interdit_construire = def->interdit_construire;
+
+        if (ev->zone_debut >= 0) {
+            char tmp[200];
+            int pos = snprintf(tmp, sizeof(tmp), "Cases bloquées : ");
+            for (int i = 0; i < ev->zone_longueur; i++) {
+                int idx = (ev->zone_debut + i) % 40;
+                if (i > 0) pos += snprintf(tmp + pos, sizeof(tmp) - pos, ", ");
+                pos += snprintf(tmp + pos, sizeof(tmp) - pos, "%s", ctx->plateau.cases[idx].nom_affichage);
+            }
+            strncpy(out->cases_affectees, tmp, sizeof(out->cases_affectees) - 1);
+            out->cases_affectees[sizeof(out->cases_affectees) - 1] = '\0';
+        } else if (def->cout_fixe_tous != 0) {
+            strncpy(out->cases_affectees, "Affecte : tous les joueurs", sizeof(out->cases_affectees) - 1);
+            out->cases_affectees[sizeof(out->cases_affectees) - 1] = '\0';
+        } else {
+            strncpy(out->cases_affectees, "Affecte : toutes les propriétés", sizeof(out->cases_affectees) - 1);
+            out->cases_affectees[sizeof(out->cases_affectees) - 1] = '\0';
+        }
     } else {
         out->nom[0]              = '\0';
         out->tours_restants      = 0;
         out->mult_loyers         = 1.0;
         out->mult_construction   = 1.0;
         out->interdit_construire = 0;
+        out->cases_affectees[0]  = '\0';
     }
 }
 

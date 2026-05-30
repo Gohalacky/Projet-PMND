@@ -28,8 +28,6 @@ typedef struct LoadMenuState {
     int      count;            /**< Nombre de sauvegardes chargées dans @c saves. */
     int      selected;         /**< Index de la ligne sélectionnée (-1 si aucune). */
     int      scroll;           /**< Index de la première ligne visible. */
-    Button   btnScrollUp;      /**< Bouton de défilement vers le haut. */
-    Button   btnScrollDown;    /**< Bouton de défilement vers le bas. */
     Button   btnBack;          /**< Bouton "< Retour" vers le menu principal. */
 } LoadMenuState;
 
@@ -46,6 +44,13 @@ void initLoadMenu(LoadMenuState* lm);
  * @param ry Ratio vertical.
  */
 void scaleLoadMenu(LoadMenuState* lm, float rx, float ry);
+
+/**
+ * @brief Fait défiler la liste via la molette de la souris.
+ * @param lm    État du menu.
+ * @param delta Sens de défilement : positif = vers le haut, négatif = vers le bas.
+ */
+void handleLoadMenuScroll(LoadMenuState* lm, int delta);
 
 /**
  * @brief Gère un clic dans le menu de chargement.

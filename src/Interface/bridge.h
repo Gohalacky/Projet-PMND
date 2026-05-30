@@ -114,6 +114,7 @@ typedef struct {
     double mult_loyers;         /**< Multiplicateur de loyers (1.0 = normal). */
     double mult_construction;   /**< Multiplicateur de coût de construction. */
     int    interdit_construire; /**< 1 si la construction est bloquée. */
+    char   cases_affectees[200];/**< Description des cases affectées par l'événement. */
 } EvenementInfo;
 
 /**

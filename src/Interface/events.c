@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 #define FONT "assets/FONT/fontPixel.ttf"
-#define DELAI_LANCER 2500 //en ms
+#define DELAI_LANCER 1800 //en ms
 
 static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack* texts,TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, PropButtonsPack* pb, TradeButtonsPack* tb, LoadMenuState* lm, RulesMenuState* rm, PrisonButtonsPack* pb_prison){
     
@@ -406,6 +406,8 @@ void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* 
         if (event->type == SDL_MOUSEWHEEL) {
             if (*state == REGLEMENT) {
                 handleRulesMenuScroll(rm, event->wheel.y);
+            } else if (*state == CHARGERPARTIE) {
+                handleLoadMenuScroll(lm, event->wheel.y);
             } else if (*state == PROPRIETE) {
                 PropInfo owned[NB_PROPRIETE];
                 int nbOwned = bridge_get_owned_props(ctx, partie, owned, NB_PROPRIETE);

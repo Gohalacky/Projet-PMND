@@ -1,0 +1,25 @@
+{
+	"version":	1,
+	"date":	"2026-05-30 15:31:52",
+	"etatPartie":	{
+		"nbJoueurs":	2,
+		"joueursActif":	0,
+		"tourActuel":	1,
+		"tourMax":	10,
+		"dejaLance":	0,
+		"joueurs":	[{
+				"nom":	"Etudiant 1",
+				"credits":	1500,
+				"noteEco":	10
+			}, {
+				"nom":	"Etudiant 2",
+				"credits":	1500,
+				"noteEco":	10
+			}]
+	},
+	"joueurs":	[],
+	"proprietes":	[],
+	"gares":	[],
+	"compagnies":	[],
+	"prison":	[]
+}

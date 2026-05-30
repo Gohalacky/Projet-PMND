@@ -1,83 +1,180 @@
-INSA’POLY - RÈGLES DU JEU
+INSA’POLY — RÈGLES OFFICIELLES COMPLÈTES
+________________________________________
 
-1. PRÉSENTATION GÉNÉRALE
-INSA’poly est une adaptation du Monopoly classique dans l’univers de l’INSA, 
-intégrant des mécaniques modernes liées à l’écologie et aux événements globaux.
+1. INTRODUCTION
 
-Les joueurs incarnent des étudiants évoluant sur un campus, 
-achetant des propriétés, développant leur patrimoine, 
-tout en gérant leur impact écologique et en s’adaptant à des événements imprévus.
+INSA’poly est un jeu de stratégie inspiré du Monopoly, 
+se déroulant dans un environnement étudiant. 
+Les joueurs investissent dans des propriétés, développent 
+leur patrimoine et doivent s’adapter à un système écologique 
+et à des événements globaux.
+Chaque action influence à la fois la richesse du joueur et 
+son impact environnemental, ce qui conditionne 
+le déroulement et l’issue de la partie.
+________________________________________
 
 2. OBJECTIF DU JEU
-Le but du jeu est de devenir le joueur le plus riche en accumulant 
-des crédits (ECTS) grâce à :
-l’achat de propriétés
-la perception de loyers
-une gestion stratégique des événements et des cartes
 
-Un joueur est éliminé lorsqu’il ne peut plus payer ses dettes.
-Le dernier joueur restant gagne la partie.
+Le but du jeu est d’obtenir le score final le plus élevé, 
+soit en éliminant les autres joueurs (mode classique), 
+soit en maximisant sa richesse et son indice écologique (mode limité).
+________________________________________
 
-3. MISE EN PLACE
-Chaque joueur choisit un pion
-Tous les joueurs commencent sur la case départ
-Chaque joueur reçoit un capital initial (ex : 1500 ECTS)
-Les pioches Chance et Caisse Communauté sont mélangées
-Aucun événement global n’est actif au début
+3. PARAMÈTRES DE PARTIE
+
+3.1 Mode de jeu
+
+Deux modes sont possibles :
+- Mode classique : la partie se termine 
+lorsqu’il ne reste qu’un seul joueur. 
+- Mode limité : un nombre de tours est fixé. 
+À la fin, un score est calculé pour chaque joueur. 
+________________________________________
+
+3.2 Capital initial
+
+Chaque joueur reçoit un capital de départ.
+Valeur recommandée : 1500 ECTS.
+
+Ce montant peut être modifié :
+- un montant faible accélère la partie, 
+- un montant élevé favorise le développement stratégique. 
+________________________________________
+
+3.3 Indice écologique initial
+
+Tous les joueurs commencent avec un indice écologique neutre :
+C
+________________________________________
 
 4. DÉROULEMENT D’UN TOUR
-Chaque joueur joue à tour de rôle.
 
-4.1 Lancer de dés
-Le joueur lance les dés et avance son pion du nombre de cases correspondant.
+Un tour de joueur se déroule ainsi :
 
-4.2 Action selon la case
--> Propriété non possédée
-Le joueur peut l’acheter
-Sinon, elle peut être mise aux enchères
+1.	Lancer des dés 
+2.	Déplacement 
+3.	Application de l’effet de la case 
+4.	Actions éventuelles (achat, construction, échange) 
+________________________________________
 
--> Propriété possédée
-Si elle appartient à un autre joueur → paiement du loyer
-Si elle appartient au joueur lui-même → rien
+5. PROPRIÉTÉS ET AMÉNAGEMENTS
+Chaque propriété peut être développée avec différents types d’aménagements.
 
--> Chance / Caisse Communauté
-Le joueur pioche une carte et applique son effet
+5.1 Types
 
--> Prison
-Le joueur est envoyé en prison ou reste bloqué
+Maisons :
+- coût modéré 
+- rendement correct 
+- impact écologique modéré 
 
-5. CARTES
-5.1 Types de cartes
--> Cartes Chance (individuelles)
-Effets personnels :
-gains ou pertes d’ECTS
-déplacements
-pénalités ou bonus
+Logements :
+- coût élevé 
+- rendement élevé 
+- impact écologique négatif 
 
--> Cartes Caisse Communauté (collectives)
-Effets globaux :
-gains ou pertes pour tous les joueurs
-taxes écologiques
+Parcs :
+- coût variable 
+- faible rendement 
+- amélioration importante de l’indice écologique 
+________________________________________
 
-5.2 Carte spéciale : Sortie de prison
-Cette carte est conservée par le joueur
-Elle ne retourne pas dans la pioche immédiatement
-Elle peut être utilisée pour sortir de prison
-Une fois utilisée, elle est remise dans la pioche
-Elle peut être échangée entre joueurs
+6. CARTES
 
-6. SYSTÈME ÉCOLOGIQUE
-Chaque joueur possède un indice écologique (A à F) :
-A = excellent
-F = très mauvais
+Les cartes sont divisées en deux catégories.
+________________________________________
 
-6.1 Impact de l’indice écologique
-L’indice écologique influence :
-les taxes écologiques
-le risque d’événements globaux
+6.1 CARTES CHANCE (EFFETS INDIVIDUELS)
 
-6.2 Taxes écologiques
-Certaines cartes imposent une taxe dépendant de l’indice :
+Les cartes Chance affectent uniquement le joueur qui les tire.
+
+Liste détaillée des cartes
+
+Bourse de projet :
+Le joueur reçoit 30 ECTS.
+
+Stage bien payé :
+Le joueur reçoit 50 ECTS.
+
+Aide du BDE :
+Le joueur reçoit 20 ECTS.
+
+Amende stationnement :
+Le joueur perd 15 ECTS.
+
+Matériel cassé en TP :
+Le joueur perd 25 ECTS.
+
+Retard rendu projet :
+Le joueur perd 20 ECTS.
+
+Izly en négatif :
+Le joueur perd 10 ECTS.
+
+Avance de 3 cases :
+Le joueur avance immédiatement 
+de 3 cases et applique l’effet de la nouvelle case.
+
+Recule de 2 cases :
+Le joueur recule immédiatement 
+de 2 cases et applique l’effet de la nouvelle case.
+
+Semaine de partiels :
+Le joueur ne peut pas construire 
+lors de son prochain tour.
+
+Sortie de prison :
+Carte spéciale. Le joueur la conserve en main. 
+Elle peut être utilisée à tout moment pour sortir de prison. 
+Elle ne retourne dans la pioche qu’après utilisation.
+________________________________________
+
+6.2 CARTES CAISSE COMMUNAUTÉ (EFFETS COLLECTIFS)
+
+Ces cartes affectent tous les joueurs.
+
+Liste détaillée des cartes
+
+Plan sobriété énergétique :
+Tous les joueurs paient 10 ECTS.
+
+Subvention campus vert :
+Tous les joueurs gagnent 10 ECTS.
+
+Travaux réseau chaleur :
+Chaque joueur paie une taxe 
+écologique basée sur 20 ECTS.
+
+Réparation dégâts climatiques :
+Chaque joueur paie une taxe 
+écologique basée sur 30 ECTS.
+
+Hausse du coût de la vie :
+Tous les joueurs paient 5 ECTS.
+
+Prime associative :
+Tous les joueurs gagnent 5 ECTS.
+
+Inondations locales :
+Chaque joueur paie une taxe 
+écologique basée sur 25 ECTS.
+
+Canicule locale :
+Chaque joueur paie une taxe 
+écologique basée sur 15 ECTS.
+________________________________________
+
+7. SYSTÈME ÉCOLOGIQUE
+
+Chaque joueur possède un indice écologique allant de A à F.
+
+Cet indice évolue selon :
+- les constructions réalisées, 
+- les choix stratégiques. 
+________________________________________
+
+7.1 Taxes écologiques
+
+Certaines cartes et événements imposent une taxe :
 
 Note	Coefficient
 A	x0.5
@@ -87,81 +184,131 @@ D	x1.2
 E	x1.5
 F	x2.0
 
-7. ÉVÉNEMENTS GLOBAUX
-À la fin de chaque round (tous les joueurs ont joué), un événement peut apparaître.
+Le montant final payé est égal à :
+base × coefficient
+________________________________________
 
-7.1 Probabilité
-Probabilité de base (ex : 8%)
-Augmentée si l’état écologique global est mauvais
+8. ÉVÉNEMENTS GLOBAUX
 
-7.2 Liste des événements
--> Crise énergétique
-Coût de construction +20%
+À la fin de chaque round, un événement peut se déclencher.
+Un seul événement peut être actif à la fois.
+________________________________________
 
--> Inflation
-Loyers +15%
-Gains des cartes réduits
+9. DESCRIPTION DÉTAILLÉE DES ÉVÉNEMENTS
 
--> Mouvement étudiant
-Interdiction de construire
-Loyers réduits
+Crise énergétique
 
--> Canicule
-Tous les joueurs paient un coût fixe
-Les joueurs avec une bonne note écologique paient moins
+Effet :
+- le coût de construction est multiplié par 1.2 
 
--> Inondations
-Une zone du plateau est bloquée
-Impossible d’y passer ou d’y agir
+Application :
+- tout achat de maison, logement ou parc est plus coûteux 
+- n’affecte pas les loyers 
+________________________________________
 
--> Confinement
-Pendant le confinement :
-Si un joueur tombe sur une propriété adverse → loyer doublé
-Si un joueur tombe sur sa propre propriété :
-il peut choisir de s’arrêter immédiatement
-ou de continuer normalement
+Inflation
 
-7.3 Durée
-Chaque événement dure plusieurs tours (généralement 2 à 3 rounds).
+Effet :
+- loyers multipliés par 1.15 
+- gains des cartes réduits (multipliés par 0.9) 
 
-8. CONSTRUCTION
-Les joueurs peuvent construire sur leurs propriétés :
-maisons
-logements sociaux
-parc
+Application :
+- avantage les propriétaires 
+- désavantage les joueurs dépendants des cartes 
+________________________________________
 
-8.1 Restrictions
-Interdit pendant certains événements (ex : mouvement étudiant)
-Coût modifié selon les événements
+Mouvement étudiant
 
-9. ÉCHANGES ENTRE JOUEURS
-Les joueurs peuvent échanger :
-propriétés
-argent
-cartes
+Effet :
+- interdiction totale de construire 
 
-Les échanges doivent être acceptés par les deux joueurs.
+Application :
+- aucun joueur ne peut construire ou améliorer ses propriétés 
+- les autres actions restent possibles 
+________________________________________
 
-10. PRISON
-Un joueur peut être envoyé en prison après certaines cases
+Canicule
 
-Pour sortir :
-payer une amende
-faire un double
-utiliser une carte Sortie de prison
+Effet :
+- tous les joueurs paient un coût fixe de 10 ECTS 
 
-11. FIN DE PARTIE
+Particularité :
+- les joueurs ayant un indice 
+écologique A ou B paient seulement la moitié 
 
-Un joueur est éliminé lorsqu’il ne peut plus payer ses dettes.
+Application :
+- paiement immédiat à chaque déclenchement de l’événement 
+________________________________________
 
-Le jeu continue jusqu’à ce qu’il ne reste qu’un joueur ou que le nombre de tour soit atteint. Le joueur alors vainqueur est celui avec le plus d'argent en comptant ces propriété et son indice écologique.
+Inondations
 
-12. REMARQUES STRATÉGIQUES
-Un bon indice écologique réduit les pénalités
-Les événements peuvent renverser la situation
-La carte Sortie de prison est précieuse
-Le confinement favorise les joueurs agressifs
+Effet :
+- une zone de 3 cases est bloquée 
 
-13. NOTES
-INSA’poly est un jeu stratégique mêlant gestion économique, adaptation aux événements et responsabilité écologique.
-Chaque décision compte, et chaque événement peut changer le cours de la partie.
+Application :
+- les joueurs ne peuvent pas interagir avec ces cases 
+- impossibilité d’acheter ou de construire sur ces cases 
+- les effets de case peuvent être ignorés ou neutralisés selon implémentation 
+________________________________________
+
+Confinement
+Effet principal :
+- loyers multipliés par 2 
+
+Effet secondaire :
+- lorsqu’un joueur tombe sur sa propre propriété, il peut choisir : 
+o soit de s’arrêter immédiatement et ne pas continuer son déplacement, 
+o soit de continuer normalement 
+
+Application :
+- favorise fortement les propriétaires 
+- augmente les risques pour les joueurs en déplacement 
+________________________________________
+
+10. CONSTRUCTION
+
+Les joueurs peuvent construire sur leurs propriétés.
+
+Restrictions :
+-	interdit pendant le mouvement étudiant 
+-	coût modifié pendant la crise énergétique 
+________________________________________
+11. ÉCHANGES
+Les joueurs peuvent échanger librement :
+-	propriétés 
+-	argent 
+-	cartes 
+Les échanges doivent être validés par les deux joueurs.
+________________________________________
+
+12. PRISON
+
+Un joueur en prison peut :
+- payer une amende 
+- tenter de faire un double 
+- utiliser une carte Sortie de prison 
+________________________________________
+
+13. FIN DE PARTIE
+
+Mode classique
+Un joueur est éliminé s’il ne peut plus payer ses dettes.
+Le dernier joueur restant gagne.
+________________________________________
+
+Mode limité
+La partie s’arrête après un nombre de tours fixé.
+________________________________________
+
+A noter
+- un joueur riche mais polluant peut perdre 
+- un joueur moins riche mais écologique peut gagner 
+________________________________________
+
+15. CONCLUSION
+
+INSA’poly est un jeu stratégique combinant économie et écologie.
+Le joueur doit optimiser ses investissements tout en anticipant 
+les événements et en maîtrisant son impact environnemental.
+Chaque partie est unique et nécessite adaptation et réflexion.
+
