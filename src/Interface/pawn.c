@@ -75,6 +75,10 @@ static int nextBoardCase(int current){
     return (current+1)%BOARD_SIZE;
 }
 
+static int prevBoardCase(int current){
+    return (current-1+BOARD_SIZE)%BOARD_SIZE;
+}
+
 static void computeSlotOffset(const Pawn* pawn, int targetCase, const Pawn pawns[MAX_PLAYERS], int nbJoueurs, float* outDx, float* outDy){
     int coloc[MAX_PLAYERS];
     int count=0;
@@ -140,6 +144,14 @@ void initPawns(Pawn pawns[MAX_PLAYERS], int nbJoueurs){
         pawns[i].currentCase=0;
         pawns[i].anim.active=false;
         pawns[i].anim.stepsRemaining=0;
+        pawns[i].anim.direction=1;
+        pawns[i].anim.nextCase=0;
+        pawns[i].anim.srcX=BOARD_POS[0].x;
+        pawns[i].anim.srcY=BOARD_POS[0].y;
+        pawns[i].anim.curX=BOARD_POS[0].x;
+        pawns[i].anim.curY=BOARD_POS[0].y;
+        pawns[i].anim.dstX=BOARD_POS[0].x;
+        pawns[i].anim.dstY=BOARD_POS[0].y;
         pawns[i].x=BOARD_POS[0].x;
         pawns[i].y=BOARD_POS[0].y;
     }
@@ -147,7 +159,7 @@ void initPawns(Pawn pawns[MAX_PLAYERS], int nbJoueurs){
 }
 
 void snapPawnToCase(Pawn* pawn, int caseIndex, Pawn pawns[MAX_PLAYERS], int nbJoueurs){
-    if(!pawn || caseIndex<0 || caseIndex>BOARD_SIZE){
+    if(!pawn || caseIndex<0 || caseIndex>=BOARD_SIZE){
         return;
     }
 
@@ -165,7 +177,7 @@ void snapPawnToCase(Pawn* pawn, int caseIndex, Pawn pawns[MAX_PLAYERS], int nbJo
 }
 
 void startPawnMove(Pawn* pawn, int fromCase, int steps){
-    if(!pawn || steps<=0){ 
+    if(!pawn || steps<=0){
         return;
     }
 
@@ -176,11 +188,33 @@ void startPawnMove(Pawn* pawn, int fromCase, int steps){
     a->curX=pawn->x;
     a->curY=pawn->y;
 
+    a->direction=1;
     a->nextCase=nextBoardCase(fromCase);
     a->dstX=BOARD_POS[a->nextCase].x;
     a->dstY=BOARD_POS[a->nextCase].y;
 
     a->stepsRemaining=steps;
+    a->active=true;
+}
+
+void startPawnMoveCard(Pawn* pawn, int fromCase, int steps){
+    if(!pawn || steps==0){
+        return;
+    }
+
+    PawnAnim* a=&pawn->anim;
+
+    a->srcX=pawn->x;
+    a->srcY=pawn->y;
+    a->curX=pawn->x;
+    a->curY=pawn->y;
+
+    a->direction=(steps>0)?1:-1;
+    a->nextCase=(a->direction>0)?nextBoardCase(fromCase):prevBoardCase(fromCase);
+    a->dstX=BOARD_POS[a->nextCase].x;
+    a->dstY=BOARD_POS[a->nextCase].y;
+
+    a->stepsRemaining=(steps>0)?steps:-steps;
     a->active=true;
 }
 
@@ -219,7 +253,7 @@ void updatePawns(Pawn pawns[MAX_PLAYERS], int nbJoueurs,Uint32 deltaMs){
             }else{
                 a->srcX=a->curX;
                 a->srcY=a->curY;
-                a->nextCase=nextBoardCase(arrivedCase);
+                a->nextCase=(a->direction>=0)?nextBoardCase(arrivedCase):prevBoardCase(arrivedCase);
                 a->dstX=BOARD_POS[a->nextCase].x;
                 a->dstY=BOARD_POS[a->nextCase].y;
             }

@@ -135,7 +135,14 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
             }
             break;
         }
- 
+
+        case CASE_TAXE: {
+            int montant = (p->position == 4) ? 200 : 100;
+            player_remove_credits(p, montant);
+            printf("%s paie %d ECTS de taxe.\n", p->name, montant);
+            break;
+        }
+
         default:
             break;
     }

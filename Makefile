@@ -39,6 +39,7 @@ SRC_IFACE = $(IFACE_DIR)/main_interface.c \
             $(IFACE_DIR)/anim.c           \
             $(IFACE_DIR)/propwindow.c     \
             $(IFACE_DIR)/tradewindow.c    \
+            $(IFACE_DIR)/prisonwindow.c   \
             $(IFACE_DIR)/pawn.c           \
             $(IFACE_DIR)/savegame.c       \
             $(IFACE_DIR)/pausemenu.c      \

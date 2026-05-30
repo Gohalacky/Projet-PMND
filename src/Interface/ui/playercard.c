@@ -10,9 +10,9 @@
 #define REF_FONT_SIZE 22
 
 // {0,200,139,93,}
-const CardRef CARDS_2J[2] = { {11,175,110,110,},{1130,175,110,110}};
-const CardRef CARDS_3J[3] = {{11,175,110,110,},{11,335,110,110},{1130,175,110,110}};
-const CardRef CARDS_4J[4] = { {11,175,110,110,},{18,335,110,110},{1130,175,110,110},{1130,335,110,110}};
+const CardRef CARDS_2J[2] = { {11,180,110,110,},{1130,175,110,110}};
+const CardRef CARDS_3J[3] = {{11,180,110,110,},{11,340,110,110},{1130,175,110,110}};
+const CardRef CARDS_4J[4] = { {11,180,110,110,},{18,340,110,110},{1130,175,110,110},{1130,340,110,110}};
 
 void renderPlayerCard(SDL_Renderer *renderer, TTF_Font *font, const Joueur *j, int numero, SDL_Rect rect){
     char buffer[64];
@@ -41,10 +41,12 @@ void renderPlayerCard(SDL_Renderer *renderer, TTF_Font *font, const Joueur *j, i
     printText(renderer, scaledFont, buffer, blanc,offsetEdutiant,baseY);
 
     snprintf(buffer,sizeof(buffer), "CR : %d",j->credits);
-    printText(renderer, scaledFont, buffer, blanc,offsetCrEco,baseY+lineH*1.7);
+    printText(renderer, scaledFont, buffer, blanc,offsetCrEco,baseY+lineH*1.3);
 
-    snprintf(buffer,sizeof(buffer), "Eco : %1.f",j->noteEco);
-    printText(renderer, scaledFont, buffer, blanc,offsetCrEco,baseY+lineH*2.9);
+    int gradeIdx = (int)j->noteEco;
+    char gradeLetter = (gradeIdx >= 1 && gradeIdx <= 6) ? ('A' + gradeIdx - 1) : '?';
+    snprintf(buffer, sizeof(buffer), "Eco : %c", gradeLetter);
+    printText(renderer, scaledFont, buffer, blanc,offsetCrEco,baseY+lineH*2.3);
 
     if(scaledFont!=font){
         TTF_CloseFont(scaledFont);

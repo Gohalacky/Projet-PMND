@@ -78,6 +78,10 @@ int bridge_roll_and_move(ContexteJeu* ctx, EtatPartie* partie) {
     Player* p = ctx->joueurs[ja];
     if (!p) return 0;
     ctx->dernier_de = engine_roll_and_move(p, &ctx->plateau, &ctx->compteur_doubles);
+    if (ctx->compteur_doubles >= 3) {
+        go_to_jail(p, ctx->jail);
+        ctx->compteur_doubles = 0;
+    }
     bridge_sync(ctx, partie);
     return ctx->dernier_de;
 }
@@ -152,6 +156,13 @@ int bridge_next_turn(EtatPartie* partie) {
     if (partie->tourMax > 0 && partie->tourActuel > partie->tourMax) return 1;
     return 0;
 }
+int bridge_check_bankruptcy_gameover(const EtatPartie* partie) {
+    int actifs = 0;
+    for (int i = 0; i < partie->nbJoueurs; i++) {
+        if (partie->joueurs[i].credits >= 0) actifs++;
+    }
+    return (actifs <= 1) ? 1 : 0;
+}
 
 void bridge_sync(const ContexteJeu* ctx, EtatPartie* partie) {
     for (int i = 0; i < partie->nbJoueurs; i++) {
@@ -160,6 +171,40 @@ void bridge_sync(const ContexteJeu* ctx, EtatPartie* partie) {
         partie->joueurs[i].credits = p->credit;
         partie->joueurs[i].noteEco = (float)p->eco_index;
     }
+}
+
+int bridge_get_winner(const ContexteJeu* ctx, const EtatPartie* partie,
+                      char winner_name[50], int* winner_value, int* winner_mode) {
+    if (!ctx || !partie) return -1;
+
+    /* winner_mode : 0 = fin de tours, 1 = faillite */
+    int mode_tours = (partie->tourMax > 0);
+    if (winner_mode) *winner_mode = mode_tours ? 0 : 1;
+
+    int best_idx   = -1;
+    int best_val   = -1;
+
+    for (int i = 0; i < partie->nbJoueurs; i++) {
+        Player* p = ctx->joueurs[i];
+        if (!p) continue;
+        if (p->credit < 0) continue; /* joueur éliminé */
+
+        int val = engine_get_player_total_value(p,
+                      (Property**)ctx->tableau_prop,
+                      (Gares**)ctx->tableau_gar,
+                      (Compagnies**)ctx->tableau_comp);
+        if (val > best_val) {
+            best_val = val;
+            best_idx = i;
+        }
+    }
+
+    if (best_idx < 0) return -1;
+
+    Player* winner = ctx->joueurs[best_idx];
+    if (winner_name)  strncpy(winner_name, winner->name, 49);
+    if (winner_value) *winner_value = best_val;
+    return best_idx;
 }
 
 /* EVENEMENTS */
@@ -176,12 +221,31 @@ void bridge_get_evenement(const ContexteJeu* ctx, EvenementInfo* out) {
         out->mult_loyers         = def->mult_loyers;
         out->mult_construction   = def->mult_cout_construction;
         out->interdit_construire = def->interdit_construire;
+
+        if (ev->zone_debut >= 0) {
+            char tmp[200];
+            int pos = snprintf(tmp, sizeof(tmp), "Cases bloquées : ");
+            for (int i = 0; i < ev->zone_longueur; i++) {
+                int idx = (ev->zone_debut + i) % 40;
+                if (i > 0) pos += snprintf(tmp + pos, sizeof(tmp) - pos, ", ");
+                pos += snprintf(tmp + pos, sizeof(tmp) - pos, "%s", ctx->plateau.cases[idx].nom_affichage);
+            }
+            strncpy(out->cases_affectees, tmp, sizeof(out->cases_affectees) - 1);
+            out->cases_affectees[sizeof(out->cases_affectees) - 1] = '\0';
+        } else if (def->cout_fixe_tous != 0) {
+            strncpy(out->cases_affectees, "Affecte : tous les joueurs", sizeof(out->cases_affectees) - 1);
+            out->cases_affectees[sizeof(out->cases_affectees) - 1] = '\0';
+        } else {
+            strncpy(out->cases_affectees, "Affecte : toutes les propriétés", sizeof(out->cases_affectees) - 1);
+            out->cases_affectees[sizeof(out->cases_affectees) - 1] = '\0';
+        }
     } else {
         out->nom[0]              = '\0';
         out->tours_restants      = 0;
         out->mult_loyers         = 1.0;
         out->mult_construction   = 1.0;
         out->interdit_construire = 0;
+        out->cases_affectees[0]  = '\0';
     }
 }
 
@@ -203,6 +267,80 @@ int bridge_is_in_jail(const ContexteJeu* ctx, const EtatPartie* partie) {
 
 const char* bridge_get_case_joueur_actif(ContexteJeu* ctx, const EtatPartie* partie) {
     return engine_get_case_joueur_actif(partie->joueursActif, ctx->joueurs, &ctx->plateau);
+}
+
+int bridge_jail_tours_restants(const ContexteJeu* ctx, const EtatPartie* partie) {
+    int ja = partie->joueursActif;
+    Player* p = ctx->joueurs[ja];
+    if (!p || !ctx->jail) return 0;
+    for (int i = 0; i < ctx->jail->nb_j; i++) {
+        if (ctx->jail->liste[i] == p)
+            return 3 - ctx->jail->comptage[i];
+    }
+    return 0;
+}
+
+int bridge_jail_has_sortie_card(const ContexteJeu* ctx, const EtatPartie* partie) {
+    int ja = partie->joueursActif;
+    Player* p = ctx->joueurs[ja];
+    if (!p) return 0;
+    const GameContext* gctx = &ctx->game_ctx;
+    if (joueur_possede_sortie_prison(gctx->pioche_chance.cartes,     NB_CARTES_CHANCE,     p->number)) return 1;
+    if (joueur_possede_sortie_prison(gctx->pioche_communaute.cartes, NB_CARTES_COMMUNAUTE, p->number)) return 1;
+    return 0;
+}
+
+int bridge_jail_try_double(ContexteJeu* ctx, EtatPartie* partie) {
+    int ja = partie->joueursActif;
+    Player* p = ctx->joueurs[ja];
+    if (!p || !ctx->jail) return 0;
+
+    ctx->dernier_de = engine_roll_dice(&ctx->compteur_doubles);
+
+    if (ctx->compteur_doubles > 0) {
+        get_out_of_jail(p, ctx->jail);
+        player_move(p, ctx->dernier_de);
+        bridge_sync(ctx, partie);
+        return 1;
+    }
+
+    add_tour_jail(p, ctx->jail);
+    if (istreetour_in_jail(p, ctx->jail)) {
+        pay_to_get_out(p, ctx->jail);
+        player_move(p, ctx->dernier_de);
+        bridge_sync(ctx, partie);
+        return 2;
+    }
+
+    bridge_sync(ctx, partie);
+    return 0;
+}
+
+int bridge_jail_use_card(ContexteJeu* ctx, EtatPartie* partie) {
+    int ja = partie->joueursActif;
+    Player* p = ctx->joueurs[ja];
+    if (!p) return 0;
+    GameContext* gctx = &ctx->game_ctx;
+
+    Carte* c = NULL;
+    for (int i = 0; i < NB_CARTES_CHANCE && !c; i++) {
+        if (gctx->pioche_chance.cartes[i].effet == CARTE_SORTIE_PRISON &&
+            gctx->pioche_chance.cartes[i].etat  == ETAT_CARTE_EN_MAIN  &&
+            gctx->pioche_chance.cartes[i].owner_number == p->number)
+            c = &gctx->pioche_chance.cartes[i];
+    }
+    for (int i = 0; i < NB_CARTES_COMMUNAUTE && !c; i++) {
+        if (gctx->pioche_communaute.cartes[i].effet == CARTE_SORTIE_PRISON &&
+            gctx->pioche_communaute.cartes[i].etat  == ETAT_CARTE_EN_MAIN  &&
+            gctx->pioche_communaute.cartes[i].owner_number == p->number)
+            c = &gctx->pioche_communaute.cartes[i];
+    }
+    if (!c) return 0;
+
+    remettre_carte_dans_paquet(c);
+    get_out_of_jail(p, ctx->jail);
+    bridge_sync(ctx, partie);
+    return 1;
 }
 
 /* PROPRIETES */
@@ -388,17 +526,28 @@ void bridge_trade_free(TradeState* ts) {
     ts->off_cible = NULL;
 }
 
-int bridge_trade_get_assets(ContexteJeu* ctx, int joueur_idx,TradeAssetInfo out[], int max) {
+int bridge_trade_get_assets(ContexteJeu* ctx, int joueur_idx, TradeAssetInfo out[], int max,
+                            const TradeState* ts) {
     if (!ctx || joueur_idx < 0 || joueur_idx >= 4 || !ctx->joueurs[joueur_idx]) return 0;
     Player* p = ctx->joueurs[joueur_idx];
     int count = 0;
+
+    const TradeOffer* off = NULL;
+    if (ts) {
+        off = (ts->phase == TRADE_PHASE_BUILD_OFFER) ? ts->off_actif : ts->off_cible;
+    }
 
     for (int i = 0; i < NB_PROPRIETE && count < max; i++) {
         Property* prop = ctx->tableau_prop[i];
         if (!prop || prop->owner != p->number || prop->level > 0 || prop->hypo) continue;
         strncpy(out[count].name, prop->name, 49); out[count].name[49] = '\0';
         out[count].value = prop->value; out[count].type = 1;
-        out[count].index = i;          out[count].selected = 0;
+        out[count].index = i;
+        out[count].selected = 0;
+        if (off) {
+            for (int j = 0; j < off->nb_props; j++)
+                if (off->props[j] == prop) { out[count].selected = 1; break; }
+        }
         count++;
     }
     for (int i = 0; i < NB_GARE && count < max; i++) {
@@ -406,7 +555,12 @@ int bridge_trade_get_assets(ContexteJeu* ctx, int joueur_idx,TradeAssetInfo out[
         if (!g || g->owner != p->number || g->hypo) continue;
         strncpy(out[count].name, g->name, 49); out[count].name[49] = '\0';
         out[count].value = g->value; out[count].type = 2;
-        out[count].index = i;        out[count].selected = 0;
+        out[count].index = i;
+        out[count].selected = 0;
+        if (off) {
+            for (int j = 0; j < off->nb_gares; j++)
+                if (off->gares[j] == g) { out[count].selected = 1; break; }
+        }
         count++;
     }
     for (int i = 0; i < NB_COMPAGNIE && count < max; i++) {
@@ -414,7 +568,12 @@ int bridge_trade_get_assets(ContexteJeu* ctx, int joueur_idx,TradeAssetInfo out[
         if (!c || c->owner != p->number || c->hypo) continue;
         strncpy(out[count].name, c->name, 49); out[count].name[49] = '\0';
         out[count].value = c->value; out[count].type = 3;
-        out[count].index = i;        out[count].selected = 0;
+        out[count].index = i;
+        out[count].selected = 0;
+        if (off) {
+            for (int j = 0; j < off->nb_comps; j++)
+                if (off->comps[j] == c) { out[count].selected = 1; break; }
+        }
         count++;
     }
     return count;

@@ -15,7 +15,7 @@ EXTRACT_STATIC         = YES
 
 # --- Fichiers à analyser ---
 # On inclut les dossiers MVC et on demande de lire le README
-INPUT                  = src/Model/ src/Interface/ src/Controller/ README.md
+INPUT                  = src/Modele/ src/Interface/ src/Controlleur/ README.md
 RECURSIVE              = YES
 USE_MDFILE_AS_MAINPAGE = README.md
 

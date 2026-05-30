@@ -1,3 +1,11 @@
+/**
+ * @file pausemenu.h
+ * @brief Menu pause : bouton  et overlay Reprendre / Sauvegarder & Quitter.
+ *
+ * Le bouton (pauseMenu) est toujours visible sur le plateau.
+ * Quand l'état passe à PAUSE, renderPauseMenu() affiche l'overlay complet.
+ */
+
 #ifndef PAUSEMENU_H
 #define PAUSEMENU_H
 
@@ -9,31 +17,36 @@
 #include "assets.h"
 
 /**
- * @file pausemenu.h
- * @brief Menu pause : bouton hamburger en haut à droite du plateau
- *        et overlay avec les actions Reprendre / Sauvegarder & Quitter.
+ * @brief Initialise les boutons du menu pause aux coordonnées de référence 1280×720.
+ * @param btn Pack de boutons principal à compléter (pauseMenu, pauseResume, pauseSaveQuit).
  */
-
-/** Initialise les boutons du menu pause (coordonnées de référence 1280×720). */
 void initPauseButtons(ButtonsPack* btn);
 
-/** Met à l'échelle les boutons du menu pause selon le ratio fenêtre. */
+/**
+ * @brief Met à l'échelle les boutons du menu pause selon le ratio de redimensionnement.
+ * @param btn    Pack de boutons.
+ * @param ratioX Ratio horizontal (fenêtre_courante_W / 1280).
+ * @param ratioY Ratio vertical   (fenêtre_courante_H / 720).
+ */
 void scalePauseButtons(ButtonsPack* btn, float ratioX, float ratioY);
 
 /**
- * @brief Dessine le bouton ☰ sur le plateau (toujours visible).
- * @param renderer  Renderer SDL.
- * @param font      Police à utiliser pour l'icône.
- * @param btn       Pack de boutons.
+ * @brief Dessine le bouton (toujours affiché sur le plateau).
+ * @param renderer Renderer SDL.
+ * @param btn      Pack de boutons (utilise btn->pauseMenu).
  */
-void renderPauseButton(SDL_Renderer* renderer, TTF_Font* font, const ButtonsPack* btn);
+void renderPauseButton(SDL_Renderer* renderer, const ButtonsPack* btn);
 
 /**
  * @brief Dessine l'overlay du menu pause (uniquement en état PAUSE).
- * @param renderer  Renderer SDL.
- * @param font      Police normale.
- * @param btn       Pack de boutons.
+ *
+ * Superpose un fond semi-transparent, un panneau centré et les deux boutons
+ * "Reprendre" et "Sauvegarder & Quitter".
+ *
+ * @param renderer Renderer SDL.
+ * @param font     Police utilisée pour les libellés des boutons.
+ * @param btn      Pack de boutons.
  */
 void renderPauseMenu(SDL_Renderer* renderer, TTF_Font* font, const ButtonsPack* btn);
 
-#endif 
+#endif

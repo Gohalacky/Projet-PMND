@@ -16,7 +16,9 @@
 #include "ui/checkbox.h"
 #include "propwindow.h"
 #include "tradewindow.h"
+#include "prisonwindow.h"
 #include "pawn.h"
+#include "anim.h"
 #include "pausemenu.h"
 #include "loadmenu.h"
 #include "rules.h"
@@ -74,27 +76,27 @@ int main(){
 
     TextsPack texts = {
         /*Menu*/
-        .menuNewGame    = { "NOUVELLE PARTIE",      0, 275, 38, 0,290,38, ALIGN_CENTER_X, {235,221,192,255} },
-        .menuLoadGame   = { "CHARGER LA PARTIE",    0, 356, 38, 0,371,38, ALIGN_CENTER_X, {235,221,192,255} },
-        .menuSave       = { "REGLEMENT",          0, 436, 38, 0,451,38, ALIGN_CENTER_X, {235,221,192,255} },
+        .menuNewGame    = { "NOUVELLE PARTIE",      0, 270, 38, 0,290,38, ALIGN_CENTER_X, {235,221,192,255} },
+        .menuLoadGame   = { "CHARGER LA PARTIE",    0, 351, 38, 0,371,38, ALIGN_CENTER_X, {235,221,192,255} },
+        .menuSave       = { "REGLEMENT",          0, 431, 38, 0,451,38, ALIGN_CENTER_X, {235,221,192,255} },
  
         /*Nouvelle partie*/
         .titleNewGame   = { "Nouvelle Partie",      0,  53, 38, 0, 53,38, ALIGN_CENTER_X, {235,221,192,255} },
-        .chooseParam    = { "Choix des parametres", 0, 256, 38, 0,256,38, ALIGN_CENTER_X, {235,221,192,255} },
-        .numberPlayer   = { "Choix du nombre de joueurs", 0, 108, 38, 0,108,38, ALIGN_CENTER_X, {235,221,192,255} },
+        .chooseParam    = { "Choix des parametres", 0, 250, 38, 0,256,38, ALIGN_CENTER_X, {235,221,192,255} },
+        .numberPlayer   = { "Choix du nombre de joueurs", 0, 104, 38, 0,108,38, ALIGN_CENTER_X, {235,221,192,255} },
 
         .btnLaunchGame  = { "Lancer la partie",  790, 650, 22, 790,650,22, ALIGN_LEFT, {235,221,192,255} },
         .btnCancel      = { "Annuler",           395, 650, 22, 395,650,22, ALIGN_LEFT, {235,221,192,255} },
         .numbTurns      = { "Nombre de tours",   380, 310, 22, 380,310,22, ALIGN_LEFT, {235,221,192,255} },
         .tillBankruptcy = { "Ou jusqu'a la faillite", 380, 355, 22, 380,355,22, ALIGN_LEFT, {235,221,192,255} },
         .initialMoney   = { "Argent initial",    380, 430, 22, 380,430,22, ALIGN_LEFT, {235,221,192,255} },
-        .event          = { "Frequence d'evenement", 380, 536, 22, 380,536,22, ALIGN_LEFT, {235,221,192,255} },
+        .event          = { "Frequence d'evenement", 380, 533, 22, 380,536,22, ALIGN_LEFT, {235,221,192,255} },
  
         /*Plateau*/
-        .btnThrowDice   = { "Lancer les des",    1125, 575, 22, 1125,575,22, ALIGN_LEFT, {235,221,192,255} },
-        .btnProperties  = { "Proprietes",        1145, 626, 22, 1145,626,22, ALIGN_LEFT, {235,221,192,255} },
-        .btnEndTurn     = { "Fin de tour",       1145, 678, 22, 1145,678,22, ALIGN_LEFT, {235,221,192,255} },
-        .indNbTurn      = { "Tour",              105, 584, 22, 105,584,22, ALIGN_LEFT, {235,221,192,255} },
+        .btnThrowDice   = { "Lancer les des",    1125, 570, 22, 1125,575,22, ALIGN_LEFT, {235,221,192,255} },
+        .btnProperties  = { "Proprietes",        1145, 622, 22, 1145,626,22, ALIGN_LEFT, {235,221,192,255} },
+        .btnEndTurn     = { "Fin de tour",       1145, 674, 22, 1145,678,22, ALIGN_LEFT, {235,221,192,255} },
+        .indNbTurn      = { "Tour",              105, 579, 22, 105,584,22, ALIGN_LEFT, {235,221,192,255} },
     };
 
     TextBoxPack tboxes;
@@ -103,7 +105,7 @@ int main(){
     initTextBox(&tboxes.eventFreq,    680, 528,  140, 36);
 
     CheckboxPack checkboxes;
-    checkboxes.tourInfini = (Checkbox){ .ref = {680, 355, 20, 20}, .checked = 0 };
+    checkboxes.tourInfini = (Checkbox){ .ref = {680, 361, 20, 20}, .checked = 0 };
     ScaleCheckbox(&checkboxes.tourInfini, 1.0f, 1.0f);
 
     PropButtonsPack pb;
@@ -111,6 +113,9 @@ int main(){
 
     TradeButtonsPack tb;
     initTradeButtons(&tb);
+
+    PrisonButtonsPack pb_prison;
+    initPrisonButtons(&pb_prison);
 
     TradeState ts;
     memset(&ts, 0, sizeof(ts));
@@ -131,6 +136,9 @@ int main(){
 
     RulesMenuState rm;
     initRulesMenu(&rm);
+
+    Animation diceAnim;
+    initAnim(&diceAnim, tex.diceSheet, 156, 153, 27, 9, 15, true);
 
     Button* allButtons[] = {
         &btn.newGame, &btn.loadGame, &btn.save,
@@ -158,6 +166,7 @@ int main(){
 
 
     EtatJeu   state = MENU;
+    EtatJeu   prevState = MENU;
     bool      quit  = false;
     SDL_Event event;
     Uint32 lastTime=SDL_GetTicks();
@@ -167,9 +176,12 @@ int main(){
         Uint32 delta = now-lastTime;
         lastTime=now;
 
-        handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb, &tb, &ts, pawns, &lm, &rm);
+        prevState = state;
+        handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb, &tb, &ts, pawns, &lm, &rm, &pb_prison);
         updatePawns(pawns, partie.nbJoueurs, delta);
-        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm, &rm);
+        if (state == LANCER && prevState != LANCER) resetAnim(&diceAnim);
+        if (state == LANCER) updateAnim(&diceAnim, delta);
+        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm, &rm, &diceAnim, &pb_prison);
     }
 
     TTF_CloseFont(fontNormal);

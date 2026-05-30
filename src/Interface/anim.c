@@ -5,15 +5,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void initAnim(Animation *anim, SDL_Texture *sheet, int frameW, int frameH, int frameCount, int fps, bool loop){
+void initAnim(Animation *anim, SDL_Texture *sheet, int frameW, int frameH, int frameCount, int framesPerRow, int fps, bool loop){
     anim->sheet = sheet;
     anim->frameW = frameW;
     anim->frameH = frameH;
     anim->frameCount = frameCount;
-    anim->fps =fps;
-    anim->loop=loop;
+    anim->framesPerRow = (framesPerRow > 0) ? framesPerRow : frameCount;
+    anim->fps = fps;
+    anim->loop = loop;
     anim->currentFrame = 0;
-    anim->accumulator=0;
+    anim->accumulator = 0;
 }
 
 bool updateAnim(Animation* anim, Uint32 deltaMs){
@@ -45,7 +46,9 @@ void renderAnim(SDL_Renderer *renderer, Animation *anim, int x, int y, SDL_Rect 
         return;
     }
 
-    SDL_Rect src={anim->currentFrame*anim->frameW,0,anim->frameW, anim->frameH};
+    int col = anim->currentFrame % anim->framesPerRow;
+    int row = anim->currentFrame / anim->framesPerRow;
+    SDL_Rect src = {col * anim->frameW, row * anim->frameH, anim->frameW, anim->frameH};
 
     if(dst){
         SDL_RenderCopy(renderer, anim->sheet, &src, dst);

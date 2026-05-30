@@ -4,6 +4,7 @@
 #include "bridge.h"
 #include "propwindow.h"
 #include "tradewindow.h"
+#include "prisonwindow.h"
 #include "ui/button.h"
 #include "ui/text.h"
 #include "ui/counter.h"
@@ -18,9 +19,9 @@
 #include <stdlib.h>
 
 #define FONT "assets/FONT/fontPixel.ttf"
-#define DELAI_LANCER 2500 //en ms
+#define DELAI_LANCER 1800 //en ms
 
-static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack* texts,TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, PropButtonsPack* pb, TradeButtonsPack* tb, LoadMenuState* lm, RulesMenuState* rm){
+static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack* texts,TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, PropButtonsPack* pb, TradeButtonsPack* tb, LoadMenuState* lm, RulesMenuState* rm, PrisonButtonsPack* pb_prison){
     
     Button* allButtons[] = {
        &btn->newGame, &btn->loadGame, &btn->save,
@@ -58,11 +59,12 @@ static void handleResize(float ratioX, float ratioY, ButtonsPack* btn, TextsPack
     ScaleCheckbox(&checkboxes->tourInfini, ratioX, ratioY);
     scalePropButtons(pb, ratioX, ratioY);
     scaleTradeButtons(tb, ratioX, ratioY);
+    scalePrisonButtons(pb_prison, ratioX, ratioY);
     scaleLoadMenu(lm, ratioX, ratioY);
     scaleRulesMenu(rm, ratioX, ratioY);
 }
 
-static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter* counterJoueurs,TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie,ContexteJeu* ctx, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm){
+static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter* counterJoueurs,TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie,ContexteJeu* ctx, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm, PrisonButtonsPack* pb_prison){
     if (*state == NOUVPARTIE) handleTextBoxClick(tboxes, x, y);
  
     switch(*state){
@@ -144,6 +146,13 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
             }
 
             if (isClicked(&btn->throwDice, x, y) && btn->throwDice.disabled != 1) {
+                if (bridge_is_in_jail(ctx, partie)) {
+                    btn->throwDice.disabled = 1;
+                    btn->endTurn.disabled   = 1;
+                    *state = PRISON;
+                    break;
+                }
+
                 int ja = partie->joueursActif;
                 int previousPos = ctx->joueurs[ja]->position;
                 bridge_roll_and_move(ctx, partie);
@@ -152,6 +161,8 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 startPawnMove(&pawns[ja], previousPos, dice);
                 partie->temps_lancer = SDL_GetTicks();
                 partie->dejaLance = 1;
+
+                partie->posAvantCarte = ctx->joueurs[ja]->position;
 
                 CarteInfo carteInfo;
                 int pioche = bridge_play_turn(ctx, partie, &carteInfo);
@@ -166,16 +177,28 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                     partie->doubleEnAttente = bridge_is_double(ctx) ? 1 : 0;
                     btn->throwDice.disabled = 1;
                     btn->endTurn.disabled   = 1;
-                    *state = CARTE;
+                    *state = LANCER;
                 } else {
                     partie->carteEnCours = 0;
-                    btn->endTurn.disabled = 0;
-                    if (bridge_is_double(ctx)) {
-                        btn->throwDice.disabled = 0;
+                    if (bridge_check_bankruptcy_gameover(partie)) {
+                        *state = GAMEOVER;
                     } else {
-                        btn->throwDice.disabled = 1;
+                        int enPrison = bridge_is_in_jail(ctx, partie);
+                        if (enPrison) {
+                            partie->prisonPending = 1;
+                            btn->throwDice.disabled = 1;
+                            btn->endTurn.disabled   = 0;
+                        } else {
+                            if (bridge_is_double(ctx)) {
+                                btn->throwDice.disabled = 0;
+                                btn->endTurn.disabled   = 1;
+                            } else {
+                                btn->throwDice.disabled = 1;
+                                btn->endTurn.disabled   = 0;
+                            }
+                        }
+                        *state = LANCER;
                     }
-                    *state = LANCER;
                 }
             }
             if (isClicked(&btn->endTurn, x, y)) {
@@ -187,7 +210,7 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 bridge_tick_evenement(ctx);
                 int fini = bridge_next_turn(partie);
                 if (fini) {
-                    bridge_free(ctx); *state = MENU;
+                    *state = GAMEOVER;
                 } else {
                     switch(partie->nbJoueurs){ case 2: *state=PLATEAU2J; break; case 3: *state=PLATEAU3J; break; case 4: *state=PLATEAU4J; break; }
                 }
@@ -209,6 +232,10 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 break;
             }
             if (isClicked(&btn->endTurn, x, y)) {
+                if (partie->prisonPending) {
+                    partie->prisonPending = 0;
+                    snapPawnToCase(&pawns[partie->joueursActif], 10, pawns, partie->nbJoueurs);
+                }
                 partie->temps_lancer = 0;
                 partie->dejaLance = 0;
                 btn->throwDice.disabled = 0;
@@ -217,13 +244,13 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 partie->carteEnCours = 0;
                 bridge_tick_evenement(ctx);
                 int fini = bridge_next_turn(partie);
-                if (fini) { 
-                    bridge_free(ctx); *state = MENU; 
-                } else { 
-                    switch(partie->nbJoueurs){ 
-                        case 2: *state=PLATEAU2J; break; 
-                        case 3: *state=PLATEAU3J; break; 
-                        case 4: *state=PLATEAU4J; break; 
+                if (fini) {
+                    *state = GAMEOVER;
+                } else {
+                    switch(partie->nbJoueurs){
+                        case 2: *state=PLATEAU2J; break;
+                        case 3: *state=PLATEAU3J; break;
+                        case 4: *state=PLATEAU4J; break;
                     }
                 }
             }
@@ -236,6 +263,22 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
         case CARTE:
             if (isClicked(&btn->okCarte, x, y)) {
                 partie->carteEnCours = 0;
+                int ja_carte = partie->joueursActif;
+                int effet = partie->derniereCarte.effet;
+                if (effet == (int)CARTE_DEPLACEMENT_RELATIF || effet == (int)CARTE_DEPLACEMENT_ABSOLU) {
+                    int fromCase = partie->posAvantCarte;
+                    int toCase   = ctx->joueurs[ja_carte]->position;
+                    if (isPawnMoving(&pawns[ja_carte])) {
+                        snapPawnToCase(&pawns[ja_carte], fromCase, pawns, partie->nbJoueurs);
+                    }
+                    int steps;
+                    if (effet == (int)CARTE_DEPLACEMENT_RELATIF) {
+                        steps = partie->derniereCarte.valeur;
+                    } else {
+                        steps = (toCase - fromCase + BOARD_SIZE) % BOARD_SIZE;
+                    }
+                    startPawnMoveCard(&pawns[ja_carte], fromCase, steps);
+                }
                 if (partie->doubleEnAttente) {
                     partie->doubleEnAttente = 0;
                     btn->throwDice.disabled = 0;
@@ -244,7 +287,7 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 } else {
                     btn->endTurn.disabled   = 0;
                     btn->throwDice.disabled = 1;
-                    switch(partie->nbJoueurs){ case 2: *state=LANCER; break; case 3: *state=LANCER; break; case 4: *state=LANCER; break; }
+                    switch(partie->nbJoueurs){ case 2: *state=PLATEAU2J; break; case 3: *state=PLATEAU3J; break; case 4: *state=PLATEAU4J; break; }
                 }
             }
             break;
@@ -255,6 +298,19 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
 
         case TRADE:
             handleTradeClick(x, y, state, tb, ctx, partie, ts);
+            break;
+
+        case PRISON:
+            if (isClicked(&btn->backToMenu, x, y)) {
+                bridge_free(ctx);
+                *state = MENU;
+                break;
+            }
+            if (isClicked(&btn->pauseMenu, x, y)) {
+                *state = PAUSE;
+                break;
+            }
+            handlePrisonClick(x, y, state, pb_prison, btn, ctx, partie, pawns);
             break;
 
         case PAUSE:
@@ -273,12 +329,23 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
             }
             break;
 
+        case GAMEOVER:
+            if (isClicked(&btn->backToMenu, x, y)) {
+                bridge_free(ctx);
+                *state = MENU;
+            }
+            break;
+
         default: break;
     }
 }
 
 static void endThrow(EtatJeu* state, EtatPartie* partie){
     partie->temps_lancer = 0;
+    if (partie->carteEnCours) {
+        *state = CARTE;
+        return;
+    }
     switch(partie->nbJoueurs){
         case 2: *state = PLATEAU2J; break;
         case 3: *state = PLATEAU3J; break;
@@ -286,10 +353,14 @@ static void endThrow(EtatJeu* state, EtatPartie* partie){
     }
 }
 
-void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* texts, TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm) {
+void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* texts, TTF_Font** fontNormal, TTF_Font** fontTitle, TTF_Font** fontButton, bool* quit, Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm, PrisonButtonsPack* pb_prison) {
 
     if(*state==LANCER && partie->temps_lancer>0){
         if(SDL_GetTicks()- partie->temps_lancer>= DELAI_LANCER){
+            if (partie->prisonPending) {
+                partie->prisonPending = 0;
+                snapPawnToCase(&pawns[partie->joueursActif], 10, pawns, partie->nbJoueurs);
+            }
             endThrow(state, partie);
             return;
         }
@@ -329,14 +400,26 @@ void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* 
             int x, y;
             SDL_GetMouseState(&x, &y);
             printf("Click en x : %d ; y : %d\n", x,y);
-            handleClick(x, y, state, btn, counterJoueurs, tboxes, checkboxes, partie, ctx, pb, tb, ts, pawns, lm, rm);
+            handleClick(x, y, state, btn, counterJoueurs, tboxes, checkboxes, partie, ctx, pb, tb, ts, pawns, lm, rm, pb_prison);
+        }
+
+        if (event->type == SDL_MOUSEWHEEL) {
+            if (*state == REGLEMENT) {
+                handleRulesMenuScroll(rm, event->wheel.y);
+            } else if (*state == CHARGERPARTIE) {
+                handleLoadMenuScroll(lm, event->wheel.y);
+            } else if (*state == PROPRIETE) {
+                PropInfo owned[NB_PROPRIETE];
+                int nbOwned = bridge_get_owned_props(ctx, partie, owned, NB_PROPRIETE);
+                handlePropScroll(pb, event->wheel.y, nbOwned);
+            }
         }
  
         if (event->type == SDL_WINDOWEVENT &&
             event->window.event == SDL_WINDOWEVENT_RESIZED) {
             float ratioX = (float)event->window.data1 / REF_W;
             float ratioY = (float)event->window.data2 / REF_H;
-            handleResize(ratioX, ratioY, btn, texts, fontNormal, fontTitle, fontButton, counterJoueurs, tboxes, checkboxes, pb, tb, lm, rm);
+            handleResize(ratioX, ratioY, btn, texts, fontNormal, fontTitle, fontButton, counterJoueurs, tboxes, checkboxes, pb, tb, lm, rm, pb_prison);
         }
     }
 }

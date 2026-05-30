@@ -12,18 +12,19 @@ int loadTextures(SDL_Renderer* renderer, TexturesPack* tex){
     tex->gameBoard3Player       = IMG_LoadTexture(renderer, "assets/IMAGE/gameBoard3Player.png");
     tex->gameBoard4Player       = IMG_LoadTexture(renderer, "assets/IMAGE/gameBoard4Player.png");
     tex->throws                 = IMG_LoadTexture(renderer, "assets/IMAGE/throws.png");
+    tex->diceSheet              = IMG_LoadTexture(renderer, "assets/IMAGE/SpriteSheet.png");
     tex->menuProperties         = IMG_LoadTexture(renderer, "assets/IMAGE/Menu_interne.png");
     tex->test                   = IMG_LoadTexture(renderer, "assets/IMAGE/TEST.png");
 
-    tex->maison[0]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maison x1.png");
-    tex->maison[1]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maison x2.png");
-    tex->maison[2]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maison x3.png");
-    tex->immeuble[0] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeuble x1.png");
-    tex->immeuble[1] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeuble x2.png");
-    tex->immeuble[2] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeuble x3.png");
-    tex->parc[0]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parc x1.png");
-    tex->parc[1]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parc x2.png");
-    tex->parc[2]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parc x3.png");
+    tex->maison[0]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maisonx1.png");
+    tex->maison[1]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maisonx2.png");
+    tex->maison[2]   = IMG_LoadTexture(renderer, "assets/IMAGE/Maisonx3.png");
+    tex->immeuble[0] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeublex1.png");
+    tex->immeuble[1] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeublex2.png");
+    tex->immeuble[2] = IMG_LoadTexture(renderer, "assets/IMAGE/Immeublex3.png");
+    tex->parc[0]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parcx1.png");
+    tex->parc[1]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parcx2.png");
+    tex->parc[2]     = IMG_LoadTexture(renderer, "assets/IMAGE/Parcx3.png");
     tex->fondProp    = IMG_LoadTexture(renderer, "assets/IMAGE/Fond_prop.png");
 
     tex->pion[0]=IMG_LoadTexture(renderer, "assets/IMAGE/pion1.png");
@@ -34,7 +35,7 @@ int loadTextures(SDL_Renderer* renderer, TexturesPack* tex){
     SDL_Texture* all[] = {
         tex->menu, tex->newGame, tex->launchGame,
         tex->gameBoard2Player, tex->gameBoard3Player, tex->gameBoard4Player,
-        tex->throws, tex->menuProperties, tex->test,tex->maison[0],   tex->maison[1],   tex->maison[2],
+        tex->throws, tex->diceSheet, tex->menuProperties, tex->test,tex->maison[0],   tex->maison[1],   tex->maison[2],
         tex->immeuble[0], tex->immeuble[1], tex->immeuble[2],
         tex->parc[0],     tex->parc[1],     tex->parc[2],
         tex->fondProp, tex->pion[0],tex->pion[1],tex->pion[2],tex->pion[3],
@@ -64,6 +65,7 @@ void freeTextures(TexturesPack* tex){
     safeDestroy(&tex->gameBoard3Player);
     safeDestroy(&tex->gameBoard4Player);
     safeDestroy(&tex->throws);
+    safeDestroy(&tex->diceSheet);
     safeDestroy(&tex->menuProperties);
     safeDestroy(&tex->test);
     for (int i = 0; i < 3; i++) {
