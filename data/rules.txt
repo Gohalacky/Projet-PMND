@@ -1,21 +1,21 @@
-INSA’POLY — RÈGLES OFFICIELLES COMPLÈTES
+INSA POLY — RÈGLES OFFICIELLES COMPLÈTES
 ________________________________________
 
 1. INTRODUCTION
 
-INSA’poly est un jeu de stratégie inspiré du Monopoly, 
+INSA poly est un jeu de stratégie inspiré du Monopoly, 
 se déroulant dans un environnement étudiant. 
 Les joueurs investissent dans des propriétés, développent 
-leur patrimoine et doivent s’adapter à un système écologique 
+leur patrimoine et doivent s adapter à un système écologique 
 et à des événements globaux.
 Chaque action influence à la fois la richesse du joueur et 
 son impact environnemental, ce qui conditionne 
-le déroulement et l’issue de la partie.
+le déroulement et l issue de la partie.
 ________________________________________
 
 2. OBJECTIF DU JEU
 
-Le but du jeu est d’obtenir le score final le plus élevé, 
+Le but du jeu est d obtenir le score final le plus élevé, 
 soit en éliminant les autres joueurs (mode classique), 
 soit en maximisant sa richesse et son indice écologique (mode limité).
 ________________________________________
@@ -26,7 +26,7 @@ ________________________________________
 
 Deux modes sont possibles :
 - Mode classique : la partie se termine 
-lorsqu’il ne reste qu’un seul joueur. 
+lorsqu il ne reste qu un seul joueur. 
 - Mode limité : un nombre de tours est fixé. 
 À la fin, un score est calculé pour chaque joueur. 
 ________________________________________
@@ -47,18 +47,18 @@ Tous les joueurs commencent avec un indice écologique neutre :
 C
 ________________________________________
 
-4. DÉROULEMENT D’UN TOUR
+4. DÉROULEMENT D UN TOUR
 
 Un tour de joueur se déroule ainsi :
 
 1.	Lancer des dés 
 2.	Déplacement 
-3.	Application de l’effet de la case 
+3.	Application de l effet de la case 
 4.	Actions éventuelles (achat, construction, échange) 
 ________________________________________
 
 5. PROPRIÉTÉS ET AMÉNAGEMENTS
-Chaque propriété peut être développée avec différents types d’aménagements.
+Chaque propriété peut être développée avec différents types d aménagements.
 
 5.1 Types
 
@@ -75,7 +75,7 @@ Logements :
 Parcs :
 - coût variable 
 - faible rendement 
-- amélioration importante de l’indice écologique 
+- amélioration importante de l indice écologique 
 ________________________________________
 
 6. CARTES
@@ -112,11 +112,11 @@ Le joueur perd 10 ECTS.
 
 Avance de 3 cases :
 Le joueur avance immédiatement 
-de 3 cases et applique l’effet de la nouvelle case.
+de 3 cases et applique l effet de la nouvelle case.
 
 Recule de 2 cases :
 Le joueur recule immédiatement 
-de 2 cases et applique l’effet de la nouvelle case.
+de 2 cases et applique l effet de la nouvelle case.
 
 Semaine de partiels :
 Le joueur ne peut pas construire 
@@ -125,7 +125,7 @@ lors de son prochain tour.
 Sortie de prison :
 Carte spéciale. Le joueur la conserve en main. 
 Elle peut être utilisée à tout moment pour sortir de prison. 
-Elle ne retourne dans la pioche qu’après utilisation.
+Elle ne retourne dans la pioche qu après utilisation.
 ________________________________________
 
 6.2 CARTES CAISSE COMMUNAUTÉ (EFFETS COLLECTIFS)
@@ -203,7 +203,7 @@ Effet :
 
 Application :
 - tout achat de maison, logement ou parc est plus coûteux 
-- n’affecte pas les loyers 
+- n affecte pas les loyers 
 ________________________________________
 
 Inflation
@@ -237,7 +237,7 @@ Particularité :
 écologique A ou B paient seulement la moitié 
 
 Application :
-- paiement immédiat à chaque déclenchement de l’événement 
+- paiement immédiat à chaque déclenchement de l événement 
 ________________________________________
 
 Inondations
@@ -247,7 +247,7 @@ Effet :
 
 Application :
 - les joueurs ne peuvent pas interagir avec ces cases 
-- impossibilité d’acheter ou de construire sur ces cases 
+- impossibilité d acheter ou de construire sur ces cases 
 - les effets de case peuvent être ignorés ou neutralisés selon implémentation 
 ________________________________________
 
@@ -256,8 +256,8 @@ Effet principal :
 - loyers multipliés par 2 
 
 Effet secondaire :
-- lorsqu’un joueur tombe sur sa propre propriété, il peut choisir : 
-o soit de s’arrêter immédiatement et ne pas continuer son déplacement, 
+- lorsqu un joueur tombe sur sa propre propriété, il peut choisir : 
+o soit de s arrêter immédiatement et ne pas continuer son déplacement, 
 o soit de continuer normalement 
 
 Application :
@@ -292,12 +292,12 @@ ________________________________________
 13. FIN DE PARTIE
 
 Mode classique
-Un joueur est éliminé s’il ne peut plus payer ses dettes.
+Un joueur est éliminé s il ne peut plus payer ses dettes.
 Le dernier joueur restant gagne.
 ________________________________________
 
 Mode limité
-La partie s’arrête après un nombre de tours fixé.
+La partie s arrête après un nombre de tours fixé.
 ________________________________________
 
 A noter
