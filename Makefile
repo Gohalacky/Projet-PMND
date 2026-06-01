@@ -141,6 +141,8 @@ valgrind_game: $(TARGET)
 # Lance Valgrind sur tous les tests sans interface graphique
 valgrind: valgrind_test valgrind_cartes
 
+
+#---- CLEAN ----
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 	@echo "Fichiers objets, binaires et couverture supprimés"
