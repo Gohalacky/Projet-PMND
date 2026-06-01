@@ -34,7 +34,7 @@ typedef struct {
  * @param prop la proprieté mise en enchere
  * @param p le joueur qui n'a pas acheté en tombant sur la case
  */
-AuctionState* init_auction_prop(Property *prop, Player *all_players[], int nb_joueurs_total);
+AuctionState* init_auction_prop(Property *prop, Player *p, Player *all_players[],int nb_joueurs_total);
 
 /**
  * @brief initialise la mise en enchere d'une gare
@@ -42,7 +42,7 @@ AuctionState* init_auction_prop(Property *prop, Player *all_players[], int nb_jo
  * @param g la gare mise en enchere
  * @param p le joueur qui n'a pas acheté en tombant sur la case
  */
-AuctionState* init_auction_gar(Gares *g, Player *all_players[], int nb_joueurs_total);
+AuctionState* init_auction_gar(Gares *g, Player *p,Player *all_players[],int nb_joueurs_total);
 
 /**
  * @brief initialise la mise en enchere d'une compagnie
@@ -50,7 +50,7 @@ AuctionState* init_auction_gar(Gares *g, Player *all_players[], int nb_joueurs_t
  * @param c la compagnie mise en enchere
  * @param p le joueur qui n'a pas acheté en tombant sur la case
  */
-AuctionState* init_auction_comp(Compagnies *c, Player *all_players[], int nb_joueurs_total);
+AuctionState* init_auction_comp(Compagnies *c, Player *p,Player *all_players[],int nb_joueurs_total);
 
 /**
  * @brief Vérifie si l'enchère d'un joueur est en règle

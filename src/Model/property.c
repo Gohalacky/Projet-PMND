@@ -191,11 +191,8 @@ int chargement_COMPAGNIE_loyer(Compagnies * plateau[NB_COMPAGNIE], const char* n
 int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){
     int i;
     for(i=0; i<NB_PROPRIETE; i++){
-        if(tableau[i]->color == couleur){
-            if(tableau[i]->owner != p->number){
-                /*printf("%s ne possède pas toute la couleur %s \n",p->name,color_names[couleur]);*/ //inutile 
-                return 0 ; /*ne possède pas toute la couleur*/
-            }
+        if(tableau[i] != NULL && tableau[i]->color == couleur){ // Protection !
+            if(tableau[i]->owner != p->number) return 0;
         }
     }
     printf("\n%s possède toute la couleur %s \n",p->name,color_names[couleur]);
@@ -207,7 +204,7 @@ int full_Comp(Compagnies * tableau[NB_COMPAGNIE],Player *p){
     int n;
     n=0;
     for(i=0; i<NB_COMPAGNIE; i++){
-        if(tableau[i]->owner == p->number){
+        if(tableau[i] != NULL && tableau[i]->owner == p->number){
             n++;
         }
     }
@@ -222,7 +219,7 @@ int nb_Gare(Gares * tableau[NB_GARE], Player *p){
     int n;
     n=0;
     for(i=0; i<NB_GARE; i++){
-        if(tableau[i]->owner == p->number){
+        if(tableau[i] != NULL && tableau[i]->owner == p->number){
             n++;
         }
     }

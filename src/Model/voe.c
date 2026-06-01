@@ -4,7 +4,7 @@
 #include "voe.h"
 
 
-AuctionState* init_auction_prop(Property *prop, Player *all_players[], int nb_joueurs_total) {
+AuctionState* init_auction_prop(Property *prop, Player *p_refus, Player *all_players[], int nb_joueurs_total) {
     AuctionState *auction = (AuctionState *)calloc(1, sizeof(AuctionState));
     if (!auction) return NULL;
 
@@ -14,17 +14,23 @@ AuctionState* init_auction_prop(Property *prop, Player *all_players[], int nb_jo
     auction->current_bid = 10; // Mise à prix de base
     auction->highest_bidder = NULL;
     
-    // Tous les joueurs participent, y compris celui qui a refusé (règles officielles)
-    auction->players_left = nb_joueurs_total;
+    // Le nombre de joueurs restants, c'est le total MOINS celui qui a refusé
+    auction->players_left = nb_joueurs_total - 1; 
 
+    // On remplit le tableau des participants
+    int index_enchere = 0;
     for (int i = 0; i < nb_joueurs_total; i++) {
-        auction->in_auction[i] = all_players[i];
+        // Si le joueur n'est PAS celui qui a refusé, on l'ajoute 
+        if (all_players[i] != p_refus) {
+            auction->in_auction[index_enchere] = all_players[i];
+            index_enchere++;
+        }
     }
 
     return auction;
 }
 
-AuctionState* init_auction_comp(Compagnies *c, Player *all_players[], int nb_joueurs_total) {
+AuctionState* init_auction_comp(Compagnies *c, Player *p_refus, Player *all_players[], int nb_joueurs_total) {
     AuctionState *auction = (AuctionState *)calloc(1, sizeof(AuctionState));
     if (!auction) return NULL;
 
@@ -34,17 +40,23 @@ AuctionState* init_auction_comp(Compagnies *c, Player *all_players[], int nb_jou
     auction->current_bid = 10; // Mise à prix de base
     auction->highest_bidder = NULL;
     
-    // Tous les joueurs participent, y compris celui qui a refusé (règles officielles)
-    auction->players_left = nb_joueurs_total;
+    // Le nombre de joueurs restants, c'est le total MOINS celui qui a refusé
+    auction->players_left = nb_joueurs_total - 1; 
 
+    // On remplit le tableau des participants
+    int index_enchere = 0;
     for (int i = 0; i < nb_joueurs_total; i++) {
-        auction->in_auction[i] = all_players[i];
+        // Si le joueur n'est PAS celui qui a refusé, on l'ajoute 
+        if (all_players[i] != p_refus) {
+            auction->in_auction[index_enchere] = all_players[i];
+            index_enchere++;
+        }
     }
 
     return auction;
 }
 
-AuctionState* init_auction_gar(Gares *g, Player *all_players[], int nb_joueurs_total) {
+AuctionState* init_auction_gar(Gares *g, Player *p_refus, Player *all_players[], int nb_joueurs_total) {
     AuctionState *auction = (AuctionState *)calloc(1, sizeof(AuctionState));
     if (!auction) return NULL;
 
@@ -54,11 +66,17 @@ AuctionState* init_auction_gar(Gares *g, Player *all_players[], int nb_joueurs_t
     auction->current_bid = 10; // Mise à prix de base
     auction->highest_bidder = NULL;
     
-    // Tous les joueurs participent, y compris celui qui a refusé (règles officielles)
-    auction->players_left = nb_joueurs_total;
+    // Le nombre de joueurs restants, c'est le total MOINS celui qui a refusé
+    auction->players_left = nb_joueurs_total - 1; 
 
+    // On remplit le tableau des participants
+    int index_enchere = 0;
     for (int i = 0; i < nb_joueurs_total; i++) {
-        auction->in_auction[i] = all_players[i];
+        // Si le joueur n'est PAS celui qui a refusé, on l'ajoute 
+        if (all_players[i] != p_refus) {
+            auction->in_auction[index_enchere] = all_players[i];
+            index_enchere++;
+        }
     }
 
     return auction;
