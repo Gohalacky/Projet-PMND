@@ -198,9 +198,8 @@ static void _render_build_offer(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* 
 
     /* Indicateur de défilement */
     if (nb > per_page) {
-        char info[48];
-        snprintf(info, sizeof(info), "[ %d - %d / %d ]  molette pour defiler",
-                 tb->scroll_assets + 1, tb->scroll_assets + visible, nb);
+        char info[80];
+        snprintf(info, sizeof(info), "[ %d - %d / %d ]  molette pour defiler",tb->scroll_assets + 1, tb->scroll_assets + visible, nb);
         printText(r, fontSmall, info, C_GRIS, leftX, maxY + (int)(4 * ry));
     }
 }

@@ -146,9 +146,9 @@ void engine_handle_purchase(Player *p, void *asset, int type,
         printf("\n ═══ VENTE AUX ENCHÈRES : %s (mise de départ : 10 ECTS) ═══\n", name);
 
         AuctionState *auction = NULL;
-        if (type == 1) auction = init_auction_prop((Property*)asset, all_players, nb_joueurs);
-        else if (type == 2) auction = init_auction_gar((Gares*)asset, all_players, nb_joueurs);
-        else if (type == 3) auction = init_auction_comp((Compagnies*)asset, all_players, nb_joueurs);
+        if (type == 1) auction = init_auction_prop((Property*)asset, p, all_players, nb_joueurs);
+        else if (type == 2) auction = init_auction_gar((Gares*)asset, p, all_players, nb_joueurs);
+        else if (type == 3) auction = init_auction_comp((Compagnies*)asset, p, all_players, nb_joueurs);
 
         if (!auction) return;
 
