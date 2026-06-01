@@ -386,6 +386,13 @@ void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* 
                     case 4: *state = PLATEAU4J; break;
                     default: *state = PLATEAU2J; break;
                 }
+            } else if (*state == PROPRIETE || *state == TRADE || *state == CARTE || *state == PRISON) {
+                switch (partie->nbJoueurs) {
+                    case 2: *state = PLATEAU2J; break;
+                    case 3: *state = PLATEAU3J; break;
+                    case 4: *state = PLATEAU4J; break;
+                    default: *state = PLATEAU2J; break;
+                }
             } else {
                 bridge_free(ctx);
                 *state = MENU;
@@ -414,6 +421,11 @@ void handleEvents(SDL_Event* event, EtatJeu* state,ButtonsPack* btn, TextsPack* 
                 PropInfo owned[NB_PROPRIETE];
                 int nbOwned = bridge_get_owned_props(ctx, partie, owned, NB_PROPRIETE);
                 handlePropScroll(pb, event->wheel.y, nbOwned);
+            } else if (*state == TRADE &&
+                       (ts->phase == TRADE_PHASE_BUILD_OFFER ||
+                        ts->phase == TRADE_PHASE_BUILD_DEMAND)) {
+                tb->scroll_assets -= event->wheel.y;
+                if (tb->scroll_assets < 0) tb->scroll_assets = 0;
             }
         }
  

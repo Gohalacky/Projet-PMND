@@ -33,13 +33,13 @@ void calcul_moyenne_eco_index_player(Player *p, Property **board, int board_size
     int moyenne = 0;
 
     for (int i = 0; i < board_size; i++) {
-        if (board[i] != NULL && board[i]->owner == p->number) {
+        if (board[i] != NULL && board[i]->owner == p->number && board[i]->indice > 0) {
             somme += board[i]->indice;
             nb_propriete++;
         }
     }
 
-    // Si le joueur ne possède rien, il reste Grade A
+    // Si le joueur n'a aucune construction, il reste Grade A
     if (nb_propriete == 0) {
         p->eco_index = GRADE_A;
     } else {

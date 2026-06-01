@@ -210,6 +210,7 @@ int savegame_load_file(const char* filepath, EtatPartie* partie, ContexteJeu* ct
         }
     }
 
+    bridge_free(ctx);
     if (bridge_init(ctx, partie) < 0) {
         printf("[savegame] Erreur bridge_init lors du chargement.\n");
         cJSON_Delete(root);

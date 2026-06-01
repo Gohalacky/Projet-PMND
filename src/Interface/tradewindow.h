@@ -54,6 +54,9 @@ typedef struct {
     /* Récapitulatif (phase 4) */
     Button accepter;
     Button refuser;
+
+    /* Défilement de la liste de biens (phases 1 et 2) */
+    int scroll_assets;
 } TradeButtonsPack;
 
 /* ─── Initialisations ─────────────────────────────────────────── */

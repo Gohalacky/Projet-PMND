@@ -161,32 +161,47 @@ static void _render_build_offer(SDL_Renderer* r,TTF_Font* fontNormal, TTF_Font* 
 
     TradeAssetInfo assets[TRADE_MAX_ASSETS];
     int nb = bridge_trade_get_assets(ctx, joueur_idx, assets, TRADE_MAX_ASSETS, ts);
-    tb->nb_asset_btns = nb;
 
-    int lineH = 46;
+    int rowH   = (int)(46 * ry);
     int startY = (int)((WIN_Y + TITLE_H + 130) * ry);
     int maxY   = (int)((WIN_Y + WIN_H - 80) * ry);
+    int per_page = (rowH > 0) ? (maxY - startY) / rowH : nb;
 
-    if (nb == 0) {
+    int max_scroll = nb - per_page;
+    if (max_scroll < 0) max_scroll = 0;
+    if (tb->scroll_assets > max_scroll) tb->scroll_assets = max_scroll;
+    if (tb->scroll_assets < 0)          tb->scroll_assets = 0;
+
+    if (nb == 0)
         printText(r, fontSmall, "  Aucun bien echangeable.", C_GRIS, leftX, startY);
-    }
 
-    for (int i = 0; i < nb; i++) {
-        int by = startY + i * (int)(lineH * ry);
-        if (by + (int)(lineH * ry) > maxY) break;
+    int visible = 0;
+    for (int i = 0; i < per_page; i++) {
+        int asset_idx = tb->scroll_assets + i;
+        if (asset_idx >= nb) break;
 
-        tb->asset_btn[i].rect.y = by;
+        tb->asset_btn[i].rect.y = startY + i * rowH;
         tb->asset_btn[i].rect.x = (int)((WIN_X + 30) * rx);
         tb->asset_btn[i].rect.w = (int)((BTN_W + 200) * rx);
         tb->asset_btn[i].rect.h = (int)(40 * ry);
 
-        int sel = bridge_trade_is_selected(ts, &assets[i]);
-        SDL_Color bg = sel ? C_BLEU : C_GRIS;
+        int sel = bridge_trade_is_selected(ts, &assets[asset_idx]);
+        const char* type_str = (assets[asset_idx].type == 1) ? "[T]"
+                             : (assets[asset_idx].type == 2) ? "[G]" : "[C]";
+        snprintf(buf, sizeof(buf), "%s %-20s  %d ECTS",
+                 type_str, assets[asset_idx].name, assets[asset_idx].value);
+        _draw_button(r, fontSmall, &tb->asset_btn[i], buf,
+                     sel ? C_BLEU : C_GRIS, C_BLANC);
+        visible++;
+    }
+    tb->nb_asset_btns = visible;
 
-        const char* type_str = (assets[i].type == 1) ? "[T]"
-                             : (assets[i].type == 2) ? "[G]" : "[C]";
-        snprintf(buf, sizeof(buf), "%s %-20s  %d ECTS",type_str, assets[i].name, assets[i].value);
-        _draw_button(r, fontSmall, &tb->asset_btn[i], buf, bg, C_BLANC);
+    /* Indicateur de défilement */
+    if (nb > per_page) {
+        char info[48];
+        snprintf(info, sizeof(info), "[ %d - %d / %d ]  molette pour defiler",
+                 tb->scroll_assets + 1, tb->scroll_assets + visible, nb);
+        printText(r, fontSmall, info, C_GRIS, leftX, maxY + (int)(4 * ry));
     }
 }
 
@@ -399,6 +414,7 @@ void handleTradeClick(int x, int y,EtatJeu* state,TradeButtonsPack* tb,ContexteJ
             for (int i = 0; i < nb; i++) {
                 if (isClicked(&tb->target[i], x, y)) {
                     bridge_trade_select_target(ctx, ts, idx[i]);
+                    tb->scroll_assets = 0;
                     return;
                 }
             }
@@ -414,9 +430,11 @@ void handleTradeClick(int x, int y,EtatJeu* state,TradeButtonsPack* tb,ContexteJ
             TradeAssetInfo assets[TRADE_MAX_ASSETS];
             int nb = bridge_trade_get_assets(ctx, joueur_idx, assets, TRADE_MAX_ASSETS, ts);
 
-            for (int i = 0; i < nb && i < tb->nb_asset_btns; i++) {
+            for (int i = 0; i < tb->nb_asset_btns; i++) {
                 if (isClicked(&tb->asset_btn[i], x, y)) {
-                    bridge_trade_toggle_asset(ctx, ts, &assets[i]);
+                    int asset_idx = tb->scroll_assets + i;
+                    if (asset_idx < nb)
+                        bridge_trade_toggle_asset(ctx, ts, &assets[asset_idx]);
                     return;
                 }
             }
@@ -424,11 +442,13 @@ void handleTradeClick(int x, int y,EtatJeu* state,TradeButtonsPack* tb,ContexteJ
             /* Navigation */
             if (isClicked(&tb->suivant, x, y)) {
                 bridge_trade_next_phase(ctx, ts);
+                tb->scroll_assets = 0;
                 return;
             }
             if (isClicked(&tb->precedent, x, y)) {
                 if (ts->phase > TRADE_PHASE_BUILD_OFFER)
                     ts->phase = (TradePhase)(ts->phase - 1);
+                tb->scroll_assets = 0;
                 return;
             }
             break;
