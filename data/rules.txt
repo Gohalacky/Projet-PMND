@@ -1,4 +1,4 @@
-INSA POLY — RÈGLES OFFICIELLES COMPLÈTES
+INSA POLY - RÈGLES OFFICIELLES COMPLÈTES
 ________________________________________
 
 1. INTRODUCTION
@@ -51,10 +51,10 @@ ________________________________________
 
 Un tour de joueur se déroule ainsi :
 
-1.	Lancer des dés 
-2.	Déplacement 
-3.	Application de l effet de la case 
-4.	Actions éventuelles (achat, construction, échange) 
+1. Lancer des dés 
+2. Déplacement 
+3. Application de l effet de la case 
+4. Actions éventuelles (achat, construction, échange) 
 ________________________________________
 
 5. PROPRIÉTÉS ET AMÉNAGEMENTS
@@ -176,13 +176,13 @@ ________________________________________
 
 Certaines cartes et événements imposent une taxe :
 
-Note	Coefficient
-A	x0.5
-B	x0.8
-C	x1.0
-D	x1.2
-E	x1.5
-F	x2.0
+Note Coefficient
+A    x0.5
+B    x0.8
+C    x1.0
+D    x1.2
+E    x1.5
+F    x2.0
 
 Le montant final payé est égal à :
 base × coefficient
