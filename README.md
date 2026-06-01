@@ -62,7 +62,7 @@ Le projet suit le modèle Modèle-Vue-Contrôleur :
 Environnement Linux recommandé. Paquets nécessaires :
 
 | Usage | Paquets |
-|---|---|
+
 | Compilation | `gcc`, `make` |
 | Interface graphique | `libsdl2-dev`, `libsdl2-image-dev`, `libsdl2-ttf-dev` |
 | Sérialisation JSON | `libcjson-dev` |
