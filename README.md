@@ -66,8 +66,14 @@ Environnement Linux recommandé. Paquets nécessaires :
 | Compilation | `gcc`, `make` |
 | Interface graphique | `libsdl2-dev`, `libsdl2-image-dev`, `libsdl2-ttf-dev` |
 | Sérialisation JSON | `libcjson-dev` |
-| Tests unitaires | `libcmocka-dev` |
-| Documentation | `doxygen`, `graphviz` |
+| Tests unitaires | `libcmocka-dev` `gcovr`|
+| Documentation | `doxygen`, `graphviz` `valgrind`|
+
+Vous pouvez installer toutes les dépendances nécessaires via la commande suivante :
+
+sudo apt update
+sudo apt install build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcmocka-dev doxygen graphviz gcovr valgrind
+
 
 ---
 
@@ -96,10 +102,12 @@ make run_test         # Exécute les tests des cartes
 ### Couverture et documentation
 
 ```bash
-make coverage   # Génère le rapport de couverture de code (gcovr)
-make doc        # Génère la documentation Doxygen et l'ouvre dans le navigateur
-make clean      # Supprime les fichiers objets et binaires
-make mrproper   # clean + suppression de la documentation générée
+make coverage       # Génère le rapport de couverture de code (gcovr)
+make doc            # Génère la documentation Doxygen et l'ouvre dans le navigateur
+make valgrind       # Génère le rapport valgrind des tests unitaires
+make valgrind_game  # Génère le rapprot valgrind du jeu complet
+make clean          # Supprime les fichiers objets et binaires
+make mrproper       # clean + suppression de la documentation générée
 ```
 
 ---

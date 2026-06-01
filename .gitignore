@@ -13,3 +13,4 @@ interface
 controlleur
 docs/
 *.xml
+rapport_valgrind_test.txt
