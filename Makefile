@@ -1,14 +1,15 @@
 CC      = gcc
-CFLAGS  = -Wall -Wextra -g -Isrc/Model -Isrc/Interface -Isrc/Controller $(shell sdl2-config --cflags)
+# AJOUT : -O0 et --coverage pour permettre la génération des rapports GCOVR
+CFLAGS  = -Wall -Wextra -g -O0 --coverage -Isrc/Model -Isrc/Interface -Isrc/Controller $(shell sdl2-config --cflags)
 LDFLAGS   = -lcmocka
 LIBS      = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf -lm -lcjson
 LIBS_BASE = -lm
 
-SRC_DIR  = src
-MOD_DIR  = src/Model
-CTRL_DIR = src/Controller
+SRC_DIR   = src
+MOD_DIR   = src/Model
+CTRL_DIR  = src/Controller
 IFACE_DIR = src/Interface
-UI_DIR   = src/Interface/ui
+UI_DIR    = src/Interface/ui
 BUILD_DIR = build
 BIN_DIR   = bin
 
@@ -19,7 +20,7 @@ SRC_MOD = $(MOD_DIR)/cartes.c       \
           $(MOD_DIR)/property.c     \
           $(MOD_DIR)/tool.c         \
           $(MOD_DIR)/trade.c        \
-          $(MOD_DIR)/prison.c   \
+          $(MOD_DIR)/prison.c       \
           $(MOD_DIR)/voe.c
 
 SRC_CTRL = $(CTRL_DIR)/game_engine.c \
@@ -27,7 +28,7 @@ SRC_CTRL = $(CTRL_DIR)/game_engine.c \
            $(CTRL_DIR)/plateau.c
 
 SRC_CTRL_CONSOLE = $(CTRL_DIR)/game_engine_console.c \
-                   $(CTRL_DIR)/engine_logic.c         \
+                   $(CTRL_DIR)/engine_logic.c        \
                    $(CTRL_DIR)/plateau.c
 
 SRC_IFACE = $(IFACE_DIR)/main_interface.c \
@@ -69,20 +70,27 @@ CONTROLLEUR = $(BIN_DIR)/controlleur
 
 all: $(TARGET)
 
+# Règle générique pour compiler le code source
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# AJOUT : Règle spécifique pour compiler les tests dans le dossier build/
+$(BUILD_DIR)/tests/%.o: tests/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(TARGET): $(ALL_OBJ)
 	mkdir -p $(BIN_DIR)
-	$(CC) $^ -o $@ $(LIBS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 	@echo "✔  Compilation réussie → $(TARGET)"
 
-test: tests/test.c $(SRC_MOD)
+# MODIFICATION : On utilise les .o au lieu des .c pour garder les fichiers de couverture au propre
+test: $(BUILD_DIR)/tests/test.o $(OBJ_COMMON)
 	mkdir -p $(BIN_DIR)
 	$(CC) $(CFLAGS) $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS_BASE)
 
-test_cartes: tests/test_cartes_evenements.c $(SRC_MOD)
+test_cartes: $(BUILD_DIR)/tests/test_cartes_evenements.o $(OBJ_COMMON)
 	mkdir -p $(BIN_DIR)
 	$(CC) $(CFLAGS) $^ -o $(TEST_CARTES) $(LDFLAGS) $(LIBS_BASE)
 
@@ -104,6 +112,11 @@ run_test: test_cartes
 run_controlleur: controlleur
 	./$(CONTROLLEUR)
 
+# AJOUT : La cible coverage de l'ancien projet
+coverage: run_unit_tests run_test
+	gcovr -r . --html-details -o rapport_global.html
+	firefox rapport_global.html &
+
 doc:
 	doxygen Doxyfile
 	@echo "Documentation générée dans docs/html/"
@@ -111,9 +124,10 @@ doc:
 
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
-	@echo "Fichiers objets et binaires supprimés"
+	@echo "Fichiers objets, binaires et couverture supprimés"
 
 mrproper: clean
-	rm -f docs/html
+	rm -rf docs/html
+	rm -f rapport_global*.html *.css
 
-.PHONY: all run run_unit_tests run_test run_controlleur doc clean mrproper
+.PHONY: all run run_unit_tests run_test run_controlleur coverage doc clean mrproper
