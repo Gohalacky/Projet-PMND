@@ -12,3 +12,4 @@ out
 interface
 controlleur
 docs/
+*.xml

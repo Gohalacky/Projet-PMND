@@ -122,12 +122,31 @@ doc:
 	@echo "Documentation générée dans docs/html/"
 	xdg-open docs/html/index.html
 
+# --- CIBLES VALGRIND ---
+
+# Teste la mémoire sur les tests unitaires principaux
+valgrind_test: test
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(TEST_EXEC)
+
+# Teste la mémoire sur les tests de cartes
+valgrind_cartes: test_cartes
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(TEST_CARTES)
+
+# Teste la mémoire sur le jeu complet
+valgrind_game: $(TARGET)
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file="rapport_valgrind_test.txt" ./$(TARGET)
+	@echo "Rapport généré dans rapport_valgrind_test.txt"
+	xdg-open rapport_valgrind_test.txt
+
+# Lance Valgrind sur tous les tests sans interface graphique
+valgrind: valgrind_test valgrind_cartes
+
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 	@echo "Fichiers objets, binaires et couverture supprimés"
 
 mrproper: clean
 	rm -rf docs/html
-	rm -f rapport_global*.html *.css
+	rm -f rapport_global*.html *.css rapport_valgrind_test.txt *.xml
 
 .PHONY: all run run_unit_tests run_test run_controlleur coverage doc clean mrproper

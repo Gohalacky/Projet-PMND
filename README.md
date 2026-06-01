@@ -20,10 +20,10 @@ Pour garder un code propre et testable, nous avons structuré le projet selon le
 
 À ce stade du développement, le jeu gère :
 * La création de partie jusqu'à 4 joueurs avec des paramètres personnalisables (argent initial, nombre de tours, etc.).
-* Un système de propriétés où l'on peut construire des aménagements (maisons, logements sociaux, parcs) qui influencent directement l'indice écologique global et personnel et la possibilité d'hypothéqué, ainsi que tout le système d'échange et de prison
+* Un système de propriétés où l'on peut construire des aménagements (maisons, logements sociaux, parcs) qui influencent directement l'indice écologique global et personnel et la possibilité d'hypothéqué, ainsi que tout le système d'échange et de prison ainsi que la mise en enchère des biens non acheté (console)
 * Un début de lien interface controlleur
 * La gestion des événements aléatoires (cartes Chance et Caisse Communauté).
-* Une couverture de tests sur la logique grâce à CMocka.
+* Une couverture de tests sur la logique grâce à CMocka ainsi qu'une documentation Doxygen complète et des tests de fuites de données via valgrind.
 
 ---
 
@@ -34,7 +34,12 @@ Si vous souhaitez recompiler le projet chez vous (environnement Linux recommand�
 * **Utilitaires de base :** `gcc` et `make`
 * **Pour l'interface graphique :** Les bibliothèques `libsdl2-dev`, `libsdl2-image-dev` et `libsdl2-ttf-dev`
 * **Pour les tests unitaires :** `libcmocka-dev`
-* **Pour générer la documentation :** `doxygen` et `graphviz` (pour les graphes d'appels)
+* **Pour générer la documentation :** `doxygen` et `graphviz` (pour les graphes d'appels) `gcovr` `valgrind` 
+
+Vous pouvez installer toutes les dépendances nécessaires via la commande suivante :
+
+sudo apt update
+sudo apt install build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcmocka-dev doxygen graphviz gcovr valgrind
 
 ---
 
@@ -48,7 +53,10 @@ Nous avons configuré un Makefile à la racine pour vous simplifier la vie.
 * Juste l'interface graphique : `make interface`
 * Les tests unitaires : `make test` et `make test_cartes`
 * Générer le site web de la documentation et l'ouvre (sous linux ouverture de index.html dans docs/): `make doc`
+* Générer le site web des résultats de la couverture des tests unitaires : `make coverage`
+* Générer les résultats des tests de valgrind pour les fuites de données : `make valgrind` pour les tests et `make valgrind_game` pour le jeu
 * Nettoyer les fichiers de compilation : `make clean`
+* Nettoyer les fichiers de compilation et les compte rendu des tests: `make mrproper`
 
 ### 2. Pour lancer le jeu
 **Attention :** Pour éviter les problèmes de chemins relatifs avec les fichiers de sauvegarde ou les images, nous vous conseillons d'utiliser nos commandes préconfigurées plutôt que de lancer les exécutables à la main.
