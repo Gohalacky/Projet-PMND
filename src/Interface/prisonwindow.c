@@ -148,6 +148,7 @@ void handlePrisonClick(int x, int y, EtatJeu* state, PrisonButtonsPack* pb, Butt
             *state = LANCER;
 
         } else {
+            partie->prisonFailAlpha = 255.0f;
             btn->throwDice.disabled = 1;
             btn->endTurn.disabled   = 0;
             switch (partie->nbJoueurs) {

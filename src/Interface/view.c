@@ -19,7 +19,8 @@
 #include <SDL2/SDL_render.h>
 #include <stdio.h>
 
-static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, Pawn pawns[MAX_PLAYERS]){
+static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, Pawn pawns[MAX_PLAYERS], MoneyPopup* popups){
+    (void)fontTitle;
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
 
@@ -29,6 +30,19 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
     SDL_RenderCopy(renderer, board, NULL, NULL);
     renderBuildings(renderer, ctx, tex, winW, winH);
     renderJoueurActif(renderer, fontButton, partie, ctx);
+
+    if (partie->prisonFailAlpha > 0.0f) {
+        TTF_Font* fontBig = TTF_OpenFont("assets/FONT/fontPixel.ttf", (int)(70.0f * winH / REF_H));
+        if (fontBig) {
+            SDL_Color rouge = {255, 20, 20, 255};
+            Uint8 alpha = (Uint8)(partie->prisonFailAlpha > 255 ? 255 : partie->prisonFailAlpha);
+            const char* msg = "Double raté ! Tour perdu.";
+            int tw, th; TTF_SizeUTF8(fontBig, msg, &tw, &th);
+            printTextAlpha(renderer, fontBig, msg, rouge, (winW - tw) / 2, (winH - th) / 2, alpha);
+            TTF_CloseFont(fontBig);
+        }
+    }
+
     renderButtonDisabled(renderer, &btn->throwDice);
     renderButtonDisabled(renderer, &btn->endTurn);
     renderPawns(renderer, tex, pawns, partie->nbJoueurs, winW, winH);
@@ -66,6 +80,33 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
         renderPlayerCard(renderer, fontButton, &partie->joueurs[i], i + 1, rect);
     }
 
+    if (popups) {
+        for (int i = 0; i < partie->nbJoueurs; i++) {
+            if (!popups[i].active) continue;
+            int cardH = (int)(cards[i].h * winH / REF_H);
+            int cardW = (int)(cards[i].w * winW / REF_W);
+            int cardX = (int)(cards[i].x * winW / REF_W);
+            int cardY = (int)(cards[i].y * winH / REF_H);
+            int cardFontSize = cardH * 22 / 110;
+            if (cardFontSize < 8) cardFontSize = 8;
+            int cardBaseY = cardY + (cardH - 3 * cardFontSize) / 2;
+            int crY = cardBaseY + (int)(cardFontSize * 1.3f);
+            int px  = cardX + (int)(55.0f * ((float)cardW / 110.0f));
+            int py  = crY - (int)(20.0f * winH / REF_H) - (int)(popups[i].offsetY);
+            char buf[16];
+            SDL_Color col;
+            if (popups[i].delta > 0) {
+                snprintf(buf, sizeof(buf), "+%d", popups[i].delta);
+                col = (SDL_Color){80, 220, 80, 255};
+            } else {
+                snprintf(buf, sizeof(buf), "%d", popups[i].delta);
+                col = (SDL_Color){220, 80, 80, 255};
+            }
+            Uint8 alpha = (Uint8)(popups[i].alpha > 255 ? 255 : popups[i].alpha < 0 ? 0 : popups[i].alpha);
+            printTextAlpha(renderer, fontNormal, buf, col, px, py, alpha);
+        }
+    }
+
     if (state == LANCER) {
 
         int ja = partie->joueursActif;
@@ -99,7 +140,7 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
             snprintf(bufferDe, sizeof(bufferDe), "%d",ctx->dernier_de);
             int tw, th;
             TTF_SizeUTF8(fontNormal, bufferDe, &tw, &th);
-            int textY = fenetreLancer.y + fenetreLancer.h/3 - 100;
+            int textY = fenetreLancer.y + fenetreLancer.h/3 - (int)(100.0f * winH / REF_H);
             int pad = 12;
             int size = (tw > th ? tw : th) + pad*2;
             SDL_Rect fond = { winW/2 - size/2, textY + th/2 - size/2, size, size };
@@ -111,14 +152,16 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
         }
 
         if (bridge_is_double(ctx))
-            printTextCentered(renderer, fontNormal, "DOUBLE !", rouge,fenetreLancer.y + (int)(fenetreLancer.h * 0.50f)+100, winW);
+            printTextCentered(renderer, fontNormal, "DOUBLE !", rouge,fenetreLancer.y + (int)(fenetreLancer.h * 0.50f) + (int)(100.0f * winH / REF_H), winW);
 
         char bufferCase[64];
         if (bridge_is_in_jail(ctx, partie))
             snprintf(bufferCase, sizeof(bufferCase), "Case : En prison !");
         else
             snprintf(bufferCase, sizeof(bufferCase), "Case : %s", bridge_get_case_joueur_actif(ctx, partie));
-        printTextCentered(renderer, fontNormal, bufferCase, blanc,fenetreLancer.y + (int)(fenetreLancer.h * 0.65f)+10,winW);
+        int scaledAnimSize = (int)(150.0f * winW / REF_W);
+        int animBottom = (winH - scaledAnimSize) / 2 - (int)(60.0f * winH / REF_H) + scaledAnimSize;
+        printTextCentered(renderer, fontNormal, bufferCase, blanc, animBottom + (int)(5.0f * winH / REF_H), winW);
     }
 
     renderPauseButton(renderer, btn);
@@ -153,7 +196,7 @@ void renderEvenementActif(SDL_Renderer* renderer, TTF_Font* fontNormal,const Con
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 180, 60, 30, 200);
-    SDL_Rect bandeau = { 0, (int)(65.0f * winH / REF_H)+20, (int)(winW), (int)(46.0f * winH / REF_H) };
+    SDL_Rect bandeau = { 0, (int)(65.0f * winH / REF_H)+20, (int)(winW), (int)(50.0f * winH / REF_H+10) };
     SDL_RenderFillRect(renderer, &bandeau);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
@@ -267,7 +310,7 @@ void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
     printTextCentered(renderer, fontNormal, "OK", blanc,btn->okCarte.rect.y + (btn->okCarte.rect.h - lineHN) / 2, winW);
 }
 
-void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm, Animation* diceAnim, PrisonButtonsPack* pb_prison){
+void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack* texts, TTF_Font* fontButton, TTF_Font* fontNormal, TTF_Font* fontTitle,Counter* counterJoueurs, TextBoxPack* tboxes, CheckboxPack* checkboxes, EtatPartie* partie, ContexteJeu* ctx, ButtonsPack* btn, PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts, Pawn pawns[MAX_PLAYERS], LoadMenuState* lm, RulesMenuState* rm, Animation* diceAnim, PrisonButtonsPack* pb_prison, MoneyPopup popups[MAX_PLAYERS]){
     
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
@@ -321,7 +364,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             }else if(partie->nbJoueurs==4){
                 plateauActuel=PLATEAU4J;
             }
-            renderPlateau(renderer, plateauActuel, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderPlateau(renderer, plateauActuel, tex, texts, fontButton, fontNormal, fontTitle, partie, ctx, btn, pawns, popups);
             renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             renderPropWindow(renderer, fontTitle, fontNormal, fontButton, tex, ctx, partie, pb, winW, winH);
             break;
@@ -334,7 +377,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             }else if(partie->nbJoueurs==4){
                 plateauActuel=PLATEAU4J;
             }
-            renderPlateau(renderer, plateauActuel, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderPlateau(renderer, plateauActuel, tex, texts, fontButton, fontNormal, fontTitle, partie, ctx, btn, pawns, popups);
             renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             renderTradeWindow(renderer, fontTitle, fontNormal, fontButton, tex, ctx, partie, tb, ts, winW, winH);
             break;
@@ -346,16 +389,16 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
         case PLATEAU2J:
         case PLATEAU3J:
         case PLATEAU4J:
-            renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, fontTitle, partie, ctx, btn, pawns, popups);
             renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             break;
 
         case LANCER:
-            renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderPlateau(renderer, state, tex, texts, fontButton, fontNormal, fontTitle, partie, ctx, btn, pawns, popups);
             renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             if (diceAnim && diceAnim->sheet) {
                 int animSize = (int)(150.0f * winW / REF_W);
-                SDL_Rect dst = {(winW - animSize) / 2, (winH - animSize) / 2 - 60, animSize, animSize};
+                SDL_Rect dst = {(winW - animSize) / 2, (winH - animSize) / 2 - (int)(60.0f * winH / REF_H), animSize, animSize};
                 renderAnim(renderer, diceAnim, 0, 0, &dst);
             }
             break;
@@ -364,7 +407,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             EtatJeu plateauPrison = PLATEAU2J;
             if (partie->nbJoueurs == 3) plateauPrison = PLATEAU3J;
             else if (partie->nbJoueurs == 4) plateauPrison = PLATEAU4J;
-            renderPlateau(renderer, plateauPrison, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderPlateau(renderer, plateauPrison, tex, texts, fontButton, fontNormal, fontTitle, partie, ctx, btn, pawns, popups);
             renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             renderPrisonWindow(renderer, fontTitle, fontNormal, ctx, partie, pb_prison, winW, winH);
             break;
@@ -374,7 +417,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             EtatJeu plateauCarte = PLATEAU2J;
             if (partie->nbJoueurs == 3) plateauCarte = PLATEAU3J;
             else if (partie->nbJoueurs == 4) plateauCarte = PLATEAU4J;
-            renderPlateau(renderer, plateauCarte, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderPlateau(renderer, plateauCarte, tex, texts, fontButton, fontNormal, fontTitle, partie, ctx, btn, pawns, popups);
             renderEvenementActif(renderer, fontNormal, ctx, winW, winH);
             renderCartePiochee(renderer, fontNormal, fontTitle, partie, btn);
             break;
@@ -384,7 +427,7 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex, TextsPack*
             EtatJeu plateauPause = PLATEAU2J;
             if (partie->nbJoueurs == 3) plateauPause = PLATEAU3J;
             else if (partie->nbJoueurs == 4) plateauPause = PLATEAU4J;
-            renderPlateau(renderer, plateauPause, tex, texts, fontButton, fontNormal, partie, ctx, btn, pawns);
+            renderPlateau(renderer, plateauPause, tex, texts, fontButton, fontNormal, fontTitle, partie, ctx, btn, pawns, popups);
             renderPauseMenu(renderer, fontNormal, btn);
             break;
         }

@@ -101,6 +101,16 @@ typedef struct {
 } CartePiochee;
 
 /**
+ * @brief Popup d'animation de gain/perte de crédits au-dessus de la carte joueur.
+ */
+typedef struct {
+    int   delta;    /**< Variation de crédits (positif = gain, négatif = perte). */
+    float alpha;    /**< Opacité courante, de 255 à 0. */
+    float offsetY;  /**< Décalage vertical en pixels (monte avec le temps). */
+    int   active;   /**< 1 si l'animation est en cours. */
+} MoneyPopup;
+
+/**
  * @brief État de la partie côté Interface.
  *
  * Mis à jour par bridge_sync() après chaque action de jeu.
@@ -117,6 +127,7 @@ typedef struct {
     int doubleEnAttente;   /**< 1 si un double a été réalisé avant une carte. */
     int posAvantCarte;     /**< Position après le dé, avant l'effet de déplacement d'une carte. */
     int prisonPending;     /**< 1 si le pion doit être téléporté en prison après l'animation. */
+    float prisonFailAlpha; /**< Opacité de l'indication "double raté" (0 si inactif). */
     CartePiochee derniereCarte; /**< Dernière carte piochée (valide si carteEnCours == 1). */
 } EtatPartie;
 

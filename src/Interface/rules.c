@@ -99,7 +99,7 @@ void handleRulesMenuClick(RulesMenuState* rm, int x, int y, EtatJeu* state) {
 }
 
 void renderRulesMenu(SDL_Renderer* renderer,TTF_Font* fontTitle,TTF_Font* fontNormal,TTF_Font* fontBtn,const RulesMenuState* rm,const TexturesPack* tex) {
-
+    (void)fontBtn;
     if (tex && tex->launchGame)
         SDL_RenderCopy(renderer, tex->launchGame, NULL, NULL);
 

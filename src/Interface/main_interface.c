@@ -171,17 +171,52 @@ int main(){
     SDL_Event event;
     Uint32 lastTime=SDL_GetTicks();
 
+    MoneyPopup popups[MAX_PLAYERS];
+    memset(popups, 0, sizeof(popups));
+
     while (!quit) {
         Uint32 now = SDL_GetTicks();
         Uint32 delta = now-lastTime;
         lastTime=now;
 
+        int creditsAvant[MAX_PLAYERS];
+        for (int i = 0; i < partie.nbJoueurs; i++)
+            creditsAvant[i] = partie.joueurs[i].credits;
+
         prevState = state;
         handleEvents(&event, &state, &btn, &texts,&fontNormal, &fontTitle, &fontButton,&quit, &counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &pb, &tb, &ts, pawns, &lm, &rm, &pb_prison);
+
+        int gameState = (state == PLATEAU2J || state == PLATEAU3J || state == PLATEAU4J|| state == LANCER || state == CARTE || state == PRISON);
+        int wasGame   = (prevState == PLATEAU2J || prevState == PLATEAU3J || prevState == PLATEAU4J|| prevState == LANCER || prevState == CARTE || prevState == PRISON);
+        if (gameState && wasGame) {
+            for (int i = 0; i < partie.nbJoueurs; i++) {
+                int diff = partie.joueurs[i].credits - creditsAvant[i];
+                if (diff != 0) {
+                    popups[i].delta   = diff;
+                    popups[i].alpha   = 255.0f;
+                    popups[i].offsetY = 0.0f;
+                    popups[i].active  = 1;
+                }
+            }
+        }
+
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            if (popups[i].active) {
+                popups[i].alpha   -= (float)delta * (255.0f / 2500.0f);
+                popups[i].offsetY += (float)delta * 0.035f;
+                if (popups[i].alpha <= 0.0f) popups[i].active = 0;
+            }
+        }
+
+        if (partie.prisonFailAlpha > 0.0f) {
+            partie.prisonFailAlpha -= (float)delta * (255.0f / 5000.0f);
+            if (partie.prisonFailAlpha < 0.0f) partie.prisonFailAlpha = 0.0f;
+        }
+
         updatePawns(pawns, partie.nbJoueurs, delta);
         if (state == LANCER && prevState != LANCER) resetAnim(&diceAnim);
         if (state == LANCER) updateAnim(&diceAnim, delta);
-        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm, &rm, &diceAnim, &pb_prison);
+        render(renderer, state, &tex, &texts,fontButton, fontNormal, fontTitle,&counterJoueurs, &tboxes, &checkboxes, &partie, &ctx, &btn, &pb, &tb, &ts, pawns, &lm, &rm, &diceAnim, &pb_prison, popups);
     }
 
     TTF_CloseFont(fontNormal);

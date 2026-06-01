@@ -1,72 +1,144 @@
 # INSA'poly
 
-Bienvenue sur le dépôt d'INSA'poly. Il s'agit d'un jeu de plateau stratégique et éco-responsable que nous développons en langage C (C11) pour le module Projet et Méthodologie pour le Numérique Durable (PMND).
+Bienvenue sur le dépôt d'INSA'poly. Il s'agit d'un jeu de plateau stratégique et éco-responsable développé en langage C pour le module Projet et Méthodologie pour le Numérique Durable (PMND).
 
-Le concept est le suivant : les joueurs incarnent des étudiants de l'INSA Rennes devant aménager un campus. L'objectif est de trouver le bon équilibre entre la réussite académique/financière (gagner des crédits ECTS) et l'impact environnemental de leurs constructions (Indice Écologique). 
+Les joueurs incarnent des étudiants de l'INSA Rennes devant aménager un campus. L'objectif est de trouver le bon équilibre entre la réussite académique/financière (crédits ECTS) et l'impact environnemental de leurs constructions (Indice Écologique).
 
 ---
 
 ## Architecture du projet (MVC)
 
-Pour garder un code propre et testable, nous avons structuré le projet selon le modèle Modèle-Vue-Contrôleur :
+Le projet suit le modèle Modèle-Vue-Contrôleur :
 
-* **Le Modèle (dossier `Modele/`) :** C'est le cœur des règles du jeu. Il gère l'état des joueurs (ECTS, position, note écologique), l'état du plateau (propriétés, gares, compagnies), l'économie des loyers et les événements dynamiques.
-* **La Vue (dossier `Interface/`) :** C'est notre interface graphique développée avec SDL2. Elle permet d'afficher le plateau, les stats des joueurs et de paramétrer la partie via un menu interactif.
-* **Le Contrôleur (dossier `Controlleur/`) :** Il fait le pont entre les deux. C'est lui qui charge les fichiers de configuration au lancement et qui fait tourner la boucle principale du jeu.
-
----
-
-## Fonctionnalités actuelles
-
-À ce stade du développement, le jeu gère :
-* La création de partie jusqu'à 4 joueurs avec des paramètres personnalisables (argent initial, nombre de tours, etc.).
-* Un système de propriétés où l'on peut construire des aménagements (maisons, logements sociaux, parcs) qui influencent directement l'indice écologique global et personnel et la possibilité d'hypothéqué, ainsi que tout le système d'échange et de prison
-* Un début de lien interface controlleur
-* La gestion des événements aléatoires (cartes Chance et Caisse Communauté).
-* Une couverture de tests sur la logique grâce à CMocka.
+- **Modèle (`src/Model/`)** — cœur des règles : état des joueurs, plateau, propriétés, loyers, cartes, événements, prison, hypothèques, échanges.
+- **Vue (`src/Interface/`)** — interface graphique SDL2 : plateau, cartes joueurs, animations, menus, fenêtres contextuelles.
+- **Contrôleur (`src/Controller/`)** — boucle de jeu, chargement des fichiers de configuration, pont entre Modèle et Vue.
 
 ---
 
-## Prérequis pour la compilation
+## Fonctionnalités
 
-Si vous souhaitez recompiler le projet chez vous (environnement Linux recommandé), vous aurez besoin des paquets suivants :
+### Partie et paramètres
+- Création de partie de 2 à 4 joueurs
+- Paramètres personnalisables : argent initial, nombre de tours maximum (ou tours infinis jusqu'à la faillite), fréquence des événements
+- Sauvegarde et chargement de partie (format JSON via cJSON)
+- Menu pause avec sauvegarde & quitter
 
-* **Utilitaires de base :** `gcc` et `make`
-* **Pour l'interface graphique :** Les bibliothèques `libsdl2-dev`, `libsdl2-image-dev` et `libsdl2-ttf-dev`
-* **Pour les tests unitaires :** `libcmocka-dev`
-* **Pour générer la documentation :** `doxygen` et `graphviz` (pour les graphes d'appels)
+### Plateau et déplacements
+- Plateau adapté à 2, 3 ou 4 joueurs
+- Pions animés avec déplacement case par case
+- Animation de dé au lancer
+- Affichage de la case atterrie et indication de double
+
+### Propriétés
+- Achat de propriétés, gares et compagnies
+- Construction d'aménagements (maisons, logements sociaux, parcs) influençant l'indice écologique
+- Système de loyers proportionnel aux constructions
+- Hypothèque et rachat de propriétés
+- Fenêtre de gestion des propriétés possédées
+
+### Échanges
+- Système d'échange entre joueurs (propriétés et crédits)
+
+### Prison
+- Tentative de double pour sortir de prison
+- Utilisation d'une carte de libération
+- Indication visuelle en cas d'échec du double ("Double raté !")
+
+### Cartes et événements
+- Cartes Chance et Caisse de Communauté avec effets variés (gains, pertes, déplacements, taxes)
+- Événements aléatoires actifs affectant des cases spécifiques, affichés dans un bandeau dédié
+
+### Interface et retours visuels
+- Interface entièrement redimensionnable (mise à l'échelle de tous les éléments)
+- Indicateur animé de gain/perte de crédits (texte vert/rouge flottant sur la carte joueur)
+- Affichage du règlement du jeu
+- Écran de fin de partie avec classement
+
+---
+
+## Prérequis
+
+Environnement Linux recommandé. Paquets nécessaires :
+
+| Usage | Paquets |
+|---|---|
+| Compilation | `gcc`, `make` |
+| Interface graphique | `libsdl2-dev`, `libsdl2-image-dev`, `libsdl2-ttf-dev` |
+| Sérialisation JSON | `libcjson-dev` |
+| Tests unitaires | `libcmocka-dev` |
+| Documentation | `doxygen`, `graphviz` |
 
 ---
 
 ## Compilation et exécution
 
-Nous avons configuré un Makefile à la racine pour vous simplifier la vie. 
+### Compilation
 
-### 1. Pour compiler
-* Tout le projet : `make`
-* Juste le moteur de jeu (sans interface) : `make controlleur`
-* Juste l'interface graphique : `make interface`
-* Les tests unitaires : `make test` et `make test_cartes`
-* Générer le site web de la documentation et l'ouvre (sous linux ouverture de index.html dans docs/): `make doc`
-* Nettoyer les fichiers de compilation : `make clean`
+```bash
+make              # Compile tout le projet → bin/insapoly
+make controlleur  # Compile uniquement le moteur de jeu (sans interface)
+make test         # Compile les tests unitaires du modèle
+make test_cartes  # Compile les tests des cartes/événements
+```
 
-### 2. Pour lancer le jeu
-**Attention :** Pour éviter les problèmes de chemins relatifs avec les fichiers de sauvegarde ou les images, nous vous conseillons d'utiliser nos commandes préconfigurées plutôt que de lancer les exécutables à la main.
+### Exécution
 
-* Lancer le jeu avec l'interface graphique : 
-  `make run_interface`
-* Lancer le jeu en mode terminal (debug) : 
-  `make run_controlleur`
-* Lancer les tests unitaires du modèle : 
-  `make run_unit_tests`
-* Lancer les tests sur les cartes : 
-  `make run_test`
-* Pour lancer le jeu :
-  `make run`
+> **Important :** Toujours lancer depuis la racine du projet pour que les chemins relatifs (assets, sauvegardes) soient correctement résolus.
+
+```bash
+make run              # Lance le jeu avec interface graphique
+make run_controlleur  # Lance le jeu en mode terminal (debug)
+make run_unit_tests   # Exécute les tests unitaires du modèle
+make run_test         # Exécute les tests des cartes
+```
+
+### Couverture et documentation
+
+```bash
+make coverage   # Génère le rapport de couverture de code (gcovr)
+make doc        # Génère la documentation Doxygen et l'ouvre dans le navigateur
+make clean      # Supprime les fichiers objets et binaires
+make mrproper   # clean + suppression de la documentation générée
+```
 
 ---
+
+## Structure des sources
+
+```
+src/
+├── Model/          # Logique de jeu (indépendante de l'affichage)
+│   ├── player.c/h, property.c/h, cartes.c/h, evenements.c/h
+│   ├── prison.c/h, trade.c/h, hypo.c/h, voe.c/h, tool.c/h
+├── Controller/     # Moteur de jeu et pont Modèle↔Vue
+│   ├── game_engine.c/h, engine_logic.c/h, plateau.c/h
+│   └── game_engine_console.c/h
+└── Interface/      # Couche graphique SDL2
+    ├── main_interface.c   # Point d'entrée, boucle principale
+    ├── view.c/h           # Rendu principal (dispatch par état)
+    ├── bridge.c/h         # Pont Interface↔Contrôleur
+    ├── events.c/h         # Gestion des événements SDL
+    ├── Struct.h           # Structures partagées (EtatPartie, Joueur…)
+    ├── assets.c/h, anim.c/h, pawn.c/h, building.c/h
+    ├── propwindow, tradewindow, prisonwindow, pausemenu…
+    └── ui/                # Composants réutilisables
+        ├── button, text, textbox, counter, checkbox, playercard
+```
+
+---
+
+## Tests
+
+Les tests couvrent la logique du Modèle (indépendamment de l'interface) :
+
+```bash
+make run_unit_tests   # Tests joueurs, propriétés, prison, échanges
+make run_test         # Tests cartes Chance et Caisse de Communauté
+make coverage         # Rapport de couverture combiné
+```
+
+---
+
 Projet réalisé dans le cadre du cursus INSA Rennes 3EII par
-Arthur GALLIC
-Arnaud PASTRE
-Thomas LELONG
-Titouan CHIFFOLEAU
+Arthur GALLIC, Arnaud PASTRE, Thomas LELONG, Titouan CHIFFOLEAU

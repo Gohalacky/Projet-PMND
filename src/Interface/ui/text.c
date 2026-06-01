@@ -55,6 +55,22 @@ void printTextCentered(SDL_Renderer *renderer, TTF_Font *font, const char *text,
     printText(renderer,font,text,color,(winW-textW)/2,y);
 }
 
+void printTextAlpha(SDL_Renderer* renderer, TTF_Font* font, const char* text,
+                    SDL_Color color, int x, int y, Uint8 alpha) {
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text, color);
+    if (!surface) return;
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    if (!texture) return;
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureAlphaMod(texture, alpha);
+    int w, h;
+    SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+    SDL_Rect rect = {x, y, w, h};
+    SDL_RenderCopy(renderer, texture, NULL, &rect);
+    SDL_DestroyTexture(texture);
+}
+
 void printTextResponsive(SDL_Renderer *renderer, TTF_Font *font, const Text *t){
     if (!font || !t || !t->text) return;
         printText(renderer, font, t->text, t->color, t->x, t->y);

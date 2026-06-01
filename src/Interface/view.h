@@ -186,7 +186,8 @@ void render(SDL_Renderer* renderer, EtatJeu state, TexturesPack* tex,
             PropButtonsPack* pb, TradeButtonsPack* tb, TradeState* ts,
             Pawn pawns[MAX_PLAYERS],
             LoadMenuState* lm, RulesMenuState* rm,
-            Animation* diceAnim, PrisonButtonsPack* pb_prison);
+            Animation* diceAnim, PrisonButtonsPack* pb_prison,
+            MoneyPopup popups[MAX_PLAYERS]);
 
 /**
  * @brief Libère toutes les ressources SDL (fenêtre, renderer, textures).

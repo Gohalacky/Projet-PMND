@@ -208,6 +208,7 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 bridge_reset_doubles(ctx);
                 partie->carteEnCours = 0;
                 bridge_tick_evenement(ctx);
+                partie->prisonFailAlpha = 0.0f;
                 int fini = bridge_next_turn(partie);
                 if (fini) {
                     *state = GAMEOVER;
@@ -243,6 +244,7 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                 bridge_reset_doubles(ctx);
                 partie->carteEnCours = 0;
                 bridge_tick_evenement(ctx);
+                partie->prisonFailAlpha = 0.0f;
                 int fini = bridge_next_turn(partie);
                 if (fini) {
                     *state = GAMEOVER;

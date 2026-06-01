@@ -73,4 +73,11 @@ void printTextCentered(SDL_Renderer* renderer, TTF_Font* font, const char* text,
  */
 void printTextResponsive(SDL_Renderer* renderer, TTF_Font* font, const Text* t);
 
+/**
+ * @brief Rend une chaîne à la position (x, y) avec une opacité personnalisée.
+ * @param alpha Opacité (0 = transparent, 255 = opaque).
+ */
+void printTextAlpha(SDL_Renderer* renderer, TTF_Font* font, const char* text,
+                    SDL_Color color, int x, int y, Uint8 alpha);
+
 #endif

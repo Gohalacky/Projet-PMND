@@ -13,7 +13,7 @@
 #include "bridge.h"
 
 #define SAVE_DIR      "saves"      /**< Répertoire de stockage des sauvegardes. */
-#define SAVE_MAX_PATH 256          /**< Longueur maximale d'un chemin de fichier. */
+#define SAVE_MAX_PATH 270          /**< Longueur maximale d'un chemin de fichier. */
 #define MAX_SAVES     10           /**< Nombre maximum de sauvegardes listées. */
 
 /**

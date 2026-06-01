@@ -36,7 +36,7 @@ int engine_roll_dice( int *compteur_doubles) {
 
 
 void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[],Gares *tableau_gare[], Compagnies *tableau_comp[], Plateau *plateau, Prison *jail, int nb_joueurs) {
- 
+    (void)nb_joueurs;
     if (!p || !plateau) return;
   
     int compteur_doubles =0; // compteur de double pour la case prison = 0 au début de tour
@@ -280,6 +280,7 @@ int engine_resolve_case_logic(Player *p, Player *all_players[], Property *tablea
             go_to_jail(p, jail);
             return 4;
         }
+        default: break;
     }
     return 0;
 }
