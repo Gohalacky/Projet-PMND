@@ -43,8 +43,8 @@ ________________________________________
 
 3.3 Indice écologique initial
 
-Tous les joueurs commencent avec un indice écologique neutre :
-C
+Tous les joueurs commencent avec un indice écologique positif:
+A
 ________________________________________
 
 4. DÉROULEMENT D UN TOUR
