@@ -1,15 +1,14 @@
 /**
  * @file player.h
- * @brief Modèle de gestion des joueurs pour INSA'poly[cite: 33].
+ * @brief Modèle de gestion des joueurs pour INSA'poly.
  *
- * Ce module gère l'état et les actions des étudiants de l'INSA (les joueurs).
- * Il centralise la gestion de leur position sur le plateau[cite: 49], 
- * de leur portefeuille de crédits ECTS [cite: 58], et de leur indice écologique personnel.
+ * Gère l'état des joueurs : position, crédits ECTS, indice écologique
+ * et possession de propriétés.
  */
 #ifndef PLAYER_H
 #define PLAYER_H
 
-/* Déclarations anticipées (Forward declarations) pour éviter les inclusions circulaires */
+/* Déclarations anticipées pour éviter les inclusions circulaires */
 struct Property;
 typedef struct Property Property;
 struct Gares;
@@ -38,7 +37,7 @@ typedef struct{
     char name[20];       /**< Nom du joueur */
     int number;          /**< Numéro d'identifiant unique du joueur */
     int credit;          /**< Solde actuel en crédits ECTS  */
-    int position;        /**< Index de la case actuelle sur le plateau (0 à 39) [cite: 49] */
+    int position;        /**< Index de la case actuelle sur le plateau (0 à 39)*/
     EcoGrade eco_index;  /**< Indice écologique personnel du joueur  */
 }Player;
 
@@ -72,7 +71,7 @@ void calcul_moyenne_eco_index_player(Player *p, Property **board, int board_size
  * * La fonction gère la boucle du plateau (modulo 40). Si le joueur dépasse 
  * la case 39 et revient au début, un passage par la case Départ est notifié.
  * * @param p Pointeur vers le joueur à déplacer.
- * @param steps Nombre de cases à avancer (généralement le résultat des dés)[cite: 55].
+ * @param steps Nombre de cases à avancer (généralement le résultat des dés).
  */
 void player_move(Player *p, int steps);
 

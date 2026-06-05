@@ -62,7 +62,7 @@ int rachathypo_PROP(Property * prop, Player * p){
         return 0; 
     }
     if (prop->hypo == 0) {
-        printf("Erreur : %s est n'est pas déjà hypothéquée.\n", prop->name);
+        printf("Erreur : %s n'est pas hypothéquée.\n", prop->name);
         return 0;
     }
     int du;
@@ -85,7 +85,7 @@ int rachathypo_COMP(Compagnies * prop, Player * p){
         return 0; 
     }
     if (prop->hypo == 0) {
-        printf("Erreur : %s est n'est pas déjà hypothéquée.\n", prop->name);
+        printf("Erreur : %s n'est pas hypothéquée.\n", prop->name);
         return 0;
     }
     int du;
@@ -108,7 +108,7 @@ int rachathypo_GARE(Gares * prop, Player * p){
         return 0; 
     }
     if (prop->hypo == 0) {
-        printf("Erreur : %s est n'est pas déjà hypothéquée.\n", prop->name);
+        printf("Erreur : %s n'est pas hypothéquée.\n", prop->name);
         return 0;
     }
     int du;

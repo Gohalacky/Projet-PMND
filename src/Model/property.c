@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include "property.h"
 
-/*récupère le nom des Couleurs avec le typedef enum Color*/
 const char* color_names[] = {
     "Marron",
     "Gris",
@@ -27,7 +26,6 @@ Property * init_Property(char *nom,
                         logement type_logement,
                         int note){
     
-    /*Property * p = (Property *)malloc(sizeof(Property)); ça fonctionne mieux avec le calloc*/
     Property * p = (Property *)calloc(1, sizeof(Property));
     
     if(p==NULL){
@@ -67,7 +65,7 @@ Compagnies * init_Compagnies(char *nom, Color couleur, int proprio, int valeur, 
         return NULL;
     }
     strncpy(g->name, nom, 49);
-    g->name[49] = '\0'; /*on s'assure que la chaine de caractère est fini*/
+    g->name[49] = '\0'; 
     g->color = couleur;
     g->owner = proprio;
     g->value = valeur;
@@ -85,7 +83,7 @@ Gares * init_Gares(char *nom, Color couleur ,int proprio, int valeur, int loyer[
         return NULL;
     }
     strncpy(g->name, nom, 49);
-    g->name[49] = '\0'; /*on s'assure que la chaine de caractère est fini*/
+    g->name[49] = '\0'; 
     g->color = couleur;
     g->owner = proprio;
     g->value = valeur;
@@ -103,7 +101,7 @@ int chargement_propriete_loyer(Property * plateau[NB_PROPRIETE], const char* nom
         printf("ERROR chargement_propriete_loyer, impossible d'ouvrir le fichier");
         return 0;
     }
-    int color_val; // Pour lire le chiffre de la couleur (0, 1, 2...)
+    int color_val; 
     char nom_str[50];
     int val, c_const, c_reno, l_vide, l_full;
     int l_m[3], l_s[3], l_p[3];
@@ -134,7 +132,7 @@ int chargement_GARE_loyer(Gares * plateau[NB_GARE], const char* nomfichier){
         printf("ERROR chargement_propriete_loyer, impossible d'ouvrir le fichier");
         return 0;
     }
-    int color_val; // Pour lire le chiffre de la couleur (0, 1, 2...)
+    int color_val; 
     char nom_str[50];
     int val;
     int l_m[4];
@@ -163,7 +161,7 @@ int chargement_COMPAGNIE_loyer(Compagnies * plateau[NB_COMPAGNIE], const char* n
         printf("ERROR chargement_propriete_loyer, impossible d'ouvrir le fichier");
         return 0;
     }
-    int color_val; // Pour lire le chiffre de la couleur (0, 1, 2...)
+    int color_val; 
     char nom_str[50];
     int val;
     int l_m[2];
@@ -191,12 +189,12 @@ int chargement_COMPAGNIE_loyer(Compagnies * plateau[NB_COMPAGNIE], const char* n
 int full_color(Property * tableau[NB_PROPRIETE], Player *p, Color couleur ){
     int i;
     for(i=0; i<NB_PROPRIETE; i++){
-        if(tableau[i] != NULL && tableau[i]->color == couleur){ // Protection !
+        if(tableau[i] != NULL && tableau[i]->color == couleur){
             if(tableau[i]->owner != p->number) return 0;
         }
     }
     printf("\n%s possède toute la couleur %s \n",p->name,color_names[couleur]);
-    return 1 ; /*possède l'entiereté de la couleur*/
+    return 1 ;
 }
 
 int full_Comp(Compagnies * tableau[NB_COMPAGNIE],Player *p){
@@ -253,7 +251,7 @@ void must_rent_Property(Property * tableau[NB_PROPRIETE], Property * prop, Playe
         player_add_credits(ownr,dut);
         banqueroute = player_remove_credits(p,dut);
         if(banqueroute == 0){
-            printf("\nBANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+            printf("\nBANQUEROUTE de %s \n", p->name); 
         }
     }
     else{
@@ -270,7 +268,7 @@ void must_rent_Compagnies(Compagnies * tableau[NB_COMPAGNIE], Compagnies * comp,
         player_add_credits(ownr,dut);
         banqueroute = player_remove_credits(p,dut);
         if(banqueroute == 0){
-            printf("\nBANQUEROUTE de %s \n", p->name); /*il faudra réalisé le protocole de banqueroute*/
+            printf("\nBANQUEROUTE de %s \n", p->name); 
         }
     }
     else{
@@ -282,12 +280,12 @@ void must_rent_Gares(Gares * tableau[NB_GARE], Gares * g, Player *loueur, Player
     int dut;
     int banqueroute;
     if(g->hypo == 0){
-        dut= (g->rent[nb_Gare(tableau,owner)-1]); //-1 car le owner possède déja une gare, ce n'est pas cette fonction qui le vérifie
+        dut= (g->rent[nb_Gare(tableau,owner)-1]); 
         printf("\nLe loyer est de %d Crédits. \n",dut);
         player_add_credits(owner,dut);
         banqueroute = player_remove_credits(loueur,dut);
         if(banqueroute == 0){
-            printf("\nBANQUEROUTE de %s \n", loueur->name); /*il faudra réalisé le protocole de banqueroute*/
+            printf("\nBANQUEROUTE de %s \n", loueur->name); 
         }
     }
     else{

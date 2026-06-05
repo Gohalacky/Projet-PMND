@@ -4,7 +4,6 @@
 #include "trade.h"
 
 TradeOffer * init_empty_offer(Player *p) {
-    // calloc alloue la mémoire et met tout (entiers, pointeurs, tableaux) à 0/NULL
     TradeOffer * tr = (TradeOffer *)calloc(1, sizeof(TradeOffer));
     
     if (tr != NULL) {
@@ -37,7 +36,7 @@ int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2, Property *tableau_pro
             return 0;
         }
         
-        // Vérification du GROUPE de couleur (Règle : pas de bâtiments dans tout le quartier)
+        // Vérification du GROUPE de couleur 
         for (j = 0; j < NB_PROPRIETE; j++) {
             if (tableau_prop[j] == NULL) continue;
             if (tableau_prop[j]->color == off_p1->props[i]->color && tableau_prop[j]->level > 0) {
@@ -88,7 +87,7 @@ int is_trade_valid(TradeOffer *off_p1, TradeOffer *off_p2, Property *tableau_pro
             return 0;
         }
     }
-    // à faire : vérifier les cartes
+
     return 1;
 }
 
@@ -101,7 +100,6 @@ void trade_set_credits(TradeOffer *offer, int amount) {
 int trade_add_property(TradeOffer *offer, Property *prop) {
     if (offer == NULL || prop == NULL) return 0;
     
-    // Sécurité : vérifier que la propriété n'est pas déjà dans l'offre
     for (int i = 0; i < offer->nb_props; i++) {
         if (offer->props[i] == prop){
             printf("%s déja présente dans l'offre.\n",offer->props[i]->name);
@@ -119,21 +117,19 @@ int trade_remove_property(TradeOffer *offer, Property *prop) {
     if (offer == NULL || prop == NULL) return 0;
 
     for (int i = 0; i < offer->nb_props; i++) {
-        if (offer->props[i] == prop) { // On a trouvé la carte à retirer
-            
-            // On décale toutes les cartes suivantes vers la gauche pour boucher le trou
+        if (offer->props[i] == prop) { 
+
             for (int j = i; j < offer->nb_props - 1; j++) {
                 offer->props[j] = offer->props[j + 1];
             }
-            
-            // On nettoie la dernière case et on met à jour le compteur
+
             offer->props[offer->nb_props - 1] = NULL;
             offer->nb_props--;
-            return 1; // Succès
+            return 1; 
         }
     }
     printf("Erreur, %s n'est pas dans l'offre.\n",prop->name);
-    return 0; // La carte n'était pas dans l'offre
+    return 0;
 }
 
 int trade_add_gare(TradeOffer *offer, Gares *gare) {
@@ -164,7 +160,7 @@ int trade_remove_gare(TradeOffer *offer, Gares *gare) {
             return 1; 
         }
     }
-    printf("Erreur, %s n'est as dans l'offre.\n",gare->name);
+    printf("Erreur, %s n'est pas dans l'offre.\n",gare->name);
     return 0; 
 }
 
@@ -196,7 +192,7 @@ int trade_remove_compagnie(TradeOffer *offer, Compagnies *comp) {
             return 1; 
         }
     }
-    printf("Erreur, %s n'est as dans l'offre.\n",comp->name);
+    printf("Erreur, %s n'est pas dans l'offre.\n",comp->name);
     return 0; 
 }
 

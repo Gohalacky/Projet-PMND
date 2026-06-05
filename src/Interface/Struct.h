@@ -128,6 +128,8 @@ typedef struct {
     int posAvantCarte;     /**< Position après le dé, avant l'effet de déplacement d'une carte. */
     int prisonPending;     /**< 1 si le pion doit être téléporté en prison après l'animation. */
     float prisonFailAlpha; /**< Opacité de l'indication "double raté" (0 si inactif). */
+    float failliteAlpha;   /**< Opacité de la notification de faillite (0 si inactif). */
+    char  failliteNom[32]; /**< Nom du joueur venant de faire faillite. */
     CartePiochee derniereCarte; /**< Dernière carte piochée (valide si carteEnCours == 1). */
 } EtatPartie;
 

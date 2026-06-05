@@ -8,19 +8,14 @@ AuctionState* init_auction_prop(Property *prop, Player *p_refus, Player *all_pla
     AuctionState *auction = (AuctionState *)calloc(1, sizeof(AuctionState));
     if (!auction) return NULL;
 
-    auction->prop_item = prop; // On remplit la propriété
-    // Note : gare_item et comp_item sont déjà à NULL grâce au calloc 
-
-    auction->current_bid = 10; // Mise à prix de base
+    auction->prop_item = prop; 
+    auction->current_bid = 10; 
     auction->highest_bidder = NULL;
-    
-    // Le nombre de joueurs restants, c'est le total MOINS celui qui a refusé
+
     auction->players_left = nb_joueurs_total - 1; 
 
-    // On remplit le tableau des participants
     int index_enchere = 0;
     for (int i = 0; i < nb_joueurs_total; i++) {
-        // Si le joueur n'est PAS celui qui a refusé, on l'ajoute 
         if (all_players[i] != p_refus) {
             auction->in_auction[index_enchere] = all_players[i];
             index_enchere++;
@@ -34,19 +29,15 @@ AuctionState* init_auction_comp(Compagnies *c, Player *p_refus, Player *all_play
     AuctionState *auction = (AuctionState *)calloc(1, sizeof(AuctionState));
     if (!auction) return NULL;
 
-    auction->comp_item = c; // On remplit la compagnie
-    // Note : prop_item et gare_item sont déjà à NULL grâce au calloc 
-
-    auction->current_bid = 10; // Mise à prix de base
+    auction->comp_item = c; 
+    auction->current_bid = 10; 
     auction->highest_bidder = NULL;
     
-    // Le nombre de joueurs restants, c'est le total MOINS celui qui a refusé
     auction->players_left = nb_joueurs_total - 1; 
 
-    // On remplit le tableau des participants
     int index_enchere = 0;
     for (int i = 0; i < nb_joueurs_total; i++) {
-        // Si le joueur n'est PAS celui qui a refusé, on l'ajoute 
+
         if (all_players[i] != p_refus) {
             auction->in_auction[index_enchere] = all_players[i];
             index_enchere++;
@@ -60,19 +51,16 @@ AuctionState* init_auction_gar(Gares *g, Player *p_refus, Player *all_players[],
     AuctionState *auction = (AuctionState *)calloc(1, sizeof(AuctionState));
     if (!auction) return NULL;
 
-    auction->gar_item = g; // On remplit la gare
-    // Note : prop_item et comp_item sont déjà à NULL grâce au calloc 
+    auction->gar_item = g; 
 
-    auction->current_bid = 10; // Mise à prix de base
+    auction->current_bid = 10; 
     auction->highest_bidder = NULL;
-    
-    // Le nombre de joueurs restants, c'est le total MOINS celui qui a refusé
+
     auction->players_left = nb_joueurs_total - 1; 
 
-    // On remplit le tableau des participants
     int index_enchere = 0;
     for (int i = 0; i < nb_joueurs_total; i++) {
-        // Si le joueur n'est PAS celui qui a refusé, on l'ajoute 
+
         if (all_players[i] != p_refus) {
             auction->in_auction[index_enchere] = all_players[i];
             index_enchere++;
@@ -82,7 +70,6 @@ AuctionState* init_auction_gar(Gares *g, Player *p_refus, Player *all_players[],
     return auction;
 }
 
-// Fonction utilitaire : vérifie si le joueur est encore dans le tableau
 static int is_player_in_auction(AuctionState *auction, Player *p) {
     for (int i = 0; i < MAX_PLAYERS; i++) {
         if (auction->in_auction[i] == p) return 1;
@@ -120,7 +107,7 @@ void fold_player(AuctionState *auction, Player *p) {
 
     for (int i = 0; i < MAX_PLAYERS; i++) {
         if (auction->in_auction[i] == p) {
-            auction->in_auction[i] = NULL; // On le retire
+            auction->in_auction[i] = NULL; 
             auction->players_left--;
             printf("%s se couche.\n", p->name);
             break;
@@ -135,10 +122,8 @@ void finalize_auction(AuctionState *auction) {
         Player *gagnant = auction->highest_bidder;
         int prix = auction->current_bid;
 
-        // Le gagnant paie
         player_remove_credits(gagnant, prix);
 
-        // On cherche ce qu'il a gagné
         if (auction->prop_item != NULL) {
             player_add_property(gagnant, auction->prop_item);
             printf("Adjugé ! %s remporte la propriété %s pour %d ECTS !\n", gagnant->name, auction->prop_item->name, prix);

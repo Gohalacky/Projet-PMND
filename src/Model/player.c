@@ -14,7 +14,7 @@ Player* init_player(const char* name, int number) {
 
     // Initialisation des champs
     strncpy(p->name, name, 19);
-    p->name[19] = '\0'; // Terminer la chaine de caractère
+    p->name[19] = '\0';
     
     p->number = number;
     p->credit = 1500;    // Valeur de départ standard

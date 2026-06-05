@@ -1,5 +1,4 @@
 CC      = gcc
-# AJOUT : -O0 et --coverage pour permettre la génération des rapports GCOVR
 CFLAGS  = -Wall -Wextra -g -O0 --coverage -Isrc/Model -Isrc/Interface -Isrc/Controller $(shell sdl2-config --cflags)
 LDFLAGS   = -lcmocka
 LIBS      = $(shell sdl2-config --libs) -lSDL2_image -lSDL2_ttf -lm -lcjson
@@ -70,12 +69,10 @@ CONTROLLEUR = $(BIN_DIR)/controlleur
 
 all: $(TARGET)
 
-# Règle générique pour compiler le code source
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# AJOUT : Règle spécifique pour compiler les tests dans le dossier build/
 $(BUILD_DIR)/tests/%.o: tests/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -85,7 +82,6 @@ $(TARGET): $(ALL_OBJ)
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 	@echo "✔  Compilation réussie → $(TARGET)"
 
-# MODIFICATION : On utilise les .o au lieu des .c pour garder les fichiers de couverture au propre
 test: $(BUILD_DIR)/tests/test.o $(OBJ_COMMON)
 	mkdir -p $(BIN_DIR)
 	$(CC) $(CFLAGS) $^ -o $(TEST_EXEC) $(LDFLAGS) $(LIBS_BASE)
@@ -112,7 +108,6 @@ run_test: test_cartes
 run_controlleur: controlleur
 	./$(CONTROLLEUR)
 
-# AJOUT : La cible coverage de l'ancien projet
 coverage: run_unit_tests run_test
 	gcovr -r . --html-details -o rapport_global.html
 	firefox rapport_global.html &
@@ -122,23 +117,17 @@ doc:
 	@echo "Documentation générée dans docs/html/"
 	xdg-open docs/html/index.html
 
-# --- CIBLES VALGRIND ---
-
-# Teste la mémoire sur les tests unitaires principaux
 valgrind_test: test
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(TEST_EXEC)
 
-# Teste la mémoire sur les tests de cartes
 valgrind_cartes: test_cartes
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(TEST_CARTES)
 
-# Teste la mémoire sur le jeu complet
 valgrind_game: $(TARGET)
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file="rapport_valgrind_test.txt" ./$(TARGET)
 	@echo "Rapport généré dans rapport_valgrind_test.txt"
 	xdg-open rapport_valgrind_test.txt
 
-# Lance Valgrind sur tous les tests sans interface graphique
 valgrind: valgrind_test valgrind_cartes
 
 clean:

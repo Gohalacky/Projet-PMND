@@ -420,7 +420,6 @@ void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_ga
         scanf("%d", &choix);
 
         if (choix > 0 && choix <= count) {
-            // Appel de ta fonction de déconstruction
             remove_level(tableau_prop, tableau_prop[list[choix-1]], p);
         }
     }
@@ -461,9 +460,7 @@ void engine_resolve_case(Player *p, Player *all_players[], Property *tableau_pro
             Property *prop = (Property*)c->data;
             if (prop->owner == 0) engine_handle_purchase(p, prop, 1, all_players, ctx ? ctx->nb_players : 1);
             else if (prop->owner != p->number) {
-                /* Appliquer le multiplicateur avant d'appeler must_rent */
                 if (mult_loyer != 1.0) {
-                    /* Patch temporaire du loyer pour passer le multiplicateur */
                     int loyer_base = prop->rent_empty;
                     if (prop->level > 0) {
                         switch (prop->type) {
@@ -930,5 +927,5 @@ int engine_group_has_buildings(Property *tableau_prop[], Color couleur) {
             return 1; // Un bâtiment a été trouvé dans le groupe
         }
     }
-    return 0; // Le groupe est totalement nu
+    return 0;
 }

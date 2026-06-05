@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Initialisation*/
 
 int bridge_init(ContexteJeu* ctx, const EtatPartie* partie) {
     memset(ctx, 0, sizeof(ContexteJeu));
@@ -38,7 +37,6 @@ int bridge_init(ContexteJeu* ctx, const EtatPartie* partie) {
 
     ctx->admin_mode = 0;
 
-    /* Initialisation du GameContext (pioches + evenements) */
     GameContext* gctx = &ctx->game_ctx;
     gctx->nb_players = partie->nbJoueurs;
     for (int i = 0; i < partie->nbJoueurs; i++) gctx->players[i]    = ctx->joueurs[i];
@@ -71,7 +69,6 @@ void bridge_free(ContexteJeu* ctx) {
     }
 }
 
-/*  DES / MOUVEMENT */
 
 int bridge_roll_and_move(ContexteJeu* ctx, EtatPartie* partie) {
     int ja = partie->joueursActif;
@@ -94,7 +91,6 @@ void bridge_reset_doubles(ContexteJeu* ctx) {
     ctx->compteur_doubles = 0;
 }
 
-/* TOUR  */
 
 static void _sync_game_ctx(ContexteJeu* ctx) {
     GameContext* gctx = &ctx->game_ctx;
@@ -150,9 +146,26 @@ int bridge_play_turn(ContexteJeu* ctx, EtatPartie* partie, CarteInfo* carte_out)
     return 0;
 }
 
+int bridge_apply_bankruptcy(ContexteJeu* ctx, EtatPartie* partie) {
+    int ja = partie->joueursActif;
+    Player* p = ctx->joueurs[ja];
+    if (!p || p->credit >= 0) return 0;
+    strncpy(partie->failliteNom, p->name, 31);
+    partie->failliteNom[31] = '\0';
+    engine_handle_bankruptcy(p, ctx->tableau_prop, ctx->tableau_gar, ctx->tableau_comp);
+    bridge_sync(ctx, partie);
+    partie->failliteAlpha = 255.0f;
+    return 1;
+}
+
 int bridge_next_turn(EtatPartie* partie) {
-    partie->joueursActif = (partie->joueursActif + 1) % partie->nbJoueurs;
-    if (partie->joueursActif == 0) partie->tourActuel++;
+    int next = partie->joueursActif;
+    do {
+        next = (next + 1) % partie->nbJoueurs;
+        if (next == 0) partie->tourActuel++;
+    } while (partie->joueurs[next].credits < 0 && next != partie->joueursActif);
+
+    partie->joueursActif = next;
     if (partie->tourMax > 0 && partie->tourActuel > partie->tourMax) return 1;
     return 0;
 }
@@ -176,8 +189,6 @@ void bridge_sync(const ContexteJeu* ctx, EtatPartie* partie) {
 int bridge_get_winner(const ContexteJeu* ctx, const EtatPartie* partie,
                       char winner_name[50], int* winner_value, int* winner_mode) {
     if (!ctx || !partie) return -1;
-
-    /* winner_mode : 0 = fin de tours, 1 = faillite */
     int mode_tours = (partie->tourMax > 0);
     if (winner_mode) *winner_mode = mode_tours ? 0 : 1;
 
@@ -187,7 +198,7 @@ int bridge_get_winner(const ContexteJeu* ctx, const EtatPartie* partie,
     for (int i = 0; i < partie->nbJoueurs; i++) {
         Player* p = ctx->joueurs[i];
         if (!p) continue;
-        if (p->credit < 0) continue; /* joueur éliminé */
+        if (p->credit < 0) continue;
 
         int val = engine_get_player_total_value(p,
                       (Property**)ctx->tableau_prop,
@@ -206,8 +217,6 @@ int bridge_get_winner(const ContexteJeu* ctx, const EtatPartie* partie,
     if (winner_value) *winner_value = best_val;
     return best_idx;
 }
-
-/* EVENEMENTS */
 
 void bridge_get_evenement(const ContexteJeu* ctx, EvenementInfo* out) {
     if (!out) return;
@@ -255,8 +264,6 @@ void bridge_tick_evenement(ContexteJeu* ctx) {
     gctx->numero_round++;
     logic_update_global_eco(gctx);
 }
-
-/* INFOS PLATEAU */
 
 int bridge_is_in_jail(const ContexteJeu* ctx, const EtatPartie* partie) {
     int ja = partie->joueursActif;
@@ -342,8 +349,6 @@ int bridge_jail_use_card(ContexteJeu* ctx, EtatPartie* partie) {
     bridge_sync(ctx, partie);
     return 1;
 }
-
-/* PROPRIETES */
 
 static void* _get_current_buyable(const ContexteJeu* ctx, const EtatPartie* partie,
                                    TypeCase* type_out) {
@@ -501,8 +506,6 @@ int bridge_build(ContexteJeu* ctx, EtatPartie* partie, int build_type) {
     }
     return 0;
 }
-
-/* TRADE */
 
 void bridge_trade_init(ContexteJeu* ctx, const EtatPartie* partie, TradeState* ts) {
     if (!ctx || !partie || !ts) return;

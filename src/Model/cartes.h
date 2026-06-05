@@ -191,7 +191,7 @@ void utiliser_carte(Carte *carte);
 /**
  * @brief Remet une carte dans le paquet.
  *
- * Typiquement utilisée après avoir consommé une carte "Sortie de prison".
+ * Utilisé après avoir consommé une carte "Sortie de prison".
  *
  * @param carte Carte concernée.
  */
@@ -213,7 +213,7 @@ int joueur_possede_sortie_prison(const Carte *cartes, int nb_cartes, int numero_
 /**
  * @brief Calcule une taxe écologique à partir d'une base et de l'indice du joueur.
  *
- * Convention actuelle de votre projet :
+ * Convention actuelle de notre projet :
  * A=1, B=2, ..., F=6.
  * On applique un coefficient croissant avec la mauvaise note.
  *

@@ -317,19 +317,6 @@ int evenements_case_est_bloquee(const EtatEvenementGlobal *e, int position) {
 /* ------------------------------------------------------------------------- */
 
 double evenements_bonus_risque_depuis_eco(EcoGrade indice_global) {
-    /*
-     * Plus l'indice est mauvais, plus la probabilité d'événement augmente.
-     * Convention du projet :
-     *   A=1, B=2, C=3, D=4, E=5, F=6
-     *
-     * Exemple proposé :
-     *   A -> 0.00
-     *   B -> 0.01
-     *   C -> 0.03
-     *   D -> 0.05
-     *   E -> 0.08
-     *   F -> 0.12
-     */
     switch (indice_global) {
         case GRADE_A: return 0.00;
         case GRADE_B: return 0.01;

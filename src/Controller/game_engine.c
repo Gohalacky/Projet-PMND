@@ -21,10 +21,9 @@ int engine_roll_dice( int *compteur_doubles) {
     int de1 = rand() % 6 + 1;
     int de2 = rand() % 6 + 1;
     
-    // Si c'est un double, on incrémente la valeur pointée. 
-    // Sinon, on la remet à zéro.
+
     if (de1 == de2) {
-        (*compteur_doubles)++; // Attention aux parenthèses, elles sont obligatoires 
+        (*compteur_doubles)++;
         printf("Double de %d !\n",de1);
     } else {
         *compteur_doubles = 0;
@@ -39,8 +38,8 @@ void engine_play_turn(Player *p, Player *all_players[], Property *tableau_prop[]
     (void)nb_joueurs;
     if (!p || !plateau) return;
   
-    int compteur_doubles =0; // compteur de double pour la case prison = 0 au début de tour
-    do{                            // on fait notre tour une premiere fois, le do while sert si le premier lancé était un double de rejoué et de refaire son tour
+    int compteur_doubles =0; 
+    do{                            
         int total_des = engine_roll_dice(&compteur_doubles);
         printf("[Dés] : Résultat = %d\n", total_des);
         // Cas : joueur en prison + double -> sort et se deplace, mais ne rejoue pas

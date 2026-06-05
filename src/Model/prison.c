@@ -22,21 +22,18 @@ void go_to_jail(Player * p, Prison * jail){
 void get_out_of_jail(Player *p, Prison * jail){
     for(int i = 0; i < jail->nb_j; i++){
         if(jail->liste[i] == p){
-            // On a trouvé le joueur, on décale les suivants vers la gauche
-            // On utilise une nouvelle variable 'j' pour ne pas casser la boucle
             for(int j = i; j < jail->nb_j - 1; j++){
                 jail->liste[j] = jail->liste[j+1];
                 jail->comptage[j] = jail->comptage[j+1];
             }
-            
-            // On met à jour le nombre de joueurs
+        
             jail->nb_j--;
             
-            // On nettoie la dernière case pour éviter les pointeurs fantômes
+
             jail->liste[jail->nb_j] = NULL;
             jail->comptage[jail->nb_j] = 0;
             printf("%s sort de prison !\n",p->name);
-            return; // On sort directement de la fonction
+            return; 
         }
     }
 }

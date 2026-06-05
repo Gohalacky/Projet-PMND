@@ -90,10 +90,6 @@ void init_pioche_chance(PiocheChance *pioche) {
     pioche->nb_cartes = NB_CARTES_CHANCE;
     pioche->sommet = 0;
 
-    /* ------------------------------------------------------------------ */
-    /* Définition des cartes Chance                                       */
-    /* ------------------------------------------------------------------ */
-
     strcpy(pioche->cartes[0].titre, "Bourse de projet");
     strcpy(pioche->cartes[0].description, "Vous recevez 30 ECTS.");
     pioche->cartes[0].paquet = PAQUET_CHANCE;
@@ -155,7 +151,7 @@ void init_pioche_chance(PiocheChance *pioche) {
     pioche->cartes[9].valeur = 1;
 
     strcpy(pioche->cartes[10].titre, "Sortie de prison");
-    strcpy(pioche->cartes[10].description, "Conservez cette carte jusqu'a utilisation.");
+    strcpy(pioche->cartes[10].description, "Conservez cette carte jusqu'à utilisation.");
     pioche->cartes[10].paquet = PAQUET_CHANCE;
     pioche->cartes[10].effet = CARTE_SORTIE_PRISON;
     pioche->cartes[10].valeur = 1;
@@ -278,7 +274,6 @@ Carte *piocher_carte_chance(PiocheChance *pioche, int numero_joueur) {
 
     Carte *carte = &pioche->cartes[idx];
 
-    /* Cas spécial : sortie de prison -> la carte reste en main */
     if (carte->effet == CARTE_SORTIE_PRISON) {
         donner_carte_a_joueur(carte, numero_joueur);
     }
@@ -287,7 +282,7 @@ Carte *piocher_carte_chance(PiocheChance *pioche, int numero_joueur) {
 }
 
 Carte *piocher_carte_communaute(PiocheCommunaute *pioche, int numero_joueur) {
-    (void)numero_joueur; /* pas utilisé pour le moment */
+    (void)numero_joueur; 
     if (pioche == NULL) return NULL;
 
     int idx = trouver_carte_disponible_communaute(pioche);
@@ -346,18 +341,6 @@ int joueur_possede_sortie_prison(const Carte *cartes, int nb_cartes, int numero_
 /* ------------------------------------------------------------------------- */
 
 int calcul_taxe_ecologique(int base, EcoGrade indice) {
-    /*
-     * Votre enum actuelle dans player.h est :
-     * GRADE_A = 1 ... GRADE_F = 6
-     *
-     * On applique des coefficients proches de ceux qu'on avait définis :
-     * A -> 0.5
-     * B -> 0.8
-     * C -> 1.0
-     * D -> 1.2
-     * E -> 1.5
-     * F -> 2.0
-     */
     double coeff = 1.0;
 
     switch (indice) {

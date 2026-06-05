@@ -125,6 +125,7 @@ void handlePrisonClick(int x, int y, EtatJeu* state, PrisonButtonsPack* pb, Butt
 
             CarteInfo carteInfo;
             int pioche = bridge_play_turn(ctx, partie, &carteInfo);
+            bridge_apply_bankruptcy(ctx, partie);
 
             if (pioche) {
                 strncpy(partie->derniereCarte.titre,       carteInfo.titre,       63);
@@ -133,7 +134,7 @@ void handlePrisonClick(int x, int y, EtatJeu* state, PrisonButtonsPack* pb, Butt
                 partie->derniereCarte.valeur    = carteInfo.valeur;
                 partie->derniereCarte.effet     = carteInfo.effet;
                 partie->carteEnCours            = 1;
-                partie->doubleEnAttente         = 0; 
+                partie->doubleEnAttente         = 0;
                 btn->throwDice.disabled         = 1;
                 btn->endTurn.disabled           = 1;
             } else {

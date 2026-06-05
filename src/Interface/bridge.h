@@ -188,6 +188,18 @@ int bridge_next_turn(EtatPartie* partie);
 int bridge_check_bankruptcy_gameover(const EtatPartie* partie);
 
 /**
+ * @brief Déclare le joueur actif en faillite s'il a un crédit négatif.
+ *
+ * Libère tous ses biens (engine_handle_bankruptcy), synchronise EtatPartie,
+ * et active la notification visuelle.
+ *
+ * @param ctx    Contexte de jeu.
+ * @param partie État de la partie.
+ * @return 1 si le joueur vient d'être déclaré en faillite, 0 sinon.
+ */
+int bridge_apply_bankruptcy(ContexteJeu* ctx, EtatPartie* partie);
+
+/**
  * @brief Synchronise EtatPartie avec l'état courant du Modèle.
  *
  * Copie credits, noteEco, position et nom de chaque joueur depuis Player*

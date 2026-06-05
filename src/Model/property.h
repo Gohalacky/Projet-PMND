@@ -82,7 +82,7 @@ typedef struct Compagnies {
 
 /**
  * @struct Gares
- * @brief Structure représentant une Gare (ou lieu de transit INSA).
+ * @brief Structure représentant une Gare.
  */
 typedef struct Gares {
     char name[50];          /**< Nom de la gare */

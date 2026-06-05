@@ -166,6 +166,7 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
 
                 CarteInfo carteInfo;
                 int pioche = bridge_play_turn(ctx, partie, &carteInfo);
+                bridge_apply_bankruptcy(ctx, partie);
 
                 if (pioche) {
                     strncpy(partie->derniereCarte.titre,       carteInfo.titre,       63);
@@ -183,18 +184,23 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                     if (bridge_check_bankruptcy_gameover(partie)) {
                         *state = GAMEOVER;
                     } else {
-                        int enPrison = bridge_is_in_jail(ctx, partie);
-                        if (enPrison) {
-                            partie->prisonPending = 1;
+                        if (partie->joueurs[partie->joueursActif].credits < 0) {
                             btn->throwDice.disabled = 1;
                             btn->endTurn.disabled   = 0;
                         } else {
-                            if (bridge_is_double(ctx)) {
-                                btn->throwDice.disabled = 0;
-                                btn->endTurn.disabled   = 1;
-                            } else {
+                            int enPrison = bridge_is_in_jail(ctx, partie);
+                            if (enPrison) {
+                                partie->prisonPending = 1;
                                 btn->throwDice.disabled = 1;
                                 btn->endTurn.disabled   = 0;
+                            } else {
+                                if (bridge_is_double(ctx)) {
+                                    btn->throwDice.disabled = 0;
+                                    btn->endTurn.disabled   = 1;
+                                } else {
+                                    btn->throwDice.disabled = 1;
+                                    btn->endTurn.disabled   = 0;
+                                }
                             }
                         }
                         *state = LANCER;
@@ -280,6 +286,16 @@ static void handleClick(int x, int y, EtatJeu* state, ButtonsPack* btn, Counter*
                         steps = (toCase - fromCase + BOARD_SIZE) % BOARD_SIZE;
                     }
                     startPawnMoveCard(&pawns[ja_carte], fromCase, steps);
+                }
+                if (bridge_check_bankruptcy_gameover(partie)) {
+                    *state = GAMEOVER;
+                    break;
+                }
+                if (partie->joueurs[partie->joueursActif].credits < 0) {
+                    btn->throwDice.disabled = 1;
+                    btn->endTurn.disabled   = 0;
+                    switch(partie->nbJoueurs){ case 2: *state=PLATEAU2J; break; case 3: *state=PLATEAU3J; break; default: *state=PLATEAU4J; break; }
+                    break;
                 }
                 if (partie->doubleEnAttente) {
                     partie->doubleEnAttente = 0;

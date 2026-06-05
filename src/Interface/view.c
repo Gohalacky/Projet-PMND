@@ -43,6 +43,19 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
         }
     }
 
+    if (partie->failliteAlpha > 0.0f) {
+        TTF_Font* fontBig = TTF_OpenFont("assets/FONT/fontPixel.ttf", (int)(60.0f * winH / REF_H));
+        if (fontBig) {
+            SDL_Color rouge = {220, 30, 30, 255};
+            Uint8 alpha = (Uint8)(partie->failliteAlpha > 255 ? 255 : partie->failliteAlpha);
+            char msg[64];
+            snprintf(msg, sizeof(msg), "%s est en faillite !", partie->failliteNom);
+            int tw, th; TTF_SizeUTF8(fontBig, msg, &tw, &th);
+            printTextAlpha(renderer, fontBig, msg, rouge, (winW - tw) / 2, (winH - th) / 2, alpha);
+            TTF_CloseFont(fontBig);
+        }
+    }
+
     renderButtonDisabled(renderer, &btn->throwDice);
     renderButtonDisabled(renderer, &btn->endTurn);
     renderPawns(renderer, tex, pawns, partie->nbJoueurs, winW, winH);
@@ -53,7 +66,6 @@ static void renderPlateau(SDL_Renderer* renderer, EtatJeu state, TexturesPack* t
     printTextResponsive(renderer, fontButton, &texts->btnEndTurn);
     printTextResponsive(renderer, fontButton, &texts->indNbTurn);
 
-    /* Numéro du tour affiché sous le label "Tour" : X/Y ou X/infini */
         char bufferTour[32];
         int lineH = TTF_FontHeight(fontNormal);
         if (partie->tourMax > 0) {
@@ -216,13 +228,11 @@ void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
 
-    /* Fond assombri */
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
     SDL_Rect full = {0, 0, winW, winH};
     SDL_RenderFillRect(renderer, &full);
 
-    /* Fenêtre de carte : couleur selon Chance (orange) ou Communauté (violet) */
     int isComm = (partie->derniereCarte.paquet == 1);
     SDL_Rect fenetre = {
         (int)(340.0f * winW / REF_W),
@@ -231,11 +241,9 @@ void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
         (int)(360.0f * winH / REF_H),
     };
 
-    /* Fond carte */
     SDL_SetRenderDrawColor(renderer, 20, 20, 40, 245);
     SDL_RenderFillRect(renderer, &fenetre);
 
-    /* Bordure colorée */
     if (isComm) SDL_SetRenderDrawColor(renderer, 160, 80, 220, 255);
     else        SDL_SetRenderDrawColor(renderer, 220, 160, 30,  255);
     for (int t = 0; t < 3; t++) {
@@ -245,32 +253,27 @@ void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
-    /* Titre du paquet */
     SDL_Color couleurPaquet = isComm ? (SDL_Color){200, 140, 255, 255}: (SDL_Color){255, 200, 50,  255};
     const char* labelPaquet = isComm ? "CAISSE DE COMMUNAUTE" : "CHANCE";
     int lineH = TTF_FontHeight(fontTitle);
     printTextCentered(renderer, fontTitle, labelPaquet, couleurPaquet,fenetre.y + 18, winW);
 
-    /* Séparateur */
     SDL_SetRenderDrawColor(renderer, 100, 100, 130, 255);
     SDL_RenderDrawLine(renderer, fenetre.x + 20, fenetre.y + lineH + 28,fenetre.x + fenetre.w - 20, fenetre.y + lineH + 28);
 
-    /* Titre de la carte */
     SDL_Color blanc = {235, 221, 192, 255};
     int lineHN = TTF_FontHeight(fontNormal);
     int y = fenetre.y + lineH + 44;
     printTextCentered(renderer, fontNormal, partie->derniereCarte.titre, blanc, y, winW);
 
-    /* Description */
     SDL_Color gris = {180, 170, 155, 255};
     y += lineHN + 14;
     printTextCentered(renderer, fontNormal, partie->derniereCarte.description, gris, y, winW);
 
-    /* Valeur : vert si gain, rouge si perte/taxe */
     if (partie->derniereCarte.valeur != 0) {
         char valBuf[48];
-        int estPerte = (partie->derniereCarte.effet == 1   /* CARTE_PERTE_ECTS */
-                     || partie->derniereCarte.effet == 2); /* CARTE_TAXE_ECO   */
+        int estPerte = (partie->derniereCarte.effet == 1   
+                     || partie->derniereCarte.effet == 2); 
         int valAbs = partie->derniereCarte.valeur < 0 ? -partie->derniereCarte.valeur : partie->derniereCarte.valeur;
         if (estPerte)
             snprintf(valBuf, sizeof(valBuf), "-%d ECTS", valAbs);
@@ -280,8 +283,7 @@ void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
         y += lineHN + 20;
         printTextCentered(renderer, fontNormal, valBuf, couleurVal, y, winW);
 
-        /* Mention du bonus/malus éco pour les taxes écologiques */
-        if (partie->derniereCarte.effet == 2) { /* CARTE_TAXE_ECO */
+        if (partie->derniereCarte.effet == 2) { 
             EcoGrade grade = (EcoGrade)(int)partie->joueurs[partie->joueursActif].noteEco;
             int reel = calcul_taxe_ecologique(valAbs, grade);
             char ecoBuf[64];
@@ -296,7 +298,6 @@ void renderCartePiochee(SDL_Renderer* renderer, TTF_Font* fontNormal,
         }
     }
 
-    /* Bouton OK */
     btn->okCarte.rect = (SDL_Rect){
         (int)(570.0f * winW / REF_W),
         (int)(460.0f * winH / REF_H),
@@ -443,11 +444,9 @@ void renderGameOver(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fontN
     int winW, winH;
     SDL_GetRendererOutputSize(renderer, &winW, &winH);
 
-    /* Fond sombre semi-transparent */
     SDL_SetRenderDrawColor(renderer, 18, 20, 30, 255);
     SDL_RenderClear(renderer);
 
-    /* Panneau central */
     int panW = (int)(winW * 0.6f);
     int panH = (int)(winH * 0.7f);
     int panX = (winW - panW) / 2;
@@ -461,10 +460,9 @@ void renderGameOver(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fontN
     SDL_RenderDrawRect(renderer, &panel);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
-    /* Déterminer le gagnant via le bridge */
     char winner_name[50] = "???";
     int  winner_value = 0;
-    int  winner_mode  = 0; /* 0=tours, 1=faillite */
+    int  winner_mode  = 0; 
     bridge_get_winner(ctx, partie, winner_name, &winner_value, &winner_mode);
 
     SDL_Color gold   = {220, 180, 60,  255};
@@ -477,16 +475,13 @@ void renderGameOver(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fontN
 
     int y = panY + (int)(panH * 0.08f);
 
-    /* Titre : FIN DE PARTIE */
     printTextCentered(renderer, fontTitle, "FIN DE PARTIE", gold, y, winW);
     y += lineTitle + 8;
 
-    /* Ligne décorative */
     SDL_SetRenderDrawColor(renderer, 200, 175, 100, 255);
     SDL_RenderDrawLine(renderer, panX + 20, y, panX + panW - 20, y);
     y += 20;
 
-    /* Sous-titre selon le mode */
     if (winner_mode == 0) {
         char buf[80];
         snprintf(buf, sizeof(buf), "Fin des %d tours", partie->tourMax);
@@ -496,25 +491,20 @@ void renderGameOver(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fontN
     }
     y += lineNormal + 24;
 
-    /* Trophée textuel */
     printTextCentered(renderer, fontTitle, "VAINQUEUR", gold, y, winW);
     y += lineTitle + 16;
 
-    /* Nom du gagnant en grand */
     printTextCentered(renderer, fontTitle, winner_name, blanc, y, winW);
     y += lineTitle + 16;
 
-    /* Valeur totale */
     char valBuf[64];
     snprintf(valBuf, sizeof(valBuf), "Patrimoine total : %d ECTS", winner_value);
     printTextCentered(renderer, fontNormal, valBuf, vert, y, winW);
     y += lineNormal + 28;
 
-    /* Classement des autres joueurs */
     printTextCentered(renderer, fontNormal, "Classement :", blanc, y, winW);
     y += lineNormal + 8;
 
-    /* Trier les joueurs par valeur totale décroissante (simple) */
     int order[4];
     int vals[4];
     int n = partie->nbJoueurs;
@@ -529,7 +519,7 @@ void renderGameOver(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fontN
             vals[i] = partie->joueurs[i].credits;
         }
     }
-    /* Tri à bulles décroissant */
+
     for (int i = 0; i < n - 1; i++) {
         for (int j = i + 1; j < n; j++) {
             if (vals[order[j]] > vals[order[i]]) {
@@ -552,7 +542,6 @@ void renderGameOver(SDL_Renderer* renderer, TTF_Font* fontTitle, TTF_Font* fontN
         y += lineNormal + 4;
     }
 
-    /* Bouton Retour au menu */
     int bW = (int)(panW * 0.4f);
     int bH = 44;
     int bX = panX + (panW - bW) / 2;

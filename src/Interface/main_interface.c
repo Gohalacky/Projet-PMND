@@ -213,6 +213,11 @@ int main(){
             if (partie.prisonFailAlpha < 0.0f) partie.prisonFailAlpha = 0.0f;
         }
 
+        if (partie.failliteAlpha > 0.0f) {
+            partie.failliteAlpha -= (float)delta * (255.0f / 5000.0f);
+            if (partie.failliteAlpha < 0.0f) partie.failliteAlpha = 0.0f;
+        }
+
         updatePawns(pawns, partie.nbJoueurs, delta);
         if (state == LANCER && prevState != LANCER) resetAnim(&diceAnim);
         if (state == LANCER) updateAnim(&diceAnim, delta);
