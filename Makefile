@@ -130,6 +130,8 @@ valgrind_game: $(TARGET)
 
 valgrind: valgrind_test valgrind_cartes
 
+
+#---- CLEAN ----
 clean:
 	rm -rf $(BUILD_DIR) $(BIN_DIR)
 	@echo "Fichiers objets, binaires et couverture supprimés"
