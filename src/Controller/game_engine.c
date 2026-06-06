@@ -13,8 +13,8 @@ const char* engine_get_case_joueur_actif(int joueurActif,Player* joueurs[],const
 }
 
 
-/**  
- * Simule un lancer de 2 dés de 6 faces.
+/*  
+Simule un lancer de 2 dés de 6 faces.
  */
 int engine_roll_dice( int *compteur_doubles) {
     
@@ -207,7 +207,7 @@ int engine_sell_building(Player *p, Property *tableau_prop[], Property *prop) {
     return 0;
 }
 
-// Utilitaires de vérification (Garde la logique intacte)
+
 int engine_group_has_buildings(Property *tableau_prop[], Color couleur) {
     for (int i = 0; i < NB_PROPRIETE; i++) {
         if (tableau_prop[i]->color == couleur && tableau_prop[i]->level > 0) {
@@ -217,8 +217,7 @@ int engine_group_has_buildings(Property *tableau_prop[], Color couleur) {
     return 0;
 }
 
-/* Fonctions d'hypothèque pour la GUI. 
-   L'interface gère la sélection, ces fonctions appliquent la logique. */
+
 int engine_mortgage_prop(Player *p, Property *tableau_prop[], Property *prop) {
     if (prop->owner == p->number && !prop->hypo && prop->level == 0 && !engine_group_has_buildings(tableau_prop, prop->color)) {
         hypotheque_PROP(prop, p);
@@ -228,7 +227,7 @@ int engine_mortgage_prop(Player *p, Property *tableau_prop[], Property *prop) {
 }
 
 int engine_unmortgage_prop(Player *p, Property *prop) {
-    int cout_rachat = (int)((prop->value / 2) * 1.1);
+    int cout_rachat = (prop->value / 2) * 11 / 10;
     if (prop->owner == p->number && prop->hypo && p->credit >= cout_rachat) {
         rachathypo_PROP(prop, p);
         return 1;
@@ -316,15 +315,14 @@ void engine_handle_bankruptcy(Player *p, Property *tableau_prop[], Gares *tablea
     p->credit = -1; // Marque le joueur comme éliminé
 }
 
-// À appeler par la GUI si p->credit < 0.
-// Renvoie 1 si le joueur est éliminé (Game Over pour lui), 0 s'il peut encore vendre des trucs.
+
 int engine_check_bankruptcy_status(Player *p, Property *tableau_prop[], Gares *tableau_gare[], Compagnies *tableau_comp[]) {
     if (p->credit < 0) {
         if (!engine_has_assets_left(p, tableau_prop, tableau_gare, tableau_comp)) {
             engine_handle_bankruptcy(p, tableau_prop, tableau_gare, tableau_comp);
             return 1; // Le joueur a perdu
         }
-        return 0; // Le joueur doit encore vendre (la GUI doit forcer l'ouverture du menu de gestion)
+        return 0; // Le joueur doit encore vendre
     }
     return 0; 
 }

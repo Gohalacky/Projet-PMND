@@ -382,7 +382,7 @@ void engine_manage_assets(Player *p, Property *tableau_prop[], Gares *tableau_ga
         }
     }
 
-    // Vendre un batiment
+
     // Vendre un bâtiment (Déconstruction)
     else if (action == 4) {
         printf("\n DÉCONSTRUCTION");
@@ -560,7 +560,7 @@ void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs,
     printf("\n           SALON DE NÉGOCIATION     ");
     printf("\n==================================================");
 
-    // 1. Choix du partenaire
+    // Choix du partenaire
     int valid_targets[MAX_PLAYER];
     int target_count = 0;
     for (int i = 0; i < nb_joueurs; i++) {
@@ -583,7 +583,7 @@ void engine_handle_trade(Player *p_actif, Player *all_players[], int nb_joueurs,
     TradeOffer *off_actif = init_empty_offer(p_actif);
     TradeOffer *off_cible = init_empty_offer(p_cible);
 
-    // 2. Sélection des biens (PROPOSITION puis DEMANDE)
+    // Sélection des biens (PROPOSITION puis DEMANDE)
     Player *participants[2] = {p_actif, p_cible};
     TradeOffer *offers[2] = {off_actif, off_cible};
     char *phase_msg[2] = {"VOTRE OFFRE (Ce que vous donnez)", "VOTRE DEMANDE (Ce que vous voulez)"};
