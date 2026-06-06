@@ -7,9 +7,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "cartes.h"
-#include "evenements.h"
-#include "player.h"
+#include "../src/Model/evenements.h"
+#include "../src/Model/cartes.h"
+
+#include "../src/Model/player.h"
+
 
 /* ========================================================================= */
 /* TESTS DU MODULE CARTES                                                    */

@@ -10,9 +10,9 @@ Les joueurs incarnent des étudiants de l'INSA Rennes devant aménager un campus
 
 Le projet suit le modèle Modèle-Vue-Contrôleur :
 
-- **Modèle (`src/Model/`)** — cœur des règles : état des joueurs, plateau, propriétés, loyers, cartes, événements, prison, hypothèques, échanges.
-- **Vue (`src/Interface/`)** — interface graphique SDL2 : plateau, cartes joueurs, animations, menus, fenêtres contextuelles.
-- **Contrôleur (`src/Controller/`)** — boucle de jeu, chargement des fichiers de configuration, pont entre Modèle et Vue.
+- Modèle (`src/Model/`) — cœur des règles : état des joueurs, plateau, propriétés, loyers, cartes, événements, prison, hypothèques, échanges.
+- Vue (`src/Interface/`) — interface graphique SDL2 : plateau, cartes joueurs, animations, menus, fenêtres contextuelles.
+- Contrôleur (`src/Controller/`) — boucle de jeu, chargement des fichiers de configuration, pont entre Modèle et Vue.
 
 ---
 
@@ -71,9 +71,10 @@ Environnement Linux recommandé. Paquets nécessaires :
 
 Vous pouvez installer toutes les dépendances nécessaires via la commande suivante :
 
+```bash
 sudo apt update
 sudo apt install build-essential libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libcmocka-dev doxygen graphviz gcovr valgrind
-
+```
 
 ---
 

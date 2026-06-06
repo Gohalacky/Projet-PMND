@@ -1,6 +1,5 @@
 /**
  * @file prison.h
- * @author your name (you@domain.com)
  * @brief  Ce module s'occupe de la gestion des fonction de la case prison et des mécaniques liés , la case prison est la case 10 et la case allé en prison est la case 30.
  * 
  */

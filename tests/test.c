@@ -1,17 +1,17 @@
-// 1. Les bibliothèques requises par CMocka (DANS CET ORDRE EXACT)
+// Les bibliothèques requises par CMocka (DANS CET ORDRE EXACT)
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
 #include <stdint.h>
 #include <cmocka.h>
 
-// 2. Les bibliothèques standards C
+//Les bibliothèques standards C
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-// 3. Vos fichiers d'en-tête métiers
-// Option A : Chemins relatifs (Recommandé pour que l'IDE arrête de souligner en rouge)
+
+//Chemins relatifs 
 #include "../src/Model/property.h"
 #include "../src/Model/player.h"
 #include "../src/Model/tool.h"
@@ -22,11 +22,6 @@
 #include "../src/Model/evenements.h"
 #include "../src/Model/cartes.h"
 
-/* Note : Si vous préférez garder #include "property.h" sans le "../src/Model/", 
-le Makefile que nous venons de créer le compilera sans problème grâce au flag `-Isrc/Model`.
-Cependant, utiliser les chemins relatifs "../src/Model/..." rend la vie beaucoup plus 
-facile à votre éditeur de texte pour l'auto-complétion !
-*/
 
 /* ========================================================================= */
 /* TESTS DE PROPERTY                                */
@@ -403,7 +398,7 @@ static void test_nb_Gare(void **state){
     free(p1);
 }
 
-/* NOUVEAU : Test des branches NULL et cas d'erreurs orphelins (Property) */
+/*  Test des branches NULL et cas d'erreurs orphelins (Property) */
 static void test_property_null_and_errors(void **state) {
     (void) state;
     Property *plateau[NB_PROPRIETE] = {NULL};
@@ -419,13 +414,13 @@ static void test_property_null_and_errors(void **state) {
     assert_int_equal(check_uniformity(plateau, NULL, 1), 0);
 }
 
-/* NOUVEAU : Couverture des types Logement/Parc et Faillite (Banqueroute) */
+/* Couverture des types Logement/Parc et Faillite (Banqueroute) */
 static void test_property_types_and_banqueroute(void **state) {
     (void) state;
     Player *p1 = init_player("P1", 1);
     Player *p2 = init_player("P2_Pauvre", 2);
 
-    // SOLUTION : On charge les vrais tableaux pour éviter les pointeurs NULL
+    //  On charge les vrais tableaux pour éviter les pointeurs NULL
     Property *plateau[NB_PROPRIETE] = {NULL};
     int nb_p = chargement_propriete_loyer(plateau, "data/loyer_insapoly.txt");
     
@@ -612,7 +607,7 @@ static void test_player_addremove_gar(void **state){
     free(p); free(g);
 }
 
-/* NOUVEAU : Test de toutes les conditions de sécurité (Player) */
+/*Test de toutes les conditions de sécurité (Player) */
 static void test_player_edge_cases(void **state) {
     (void) state;
     Player *p = init_player("P", 1);
@@ -754,7 +749,7 @@ static void test_hypotheque_et_rachat_COMP(void **state) {
     free(comp); free(p1);
 }
 
-/* NOUVEAU : Test des branches NULL et cas d'erreurs orphelins (Hypo) */
+/* Test des branches NULL et cas d'erreurs orphelins (Hypo) */
 static void test_hypo_edge_cases(void **state) {
     (void) state;
     Player *p1 = init_player("P1", 1);
@@ -1282,7 +1277,7 @@ static void test_auction_system_gar(void **state) {
     free(p1); free(p2); free(p3); free(p4);
 }
 
-/* NOUVEAU : Test des branches NULL et cas d'erreurs orphelins (VOE) */
+/* Test des branches NULL et cas d'erreurs orphelins (VOE) */
 static void test_voe_edge_cases(void **state) {
     (void) state;
     
@@ -1307,7 +1302,7 @@ static void test_voe_edge_cases(void **state) {
 /* TESTS DE EVENEMENTS                              */
 /* ========================================================================= */
 
-/* NOUVEAU : Couverture à 100% du système d'évènements */
+/* Couverture à 100% du système d'évènements pour tout avoir dans le même fichier */
 static void test_evenements_all(void **state) {
     (void) state;
     printf("==========================================================\n");
@@ -1394,7 +1389,7 @@ static void test_evenements_all(void **state) {
 /* TESTS DE CARTES                                  */
 /* ========================================================================= */
 
-/* NOUVEAU : Couverture à 100% du système de cartes (Chance/Communauté) */
+/* Couverture à 100% du système de cartes (Chance/Communauté) pour tout avoir dans le même fichier */
 static void test_cartes_all(void **state) {
     (void) state;
     printf("==========================================================\n");
@@ -1482,8 +1477,8 @@ int main(void) {
         cmocka_unit_test(test_full_color),
         cmocka_unit_test(test_full_comp),
         cmocka_unit_test(test_nb_Gare),
-        cmocka_unit_test(test_property_null_and_errors),       // NOUVEAU
-        cmocka_unit_test(test_property_types_and_banqueroute), // NOUVEAU
+        cmocka_unit_test(test_property_null_and_errors),      
+        cmocka_unit_test(test_property_types_and_banqueroute),
 
         // player
         cmocka_unit_test(test_init_player_values),
@@ -1493,7 +1488,7 @@ int main(void) {
         cmocka_unit_test(test_player_acquisition_propriete),
         cmocka_unit_test(test_player_addremove_comp),
         cmocka_unit_test(test_player_addremove_gar),
-        cmocka_unit_test(test_player_edge_cases),              // NOUVEAU
+        cmocka_unit_test(test_player_edge_cases),              
 
         // tool
         cmocka_unit_test(test_underscore_conversion),
@@ -1502,7 +1497,7 @@ int main(void) {
         cmocka_unit_test(test_hypotheque_et_rachat_PROP),
         cmocka_unit_test(test_hypotheque_et_rachat_GARE),
         cmocka_unit_test(test_hypotheque_et_rachat_COMP),
-        cmocka_unit_test(test_hypo_edge_cases),                // NOUVEAU
+        cmocka_unit_test(test_hypo_edge_cases),                
 
         // trade
         cmocka_unit_test(test_init_empty_offer),
@@ -1521,7 +1516,7 @@ int main(void) {
         cmocka_unit_test(test_auction_system),
         cmocka_unit_test(test_auction_system_comp),
         cmocka_unit_test(test_auction_system_gar),
-        cmocka_unit_test(test_voe_edge_cases),                 // NOUVEAU
+        cmocka_unit_test(test_voe_edge_cases),                 
 
         // evenements & cartes (NOUVEAU)
         cmocka_unit_test(test_evenements_all),
